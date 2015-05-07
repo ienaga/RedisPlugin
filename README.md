@@ -25,6 +25,88 @@ extension=yaml.so
 dev:
 prd:
 stg:
+  database:
+    dbMaster:
+      adapter:  Mysql
+      host:     127.0.0.1
+      port:     3301
+      username: root
+      password: XXXXX
+      dbname:   XXXXX
+      charset:  utf8
+      transaction: true
+      transaction_name: XXXXX
+    dbSlave:
+      adapter:  Mysql
+      host:     127.0.0.1
+      port:     3311
+      username: root
+      password: XXXXX
+      dbname:   XXXXX
+      charset:  utf8
+      transaction: false
+    dbCommonMaster:
+      adapter:  Mysql
+      host:     127.0.0.1
+      port:     3301
+      username: root
+      password: XXXXX
+      dbname:   XXXXX
+      charset:  utf8
+      transaction: false
+    dbCommonSlave:
+      adapter:  Mysql
+      host:     127.0.0.1
+      port:     3311
+      username: root
+      password: XXXXX
+      dbname:   XXXXX
+      charset:  utf8
+      transaction: false
+    dbMember1Master:
+      adapter:  Mysql
+      host:     127.0.0.1
+      port:     3306
+      username: root
+      password: XXXXX
+      dbname:   XXXXX
+      charset:  utf8
+      options:
+        20: false
+      transaction: true
+      transaction_name: XXXXX
+    dbMember1Slave:
+      adapter:  Mysql
+      host:     127.0.0.1
+      port:     3316
+      username: root
+      password: XXXXX
+      dbname:   XXXXX
+      charset:  utf8
+      transaction: false
+    dbMember2Master:
+      adapter:  Mysql
+      host:     127.0.0.1
+      port:     3307
+      username: root
+      password: XXXXX
+      dbname:   XXXXX
+      charset:  utf8
+      options:
+        20: false
+      transaction: true
+      transaction_name: XXXXX
+    dbMember2Slave:
+      adapter:  Mysql
+      host:     127.0.0.1
+      port:     3317
+      username: root
+      password: XXXXX
+      dbname:   XXXXX
+      charset:  utf8
+      transaction: false
+
+
   redis:
     default:
       name: db
@@ -32,15 +114,15 @@ stg:
 
     # shard admin
     admin:
-      model: 
-      method: 
-      column: 
+      model:  XXXXX
+      method: XXXXX
+      column: XXXXX
 
     # shard config master
     shard:
-      model: 
-      method: 
-      column: 
+      model:  XXXXX
+      method: XXXXX
+      column: XXXXX
 
     dbMaster:
       name: platform

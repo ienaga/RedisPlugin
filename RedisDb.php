@@ -3,7 +3,6 @@
 namespace RedisPlugin;
 
 use \Exception;
-use \RedisPlugin\RedisDbConfig;
 
 class RedisDb
 {
