@@ -121,36 +121,36 @@ stg:
       column: XXXXX
 
     dbMaster:
-      name: platform
+      name: AAAAA
     dbSlave:
-      name: platform
+      name: AAAAA
     dbCommonMaster:
-      name: common
+      name: BBBBB
     dbCommonSlave:
-      name: common
+      name: BBBBB
     dbMember1Master:
-      name: member1
+      name: CCCCC
     dbMember1Slave:
-      name: member1
+      name: CCCCC
     dbMember2Master:
-      name: member2
+      name: DDDDD
     dbMember2Slave:
-      name: member2
+      name: DDDDD
 
     server:
-      common:
+      AAAAA:
         host: 127.0.0.1
         port: 6379
         select: 0
-      platform:
+      BBBBB:
         host: 127.0.0.1
         port: 6379
         select: 1
-      member1:
+      CCCCC:
         host: 127.0.0.1
         port: 6379
         select: 2
-      member2:
+      DDDDD:
         host: 127.0.0.1
         port: 6379
         select: 3
