@@ -71,8 +71,6 @@ stg:
       password: XXXXX
       dbname:   XXXXX
       charset:  utf8
-      options:
-        20: false
       transaction: true
       transaction_name: XXXXX
     dbMember1Slave:
@@ -92,8 +90,6 @@ stg:
       password: XXXXX
       dbname:   XXXXX
       charset:  utf8
-      options:
-        20: false
       transaction: true
       transaction_name: XXXXX
     dbMember2Slave:
@@ -167,4 +163,38 @@ stg:
 $yml = yaml_parse_file(XXX.yml);
 ~~~
 
+## Phalcon services.php
 
+~~~
+/**
+ * Database connection is created based in the parameters defined in the configuration file
+ */
+
+use Phalcon\Db\Adapter\Pdo\Mysql as DbAdapter;
+use Phalcon\Mvc\Model\Transaction\Manager;
+
+foreach ($config->get('database') as $db => $arguments)
+{
+
+    $di->setShared($db, function () use ($arguments)
+    {
+
+        return new DbAdapter($arguments->toArray());
+
+    });
+
+    if (isset($arguments['transaction']) && $arguments['transaction']) {
+
+        $di->setShared($arguments['transaction_name'], function() use ($db)
+        {
+            $manager = new Manager();
+
+            if ($db !== null)
+                $manager->setDbService($db);
+
+            return $manager;
+        });
+
+    }
+}
+~~~
