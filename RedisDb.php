@@ -66,7 +66,7 @@ class RedisDb
      */
     public static function setCommon($model)
     {
-        $type = (self::isTransaction()) ? 'Master' : 'Slave';
+        $type = (self::isTransaction()) ? 'CommonMaster' : 'CommonSlave';
 
         self::setModel($model);
 
@@ -409,7 +409,7 @@ class RedisDb
         $col = null;
         if (!isset($parameters['where'])) {
 
-            $sqlText = str_replace("AND", "", $parameters[0]);
+            $sqlText  = str_replace("AND", "", $parameters[0]);
             $sqlTexts = explode(" ", $sqlText);
 
             $count = 1;
@@ -443,7 +443,6 @@ class RedisDb
 
         // なければDBから
         if ($result === false) {
-
             $result = $model::findFirst(self::_createKey($parameters));
 
             if ($result) {
@@ -494,11 +493,13 @@ class RedisDb
             self::getRedis()->setTimeout($hashKey, $expire);
         }
 
-        // 基本は1時間保持
-        if (self::getConfigName() !== 'common'
-            && !self::getRedis()->isTimeout($hashKey)
-        ) {
-            $expire = self::getConfig()->get('default')->get('expire');
+        // 基本は1日保持
+        if (!self::getRedis()->isTimeout($hashKey)) {
+            $expire = 86400;
+
+            if (self::getConfigName() !== 'common')
+                $expire = self::getConfig()->get('default')->get('expire');
+
             self::getRedis()->setTimeout($hashKey, $expire);
         }
     }
@@ -607,16 +608,8 @@ class RedisDb
      */
     public static function getRedis()
     {
-        $redis = RedisManager::getInstance();
-
-        $redis->connect(
-            self::getConfig()
-                ->get('server')
-                ->get(self::getConfigName())
-                ->toArray()
-        );
-
-        return $redis;
+        return RedisManager::getInstance()
+            ->connect(self::getConfig()->get('server')->get(self::getConfigName())->toArray());
     }
 
     /**
@@ -714,11 +707,13 @@ class RedisDb
                     self::getRedis()->setTimeout($key, $expire);
                 }
 
-                // 基本は24時間保持
-                if ($configName !== 'common'
-                    && !self::getRedis($configName)->isTimeout($key)
-                ) {
-                    $expire = self::getConfig()->get('default')->get('expire');
+                // 基本は1日保持
+                if (!self::getRedis($configName)->isTimeout($key)) {
+                    $expire = 86400;
+
+                    if ($configName !== 'common')
+                        $expire = self::getConfig()->get('default')->get('expire');
+
                     self::getRedis()->setTimeout($key, $expire);
                 }
             }

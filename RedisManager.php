@@ -53,7 +53,8 @@ class RedisManager
     # ----------------------------------------------------------------------------
 
     /**
-     * @param array $config
+     * @param  array $config
+     * @return $this
      */
     public function connect($config = array())
     {
@@ -89,6 +90,8 @@ class RedisManager
 
         self::$redis = $this->connections[$key];
         self::$redis->select($select);
+
+        return $this;
     }
 
     # ----------------------------------------------------------------------------
