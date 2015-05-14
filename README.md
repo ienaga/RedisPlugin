@@ -35,7 +35,7 @@ stg:
       dbname:   XXXXX
       charset:  utf8
       transaction: true
-      transaction_name: XXXXX
+      transaction_name: XXXXX # master
     dbSlave:
       adapter:  Mysql
       host:     127.0.0.1
@@ -72,7 +72,7 @@ stg:
       dbname:   XXXXX
       charset:  utf8
       transaction: true
-      transaction_name: XXXXX
+      transaction_name: XXXXX # member1
     dbMember1Slave:
       adapter:  Mysql
       host:     127.0.0.1
@@ -91,7 +91,7 @@ stg:
       dbname:   XXXXX
       charset:  utf8
       transaction: true
-      transaction_name: XXXXX
+      transaction_name: XXXXX # member2
     dbMember2Slave:
       adapter:  Mysql
       host:     127.0.0.1
@@ -110,15 +110,15 @@ stg:
 
     # shard admin
     admin:
-      model:  XXXXX
-      method: XXXXX
-      column: XXXXX
+      model:  XXXXX # AdminUser
+      method: XXXXX # getUset
+      column: XXXXX # user_id
 
     # shard config master
     shard:
-      model:  XXXXX
-      method: XXXXX
-      column: XXXXX
+      model:  XXXXX # AdminConfig
+      method: XXXXX # getConfig
+      column: XXXXX # db_id
 
     dbMaster:
       name: AAAAA
