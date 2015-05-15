@@ -198,3 +198,30 @@ foreach ($config->get('database') as $db => $arguments)
     }
 }
 ~~~
+
+## Sample findFirst
+~~~
+    return RedisDb::findFirst(array(
+        'where' => array(
+            'member_id' => $memberId,
+            'status_number' => 1
+        )
+    ), RedisDb::setCon(new self, $memberId));
+~~~
+
+## Sample query
+~~~
+    return RedisDb::query(self::query()
+        ->where("member_id = ".$memberId)
+        ->andWhere("status_number = ".1)
+        , RedisDb::setCon(new self, $memberId)
+    );
+~~~
+
+## Sample save
+~~~
+    $model = new self;
+    $model->setMemberId($memberId);
+    $model->setStatus(1);
+    RedisDb::save($model);
+~~~
