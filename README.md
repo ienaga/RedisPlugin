@@ -1,5 +1,6 @@
-RedisPlugin for Phalcon
+RedisPlugin for Phalcon (The correspondence of MySQL sharding.)
 ======
+
 
 ## Version
 
@@ -199,7 +200,7 @@ foreach ($config->get('database') as $db => $arguments)
 }
 ~~~
 
-## Sample findFirst
+## findFirst
 ~~~
     return RedisDb::findFirst(array(
         'where' => array(
@@ -209,7 +210,7 @@ foreach ($config->get('database') as $db => $arguments)
     ), RedisDb::setCon(new self, $memberId));
 ~~~
 
-## Sample query
+## query
 ~~~
     return RedisDb::query(self::query()
         ->where("member_id = ".$memberId)
@@ -218,7 +219,7 @@ foreach ($config->get('database') as $db => $arguments)
     );
 ~~~
 
-## Sample save
+## save
 ~~~
     $model = new self;
     $model->setMemberId($memberId);
