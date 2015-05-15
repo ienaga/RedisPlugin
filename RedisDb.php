@@ -452,8 +452,23 @@ class RedisDb
                         break;
                 }
             }
+
         } else {
-            $params = $parameters;
+            $params['where'] = $parameters;
+        }
+
+        if (isset($parameters['order']))
+            $params['where']['order'] = str_replace(" ", "_", $parameters['order']);
+
+        if (isset($parameters['limit'])) {
+            $value = $parameters['limit'];
+            if (is_array($parameters['limit'])) {
+                foreach ($parameters['limit'] as $value) {
+                    $value .= '_'. $value;
+                }
+            }
+
+            $params['where']['order'] = $value;
         }
 
         // redisから取得
@@ -673,6 +688,12 @@ class RedisDb
                 $parameters['where'][$column] = $value;
             }
         }
+
+        if ($criteria->getOrder())
+            $parameters['where']['order'] = str_replace(" ", "_", $criteria->getOrder());
+
+        if ($criteria->getLimit())
+            $parameters['where']['limit'] = str_replace(" ", "_", $criteria->getLimit());
 
         $key = self::generateKey($parameters['where']);
         $results = self::findRedis($key);
