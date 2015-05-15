@@ -9,17 +9,12 @@ class RedisDb
     /**
      * @var \Phalcon\Mvc\Model
      */
-    private static $selectModel = null;
+    private static $model = null;
 
     /**
      * @var \Phalcon\Mvc\Model\Transaction[]
      */
     private static $connections = array();
-
-    /**
-     * @var array
-     */
-    private static $redisConnections = array();
 
     /**
      * @var bool
@@ -43,12 +38,36 @@ class RedisDb
 
 
     /**
-     * @param null $memberId
+     * @param  null $memberId
      * @return \Phalcon\Mvc\Model\TransactionInterface
      */
     public static function getTransaction($memberId = null)
     {
         return self::addMasterConnection(self::getConnectionName($memberId) . 'Master');
+    }
+
+    /**
+     * @param  \Phalcon\Mvc\Model $model
+     * @param  array $data
+     * @param  array $whiteList
+     * @return \Phalcon\Mvc\Model
+     */
+    public static function save($model, $data = null, $whiteList = null)
+    {
+        self::setModel($model);
+
+        $memberId = null;
+        if (method_exists(self::getModel(), 'getMemberId')) {
+            $memberId = self::getModel()->getMemberId();
+        }
+        self::setCon($model, $memberId);
+
+        $model->setTransaction(self::getTransaction($memberId));
+
+        if (!$model->save($data, $whiteList))
+            RedisDb::outputErrorMessage();
+
+        return $model;
     }
 
     /**
@@ -86,10 +105,10 @@ class RedisDb
 
         self::setModel($model);
 
+        $model->setReadConnectionService(self::getConnectionName($memberId) . $type);
+
         if (self::isTransaction() && $memberId !== null)
             self::addModels($memberId, $model);
-
-        $model->setReadConnectionService(self::getConnectionName($memberId) . $type);
 
         return $model;
     }
@@ -99,7 +118,15 @@ class RedisDb
      */
     public static function getModel()
     {
-        return self::$selectModel;
+        return self::$model;
+    }
+
+    /**
+     * @param \Phalcon\Mvc\Model $model
+     */
+    public static function setModel($model)
+    {
+        self::$model = $model;
     }
 
     /**
@@ -123,14 +150,6 @@ class RedisDb
     }
 
     /**
-     * @param \Phalcon\Mvc\Model $model
-     */
-    public static function setModel($model)
-    {
-        self::$selectModel = $model;
-    }
-
-    /**
      * @return mixed
      */
     public static function getConfig()
@@ -139,17 +158,16 @@ class RedisDb
     }
 
     /**
-     * @param \Phalcon\Mvc\Model $model
-     * @param string $configName
+     * @param  \Phalcon\Mvc\Model $model
+     * @param  string $configName
      * @return \Phalcon\Mvc\Model
      */
     public static function setConForConfigName($model, $configName)
     {
         $type =  (self::isTransaction()) ? 'Master' : 'Slave';
 
-        self::setModel($model);
-
         $model->setReadConnectionService($configName . $type);
+        self::setModel($model);
 
         return $model;
     }
@@ -168,7 +186,6 @@ class RedisDb
                 $column = self::getConfig()->get('admin')->get('column');
                 return self::getMemberConfigName($adminMember->{$column});
             }
-
         }
 
         return self::getConfig()->get('default')->get('name');
@@ -192,7 +209,6 @@ class RedisDb
             $transactionManager = \Phalcon\DI::getDefault()->getShared($service);
 
             self::$connections[$configName] = $transactionManager->get();
-            self::$redisConnections[$configName] = array();
         }
 
         return self::$connections[$configName];
@@ -231,7 +247,7 @@ class RedisDb
             }
         }
 
-        self::redisCommit();
+        self::autoClear();
         self::$connections = array();
         self::$isTransaction = false;
     }
@@ -243,14 +259,13 @@ class RedisDb
     public static function rollback(Exception $e)
     {
         $rollback = false;
+
+        $config = \Phalcon\DI::getDefault()->get('config')->get('database');
+
         foreach (self::$connections as $configName => $connection) {
 
             // Activeなトランザクションがある場合だけrollbackする
-            $service = \Phalcon\DI::getDefault()
-                ->get('config')
-                ->get('database')
-                ->get($configName)
-                ->get('transaction_name');
+            $service = $config->get($configName)->get('transaction_name');
 
             /** @var \Phalcon\Mvc\Model\Transaction\Manager $transactionManager */
             $transactionManager = \Phalcon\DI::getDefault()->getShared($service);
@@ -273,7 +288,6 @@ class RedisDb
         }
 
         // 初期化
-        self::$redisConnections = array();
         self::$models = array();
         self::$connections = array();
         self::$isTransaction = false;
@@ -296,13 +310,15 @@ class RedisDb
      */
     public static function getMemberConfigName($dbId)
     {
-        $model = self::getConfig()->get('shard')->get('model');
-        $method = self::getConfig()->get('shard')->get('method');
-        $column = self::getConfig()->get('shard')->get('column');
+        $config = self::getConfig()->get('shard');
 
-        $config = call_user_func(array($model, $method), $dbId);
-        if ($config)
-            return $config->{$column};
+        $dbConfig = call_user_func(array(
+            $config->get('model'),
+            $config->get('method')
+        ), $dbId);
+
+        if ($dbConfig)
+            return $dbConfig->{$config->get('column')};
 
         return self::getConfig()->get('default')->get('name');
     }
@@ -314,10 +330,12 @@ class RedisDb
      */
     public static function getAdminMember($memberId)
     {
-        $model = self::getConfig()->get('admin')->get('model');
-        $method = self::getConfig()->get('admin')->get('method');
+        $config = self::getConfig()->get('admin');
 
-        $adminMember = call_user_func(array($model, $method), $memberId);
+        $adminMember = call_user_func(array(
+            $config->get('model'),
+            $config->get('method')
+        ), $memberId);
 
         if (!$adminMember)
             throw new Exception('Not Created Admin Member');
@@ -404,6 +422,7 @@ class RedisDb
      */
     public static function findFirst($parameters, $model, $expire = 0)
     {
+
         $params = array('where' => array());
 
         $col = null;
@@ -439,17 +458,18 @@ class RedisDb
 
         // redisから取得
         self::setModel($model);
-        $result = self::findFirstRedis(self::generateKey($params['where']));
+
+        $key = self::generateKey($params['where']);
+        $result = self::findRedis($key);
 
         // なければDBから
         if ($result === false) {
             $result = $model::findFirst(self::_createKey($parameters));
 
-            if ($result) {
-                self::setHash($params, $result, $expire);
-            } else {
-                self::setHash($params, null, $expire);
-            }
+            if (!$result)
+                $result = null;
+
+            self::setHash($key, $result, $expire);
         }
 
         return $result;
@@ -475,17 +495,15 @@ class RedisDb
     /**
      * Redisにセット
      *
-     * @param array              $parameters
+     * @param string             $key
      * @param \Phalcon\Mvc\Model $value
      * @param int                $expire
      */
-    public static function setHash($parameters, $value, $expire = 0)
+    public static function setHash($key, $value, $expire = 0)
     {
         // hash key
         $hashKey = self::getHashKey();
 
-        // セット
-        $key = self::generateKey($parameters['where']);
         self::getRedis()->hSet($hashKey, $key, $value);
 
         // 保持期間があればセット
@@ -509,35 +527,15 @@ class RedisDb
      * @param  string $key
      * @return \Phalcon\Mvc\Model
      */
-    public static function findFirstRedis($key)
+    public static function findRedis($key)
     {
-        $hashKey = self::getHashKey();
         $cacheKey = self::getCacheKey($key);
 
-        if (isset($cache[$cacheKey]))
-            return $cache[$cacheKey];
+        if (!isset(self::$cache[$cacheKey]))
+            self::$cache[$cacheKey] =
+                self::getRedis()->hGet(self::getHashKey(), $key);
 
-        $cache[$cacheKey] = self::getRedis()->hGet($hashKey, $key);
-
-        return $cache[$cacheKey];
-    }
-
-    /**
-     * Redisから取得
-     * @param  string $key
-     * @return \Phalcon\Mvc\Model[]
-     */
-    public static function execute($key)
-    {
-        $hashKey = self::getHashKey();
-        $cacheKey = self::getCacheKey($key);
-
-        if (isset($cache[$cacheKey]))
-            return $cache[$cacheKey];
-
-        $cache[$cacheKey] = self::getRedis()->hGet($hashKey, $key);
-
-        return $cache[$cacheKey];
+        return self::$cache[$cacheKey];
     }
 
     /**
@@ -562,27 +560,24 @@ class RedisDb
         if (isset($keys['member_id'])) {
 
             self::$hashPrefix = '@'. $keys['member_id'];
+
             $keyValues[] = 'member_id_'.$keys['member_id'];
 
             unset($keys['member_id']);
 
-        }
+        } else if (isset($keys['id'])) {
 
-        if (isset($keys['id'])) {
+            self::$hashPrefix = '@'. $keys['id'];
 
             $keyValues[] = 'id_'.$keys['id'];
-            if (self::$hashPrefix === '')
-                self::$hashPrefix = '@'. $keys['id'];
 
             unset($keys['id']);
 
-        }
-
-        if (isset($keys['social_id'])) {
+        } else if (isset($keys['social_id'])) {
 
             $keyValues[] = 'social_id_'.$keys['social_id'];
-            if (self::$hashPrefix === '')
-                self::$hashPrefix = '@'. $keys['social_id'];
+
+            self::$hashPrefix = '@'. $keys['social_id'];
 
             unset($keys['social_id']);
 
@@ -608,8 +603,8 @@ class RedisDb
      */
     public static function getRedis()
     {
-        return RedisManager::getInstance()
-            ->connect(self::getConfig()->get('server')->get(self::getConfigName())->toArray());
+        $configs = self::getConfig()->get('server')->get(self::getConfigName())->toArray();
+        return RedisManager::getInstance()->connect($configs);
     }
 
     /**
@@ -617,8 +612,6 @@ class RedisDb
      */
     public static function autoClear()
     {
-        self::$hashPrefix = '';
-
         foreach (self::getModels() as $memberId => $models) {
 
             foreach ($models as $model) {
@@ -629,17 +622,14 @@ class RedisDb
 
                 $source = self::getModel()->getSource();
 
-                $key = $source .'@'. $memberId;
-                self::getRedis()->delete($key);
+                self::getRedis()->delete($source .'@'. $memberId);
 
                 if (method_exists($model, 'getId')) {
-                    $key = $source .'@'. $model->getId();
-                    self::getRedis()->delete($key);
+                    self::getRedis()->delete($source .'@'. $model->getId());
                 }
 
                 if (method_exists($model, 'getSocialId')) {
-                    $key = $source .'@'. $model->getSocialId();
-                    self::getRedis()->delete($key);
+                    self::getRedis()->delete($source .'@'. $model->getSocialId());
                 }
             }
 
@@ -649,86 +639,12 @@ class RedisDb
     }
 
     /**
-     * キャッシュを削除
-     * @param array $keys
-     */
-    public static function clearCache($keys = array())
-    {
-        self::getRedis()->hDel(self::getHashKey(), self::generateKey($keys));
-    }
-
-    /**
-     * Redisにセット
-     *
-     * @param array    $keys
-     * @param \Phalcon\Mvc\Model   $model
-     * @param int      $expire
-     */
-    public static function setTransactionHash($keys, $model, $expire = 0)
-    {
-        $key = self::getModel()->getReadConnectionService();
-
-        if (isset(self::$redisConnections[$key])) {
-
-            self::$redisConnections[$key][] = array(
-                'keys'     => $keys,
-                'model'    => $model,
-                'expire'   => $expire
-            );
-
-        }
-    }
-
-    /**
-     * redisCommit
-     */
-    public static function redisCommit()
-    {
-        // キャッシュ削除
-        self::autoClear();
-
-        foreach (self::$redisConnections as $configName => $array) {
-
-            foreach ($array as $values) {
-
-                /** @var \Phalcon\Mvc\Model $model */
-                $model = $values['model'];
-                self::setModel($model);
-
-                // key
-                $key = self::generateKey($values['keys']);
-
-                // セット
-                self::getRedis()->set($key, $model);
-
-                // 保持期間があればセット
-                $expire = $values['expire'];
-                if ($expire > 0 && !self::getRedis()->isTimeout($key)) {
-                    self::getRedis()->setTimeout($key, $expire);
-                }
-
-                // 基本は1日保持
-                if (!self::getRedis($configName)->isTimeout($key)) {
-                    $expire = 86400;
-
-                    if ($configName !== 'common')
-                        $expire = self::getConfig()->get('default')->get('expire');
-
-                    self::getRedis()->setTimeout($key, $expire);
-                }
-            }
-        }
-
-        self::$redisConnections = array();
-    }
-
-    /**
-     * @param, \Phalcon\Mvc\Model $model
      * @param  \Phalcon\Mvc\Model\Criteria $criteria
+     * @param, \Phalcon\Mvc\Model $model
      * @param  int $expire
      * @return \Phalcon\Mvc\Model[]
      */
-    public static function query($model, $criteria, $expire = 0)
+    public static function query($criteria, $model, $expire = 0)
     {
 
         self::setModel($model);
@@ -758,36 +674,34 @@ class RedisDb
             }
         }
 
-        $results = self::execute(self::generateKey($parameters['where']));
+        $key = self::generateKey($parameters['where']);
+        $results = self::findRedis($key);
+
         if ($results === false) {
 
             $results = $criteria->execute();
 
-            if (count($results) > 0) {
-                self::setHash($parameters, $results, $expire);
-            } else {
-                self::setHash($parameters, array(), $expire);
-            }
+            if (!$results)
+                $results = array();
+
+            self::setHash($key, $results, $expire);
         }
 
         return $results;
     }
 
     /**
-     * @param  \Phalcon\Mvc\Model $model
      * @throws Exception
      */
-    public static function generateErrorMessage($model)
+    public static function outputErrorMessage()
     {
 
-        $messages = null;
-
-        foreach ($model->getMessages() as $message) {
+        $messages = '';
+        foreach (self::getModel()->getMessages() as $message) {
             $messages .= $message;
         }
 
         throw new Exception($messages);
-
     }
 
 }
