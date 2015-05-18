@@ -202,12 +202,38 @@ foreach ($config->get('database') as $db => $arguments)
 
 ## findFirst
 ~~~
+    EQUAL
     return RedisDb::findFirst(array(
         'where' => array(
             'member_id' => $memberId,
             'status_number' => 1
         )
-    ), RedisDb::setCon(new self, $memberId));
+    ), new self);
+
+    IN
+    return RedisDb::findFirst(array(
+        'where' => array(
+            'member_id' => array(1, 3, 6), // IN
+            'status_number' => 1
+        )
+    ), new self);
+
+    OPERATOR
+    return RedisDb::findFirst(array(
+        'where' => array(
+            'member_id' => array('operator' => '>', 'value' => 1),
+            'status_number' => 1
+        )
+    ), new self);
+
+
+    IS NULL
+    return RedisDb::findFirst(array(
+        'where' => array(
+            'member_id' => null,
+            'status_number' => 1
+        )
+    ), new self);
 ~~~
 
 ## query
@@ -215,7 +241,7 @@ foreach ($config->get('database') as $db => $arguments)
     return RedisDb::query(self::query()
         ->where("member_id = ".$memberId)
         ->andWhere("status_number = ".1)
-        , RedisDb::setCon(new self, $memberId)
+        , new self
     );
 ~~~
 

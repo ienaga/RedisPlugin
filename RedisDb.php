@@ -34,8 +34,7 @@ class RedisDb
     /**
      * @var string
      */
-    private static $hashPrefix = '';
-
+    private static $hashPrefix = null;
 
     /**
      * @param  null $memberId
@@ -54,15 +53,21 @@ class RedisDb
      */
     public static function save($model, $data = null, $whiteList = null)
     {
-        self::setModel($model);
+        $prefix = null;
 
-        $memberId = null;
-        if (method_exists(self::getModel(), 'getMemberId')) {
-            $memberId = self::getModel()->getMemberId();
+        if (method_exists($model, 'getMemberId')) {
+
+            $prefix = $model->getMemberId();
+
+        } else if (method_exists($model, 'getId')) {
+
+            $prefix = $model->getId();
+
         }
-        self::setCon($model, $memberId);
 
-        $model->setTransaction(self::getTransaction($memberId));
+        self::setCon($model, $prefix);
+
+        $model->setTransaction(self::getTransaction($prefix));
 
         if (!$model->save($data, $whiteList))
             RedisDb::outputErrorMessage();
@@ -346,11 +351,12 @@ class RedisDb
     /**
      * @param  array $parameters
      * @return array
+     * @throws Exception
      */
-    public static function _createKey($parameters)
+    public static function _generateParameters($parameters)
     {
         if (!is_array($parameters) || !isset($parameters['where']))
-            return $parameters;
+            throw new Exception('findFirst Error Not Found where or String');
 
         $where = array();
         $bind  = isset($parameters['bind']) ? $parameters['bind'] : array();
@@ -423,42 +429,21 @@ class RedisDb
     public static function findFirst($parameters, $model, $expire = 0)
     {
 
-        $params = array('where' => array());
+        $parameters = self::_generateParameters($parameters);
 
-        $col = null;
-        if (!isset($parameters['where'])) {
+        $bind = $parameters['bind'];
 
-            $sqlText  = str_replace("AND", "", $parameters[0]);
-            $sqlTexts = explode(" ", $sqlText);
+        $key = $parameters[0];
+        $key = str_replace(" ", "", $key);
+        $key = str_replace("AND", "_", $key);
 
-            $count = 1;
-            foreach ($sqlTexts as $value) {
-                switch ($value) {
-                    case "=":
-                    case "!=":
-                    case ">=":
-                    case "<=":
-                    case ">":
-                    case "<":
-                        continue;
-                        break;
-                    default:
-                        if ($count % 2 !== 0) {
-                            $col = $value;
-                        } else {
-                            $params['where'][$col] = $value;
-                        }
-                        $count++;
-                        break;
-                }
-            }
-
-        } else {
-            $params['where'] = $parameters;
+        foreach ($bind as $col => $value) {
+            $key = str_replace("[$col]", $col, $key);
+            $key = str_replace(":$col:", $value, $key);
         }
 
         if (isset($parameters['order']))
-            $params['where']['order'] = str_replace(" ", "_", $parameters['order']);
+            $key .= '_order_' . str_replace(" ", "_", $parameters['order']);
 
         if (isset($parameters['limit'])) {
             $value = $parameters['limit'];
@@ -468,18 +453,19 @@ class RedisDb
                 }
             }
 
-            $params['where']['order'] = $value;
+            $key .= '_limit_' . $value;
         }
 
-        // redisから取得
-        self::setModel($model);
+        self::setPrefix($bind);
 
-        $key = self::generateKey($params['where']);
+        self::connect($model);
+
         $result = self::findRedis($key);
 
         // なければDBから
         if ($result === false) {
-            $result = $model::findFirst(self::_createKey($parameters));
+
+            $result = $model::findFirst($parameters);
 
             if (!$result)
                 $result = null;
@@ -491,12 +477,102 @@ class RedisDb
     }
 
     /**
+     * @param  \Phalcon\Mvc\Model $model
+     * @return \Phalcon\Mvc\Model
+     */
+    public static function connect($model)
+    {
+        $prefix = self::getPrefix();
+        $source = $model->getSource();
+
+        $isCommon = false;
+        $isAdmin = false;
+
+        // 共通DB
+        $commonDbs = explode(',', self::getConfig()->get('common')->get('dbs'));
+        if (is_array($commonDbs)) {
+            foreach ($commonDbs as $name) {
+                if (substr($source, 0, strlen($name)) !== $name)
+                    continue;
+
+                RedisDb::setCommon($model);
+                $isCommon = true;
+
+                break;
+            }
+        }
+
+        // マスタDB
+        if (!$isCommon) {
+            $adminDbs = explode(',', self::getConfig()->get('admin')->get('dbs'));
+            if (is_array($adminDbs)) {
+                foreach ($adminDbs as $name) {
+                    if (substr($source, 0, strlen($name)) !== $name)
+                        continue;
+
+                    RedisDb::setCon($model);
+                    $isAdmin = true;
+
+                    break;
+                }
+            }
+        }
+
+        // ユーザDB
+        if (!$isCommon && !$isAdmin) {
+            RedisDb::setCon($model, self::getPrefix());
+        }
+
+        // reset
+        self::setModel($model);
+        self::$hashPrefix = $prefix;
+
+    }
+
+    /**
      * @return string
      */
     public static function getHashKey()
     {
-        return self::getModel()->getSource() . self::$hashPrefix;
+        $key = self::getModel()->getSource();
+
+        if (self::getPrefix())
+            $key .= '@'. self::getPrefix();
+
+        return $key;
     }
+
+    /**
+     * @return null|string
+     */
+    public static function getPrefix()
+    {
+        return self::$hashPrefix;
+    }
+
+    /**
+     * @param array $keys
+     */
+    public static function setPrefix($keys)
+    {
+
+        self::$hashPrefix = null;
+
+        if (isset($keys['member_id'])) {
+
+            self::$hashPrefix = $keys['member_id'];
+
+        } else if (isset($keys['id'])) {
+
+            self::$hashPrefix = $keys['id'];
+
+        } else if (isset($keys['social_id'])) {
+
+            self::$hashPrefix = $keys['social_id'];
+
+        }
+    }
+
 
     /**
      * @param  string $key
@@ -570,41 +646,18 @@ class RedisDb
     public static function generateKey($keys = array())
     {
         $keyValues = array();
-        self::$hashPrefix = '';
-
-        if (isset($keys['member_id'])) {
-
-            self::$hashPrefix = '@'. $keys['member_id'];
-
-            $keyValues[] = 'member_id_'.$keys['member_id'];
-
-            unset($keys['member_id']);
-
-        } else if (isset($keys['id'])) {
-
-            self::$hashPrefix = '@'. $keys['id'];
-
-            $keyValues[] = 'id_'.$keys['id'];
-
-            unset($keys['id']);
-
-        } else if (isset($keys['social_id'])) {
-
-            $keyValues[] = 'social_id_'.$keys['social_id'];
-
-            self::$hashPrefix = '@'. $keys['social_id'];
-
-            unset($keys['social_id']);
-
-        }
-
-        if (count($keys) > 1) {
-            asort($keys);
-        }
 
         if (count($keys) > 0) {
             foreach ($keys as $key => $value) {
-                $keyValues[] = $key .'_'. $value;
+                if (is_array($key)) {
+                    foreach ($key as $col => $val) {
+                        $keyValues[] = $col . $val;
+                    }
+
+                    continue;
+                }
+
+                $keyValues[] = $key . $value;
             }
         }
 
@@ -661,41 +714,73 @@ class RedisDb
      */
     public static function query($criteria, $model, $expire = 0)
     {
-
-        self::setModel($model);
+        $parameters = array();
+        $prefixKey = array();
 
         // 分解
         $sqlText = $criteria->getConditions();
         $sqlText = str_replace("(", "", $sqlText);
         $sqlText = str_replace(")", "", $sqlText);
-        $sqlText = str_replace("!", "", $sqlText);
         $sqlText = str_replace(" ", "", $sqlText);
         $sqlText = str_replace("OR", "AND", $sqlText);
 
         $params = explode('AND', $sqlText);
-        $parameters = array('where' => array());
         foreach ($params as $param) {
 
-            $list = explode('=', $param);
-            if (count($list) === 1) {
-                continue;
+            // reset
+            $delimiter = '';
+            $formula = array('!=', '<>', '<=', '>=', '>', '<', '=');
+            $list = array();
+
+            // key value
+            while (count($formula)) {
+
+                $delimiter = array_shift($formula);
+
+                $list = explode($delimiter, $param);
+
+                if (count($list) === 1)
+                    continue;
+
+                break;
             }
 
             list($column, $value) = $list;
-            if (isset($parameters['where'][$column])) {
-                $parameters['where'][$column.$value] = $value;
+
+            if (isset($parameters[$column])) {
+
+                if (is_array($parameters[$column])) {
+
+                    $parameters[$column][] = $delimiter.$value;
+
+                } else {
+
+                    $parameters[$column] = array($parameters[$column], $delimiter.$value);
+
+                }
+
             } else {
-                $parameters['where'][$column] = $value;
+
+                $parameters[$column] = $delimiter.$value;
+
+                $prefixKey[$column] = $value;
+
             }
         }
 
         if ($criteria->getOrder())
-            $parameters['where']['order'] = str_replace(" ", "_", $criteria->getOrder());
+            $parameters['order'] = str_replace(" ", "_", $criteria->getOrder());
 
         if ($criteria->getLimit())
-            $parameters['where']['limit'] = str_replace(" ", "_", $criteria->getLimit());
+            $parameters['limit'] = str_replace(" ", "_", $criteria->getLimit());
 
-        $key = self::generateKey($parameters['where']);
+
+        self::setPrefix($prefixKey);
+
+        $key = self::generateKey($parameters);
+
+        self::connect($model);
+
         $results = self::findRedis($key);
 
         if ($results === false) {
