@@ -109,11 +109,15 @@ stg:
       name: db
       expire: 3600
 
+    # common
+      dbs: XXXX, XXXX, XXXX # common DB Name
+
     # shard admin
     admin:
       model:  XXXXX # AdminUser
       method: XXXXX # getUset
       column: XXXXX # user_id
+      dbs: XXXX, XXXX, XXXX # common DB Name
 
     # shard config master
     shard:
