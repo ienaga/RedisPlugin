@@ -510,15 +510,8 @@ class RedisDb
      */
     private static function _generateFindKey($parameters)
     {
-        $key = $parameters[0];
-        $key = str_replace(" ", "", $key);
-        $key = str_replace("AND", "_", $key);
 
-        $bind = $parameters['bind'];
-        foreach ($bind as $col => $value) {
-            $key = str_replace("[$col]", $col, $key);
-            $key = str_replace(":$col:", $value, $key);
-        }
+        $key = self::generateKey($parameters['cache']);
 
         // order by
         if (isset($parameters['order']))
@@ -796,7 +789,10 @@ class RedisDb
             throw new Exception('findFirst Error Not Found where or String');
 
         $where = array();
+
         $bind  = isset($parameters['bind']) ? $parameters['bind'] : array();
+
+        $keys = array();
 
         foreach ($parameters['where'] as $column => $value) {
 
@@ -814,15 +810,20 @@ class RedisDb
                 if (isset($value['operator'])) {
                     $operator  = $value['operator'];
                     $bindValue = $value['value'];
+
                     $where[]   = sprintf('%s %s :%s:', $column, $operator, $named_place);
-                    $bind[ $named_place ] = $bindValue;
+                    $bind[$named_place] = $bindValue;
+                    $keys[$named_place] = $operator.$bindValue;
                 } else {
                     $placeholders = array();
                     $len = count($value);
+
                     for ($i=0; $i<$len; $i++) {
                         $placeholders[] = sprintf(':%s:', $named_place . $i);
-                        $bind[ $named_place . $i ] = $value[$i];
+                        $bind[$named_place.$i] = $value[$i];
                     }
+
+                    $keys[$named_place] = implode(',',$value);
                     $where[] = sprintf('%s IN (%s)', $column, implode(',',$placeholders));
                 }
 
@@ -830,10 +831,11 @@ class RedisDb
 
                 if ($value === null){
                     $where[] = sprintf('%s IS NULL', $column);
-
+                    $keys[$named_place] = 'IS_NULL';
                 } else {
                     $where[] = sprintf('%s = :%s:', $column, $named_place);
-                    $bind[ $named_place ] = $value;
+                    $bind[$named_place] = $value;
+                    $keys[$named_place] = '='.$value;
                 }
 
             }
@@ -849,6 +851,9 @@ class RedisDb
 
             $parameters['bind'] = $bind;
 
+            ksort($keys);
+
+            $parameters['keys'] = $keys;
         }
 
         unset($parameters['where']);
