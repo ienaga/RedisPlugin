@@ -699,9 +699,9 @@ class RedisDb
     /**
      * Redisにセット
      *
-     * @param string             $key
-     * @param \Phalcon\Mvc\Model $value
-     * @param int                $expire
+     * @param string $key
+     * @param mixed  $value
+     * @param int    $expire
      */
     public static function setHash($key, $value, $expire = 0)
     {
@@ -754,6 +754,7 @@ class RedisDb
     {
         foreach (self::getModels() as $memberId => $models) {
 
+            /** @var \Phalcon\Mvc\Model[] $models */
             foreach ($models as $model) {
 
                 $model->setReadConnectionService(self::getConnectionName($memberId) . 'Master');
