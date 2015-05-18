@@ -520,9 +520,11 @@ class RedisDb
             $key = str_replace(":$col:", $value, $key);
         }
 
+        // order by
         if (isset($parameters['order']))
             $key .= '_order_' . str_replace(" ", "_", $parameters['order']);
 
+        // limit
         if (isset($parameters['limit'])) {
             $value = $parameters['limit'];
             if (is_array($parameters['limit'])) {
@@ -534,6 +536,7 @@ class RedisDb
             $key .= '_limit_' . $value;
         }
 
+        // group by
         if (isset($parameters['group'])) {
             $value = $parameters['group'];
             if (is_array($parameters['group'])) {
@@ -558,6 +561,7 @@ class RedisDb
 
         if (count($keys) > 0) {
             foreach ($keys as $key => $value) {
+
                 if (is_array($key)) {
                     foreach ($key as $col => $val) {
                         $keyValues[] = $col . $val;
@@ -588,7 +592,9 @@ class RedisDb
         // 共通DB
         $commonDbs = explode(',', self::getConfig()->get('common')->get('dbs'));
         if (is_array($commonDbs)) {
+
             foreach ($commonDbs as $name) {
+
                 if (substr($source, 0, strlen($name)) !== $name)
                     continue;
 
@@ -603,7 +609,9 @@ class RedisDb
         if (!$isCommon) {
             $adminDbs = explode(',', self::getConfig()->get('admin')->get('dbs'));
             if (is_array($adminDbs)) {
+
                 foreach ($adminDbs as $name) {
+
                     if (substr($source, 0, strlen($name)) !== $name)
                         continue;
 
