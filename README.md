@@ -204,7 +204,7 @@ foreach ($config->get('database') as $db => $arguments)
 }
 ~~~
 
-## findFirst
+## findFirst | find
 ~~~
     EQUAL
     return RedisDb::findFirst(array(
@@ -214,13 +214,29 @@ foreach ($config->get('database') as $db => $arguments)
         )
     ), new self);
 
-    IN
-    return RedisDb::findFirst(array(
+    return RedisDb::find(array(
         'where' => array(
-            'member_id' => array(1, 3, 6), // IN
+            'member_id' => $memberId,
             'status_number' => 1
         )
     ), new self);
+
+
+    IN
+    return RedisDb::findFirst(array(
+        'where' => array(
+            'member_id' => array(1, 3, 6),
+            'status_number' => 1
+        )
+    ), new self);
+
+    return RedisDb::find(array(
+        'where' => array(
+            'member_id' => array(1, 3, 6),
+            'status_number' => 1
+        )
+    ), new self);
+
 
     OPERATOR
     return RedisDb::findFirst(array(
@@ -230,9 +246,23 @@ foreach ($config->get('database') as $db => $arguments)
         )
     ), new self);
 
+    return RedisDb::find(array(
+        'where' => array(
+            'member_id' => array('operator' => '>', 'value' => 1),
+            'status_number' => 1
+        )
+    ), new self);
+
 
     IS NULL
     return RedisDb::findFirst(array(
+        'where' => array(
+            'member_id' => null,
+            'status_number' => 1
+        )
+    ), new self);
+
+    return RedisDb::find(array(
         'where' => array(
             'member_id' => null,
             'status_number' => 1

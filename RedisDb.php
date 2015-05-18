@@ -349,76 +349,37 @@ class RedisDb
     }
 
     /**
-     * @param  array $parameters
-     * @return array
-     * @throws Exception
+     * @param  array              $parameters
+     * @param  \Phalcon\Mvc\Model $model
+     * @param  int                $expire
+     * @return \Phalcon\Mvc\Model
      */
-    public static function _generateParameters($parameters)
+    public static function find($parameters, $model, $expire = 0)
     {
-        if (!is_array($parameters) || !isset($parameters['where']))
-            throw new Exception('findFirst Error Not Found where or String');
+        $parameters = self::_generateParameters($parameters);
 
-        $where = array();
-        $bind  = isset($parameters['bind']) ? $parameters['bind'] : array();
+        $key = self::_generateFindKey($parameters);
 
-        foreach ($parameters['where'] as $column => $value) {
+        self::setPrefix($parameters['bind']);
 
-            if (count($aliased = explode('.', $column)) > 1) {
-                $named_place = $aliased[1];
-                $column = sprintf('[%s].[%s]', $aliased[0], $aliased[1]);
-            } else {
-                $named_place = $column;
-                $column = sprintf('[%s]', $column);
-            }
+        self::connect($model);
 
-            if (is_array($value)) {
+        // redisから検索
+        $result = self::findRedis($key);
 
-                // where句で"="以外のオペレータを利用する為の拡張
-                if (isset($value['operator'])) {
-                    $operator  = $value['operator'];
-                    $bindValue = $value['value'];
-                    $where[]   = sprintf('%s %s :%s:', $column, $operator, $named_place);
-                    $bind[ $named_place ] = $bindValue;
-                } else {
-                    $placeholders = array();
-                    $len = count($value);
-                    for ($i=0; $i<$len; $i++) {
-                        $placeholders[] = sprintf(':%s:', $named_place . $i);
-                        $bind[ $named_place . $i ] = $value[$i];
-                    }
-                    $where[] = sprintf('%s IN (%s)', $column, implode(',',$placeholders));
-                }
+        // なければDBから
+        if ($result === false) {
 
-            } else {
+            $result = $model::find($parameters);
 
-                if ($value === null){
-                    $where[] = sprintf('%s IS NULL', $column);
+            if (!$result)
+                $result = array();
 
-                } else {
-                    $where[] = sprintf('%s = :%s:', $column, $named_place);
-                    $bind[ $named_place ] = $value;
-                }
-
-            }
+            self::setHash($key, $result, $expire);
         }
 
-        if (count($where) > 0) {
-
-            $conditions = isset($parameters[0]) ? $parameters[0] : '';
-
-            $parameters[0] = $conditions
-                ? ($conditions . ' AND ' . implode(' AND ', $where))
-                : implode(' AND ', $where);
-
-            $parameters['bind'] = $bind;
-
-        }
-
-        unset($parameters['where']);
-
-        return $parameters;
+        return $result;
     }
-
 
     /**
      * @param  array              $parameters
@@ -428,38 +389,15 @@ class RedisDb
      */
     public static function findFirst($parameters, $model, $expire = 0)
     {
-
         $parameters = self::_generateParameters($parameters);
 
-        $bind = $parameters['bind'];
+        $key = self::_generateFindKey($parameters);
 
-        $key = $parameters[0];
-        $key = str_replace(" ", "", $key);
-        $key = str_replace("AND", "_", $key);
-
-        foreach ($bind as $col => $value) {
-            $key = str_replace("[$col]", $col, $key);
-            $key = str_replace(":$col:", $value, $key);
-        }
-
-        if (isset($parameters['order']))
-            $key .= '_order_' . str_replace(" ", "_", $parameters['order']);
-
-        if (isset($parameters['limit'])) {
-            $value = $parameters['limit'];
-            if (is_array($parameters['limit'])) {
-                foreach ($parameters['limit'] as $value) {
-                    $value .= '_'. $value;
-                }
-            }
-
-            $key .= '_limit_' . $value;
-        }
-
-        self::setPrefix($bind);
+        self::setPrefix($parameters['bind']);
 
         self::connect($model);
 
+        // redisから検索
         $result = self::findRedis($key);
 
         // なければDBから
@@ -474,236 +412,6 @@ class RedisDb
         }
 
         return $result;
-    }
-
-    /**
-     * @param  \Phalcon\Mvc\Model $model
-     * @return \Phalcon\Mvc\Model
-     */
-    public static function connect($model)
-    {
-        $prefix = self::getPrefix();
-        $source = $model->getSource();
-
-        $isCommon = false;
-        $isAdmin = false;
-
-        // 共通DB
-        $commonDbs = explode(',', self::getConfig()->get('common')->get('dbs'));
-        if (is_array($commonDbs)) {
-            foreach ($commonDbs as $name) {
-                if (substr($source, 0, strlen($name)) !== $name)
-                    continue;
-
-                RedisDb::setCommon($model);
-                $isCommon = true;
-
-                break;
-            }
-        }
-
-        // マスタDB
-        if (!$isCommon) {
-            $adminDbs = explode(',', self::getConfig()->get('admin')->get('dbs'));
-            if (is_array($adminDbs)) {
-                foreach ($adminDbs as $name) {
-                    if (substr($source, 0, strlen($name)) !== $name)
-                        continue;
-
-                    RedisDb::setCon($model);
-                    $isAdmin = true;
-
-                    break;
-                }
-            }
-        }
-
-        // ユーザDB
-        if (!$isCommon && !$isAdmin) {
-            RedisDb::setCon($model, self::getPrefix());
-        }
-
-        // reset
-        self::setModel($model);
-        self::$hashPrefix = $prefix;
-
-    }
-
-    /**
-     * @return string
-     */
-    public static function getHashKey()
-    {
-        $key = self::getModel()->getSource();
-
-        if (self::getPrefix())
-            $key .= '@'. self::getPrefix();
-
-        return $key;
-    }
-
-    /**
-     * @return null|string
-     */
-    public static function getPrefix()
-    {
-        return self::$hashPrefix;
-    }
-
-    /**
-     * @param array $keys
-     */
-    public static function setPrefix($keys)
-    {
-
-        self::$hashPrefix = null;
-
-        if (isset($keys['member_id'])) {
-
-            self::$hashPrefix = $keys['member_id'];
-
-        } else if (isset($keys['id'])) {
-
-            self::$hashPrefix = $keys['id'];
-
-        } else if (isset($keys['social_id'])) {
-
-            self::$hashPrefix = $keys['social_id'];
-
-        }
-    }
-
-
-    /**
-     * @param  string $key
-     * @return string
-     */
-    public static function getCacheKey($key)
-    {
-        return self::getHashKey() .'@'. $key;
-    }
-
-    /**
-     * Redisにセット
-     *
-     * @param string             $key
-     * @param \Phalcon\Mvc\Model $value
-     * @param int                $expire
-     */
-    public static function setHash($key, $value, $expire = 0)
-    {
-        // hash key
-        $hashKey = self::getHashKey();
-
-        self::getRedis()->hSet($hashKey, $key, $value);
-
-        // 保持期間があればセット
-        if ($expire > 0 && !self::getRedis()->isTimeout($hashKey)) {
-            self::getRedis()->setTimeout($hashKey, $expire);
-        }
-
-        // 基本は1日保持
-        if (!self::getRedis()->isTimeout($hashKey)) {
-            $expire = 86400;
-
-            if (self::getConfigName() !== 'common')
-                $expire = self::getConfig()->get('default')->get('expire');
-
-            self::getRedis()->setTimeout($hashKey, $expire);
-        }
-    }
-
-    /**
-     * Redisから取得
-     * @param  string $key
-     * @return \Phalcon\Mvc\Model
-     */
-    public static function findRedis($key)
-    {
-        $cacheKey = self::getCacheKey($key);
-
-        if (!isset(self::$cache[$cacheKey]))
-            self::$cache[$cacheKey] =
-                self::getRedis()->hGet(self::getHashKey(), $key);
-
-        return self::$cache[$cacheKey];
-    }
-
-    /**
-     * @return string
-     */
-    public static function getConfigName()
-    {
-        return self::getConfig()
-            ->get(self::getModel()->getReadConnectionService())
-            ->get('name');
-    }
-
-    /**
-     * @param  array $keys
-     * @return string
-     */
-    public static function generateKey($keys = array())
-    {
-        $keyValues = array();
-
-        if (count($keys) > 0) {
-            foreach ($keys as $key => $value) {
-                if (is_array($key)) {
-                    foreach ($key as $col => $val) {
-                        $keyValues[] = $col . $val;
-                    }
-
-                    continue;
-                }
-
-                $keyValues[] = $key . $value;
-            }
-        }
-
-        return implode('_', $keyValues);
-    }
-
-    /**
-     * redisを取得
-     *
-     * @return RedisManager
-     */
-    public static function getRedis()
-    {
-        $configs = self::getConfig()->get('server')->get(self::getConfigName())->toArray();
-        return RedisManager::getInstance()->connect($configs);
-    }
-
-    /**
-     * autoClear
-     */
-    public static function autoClear()
-    {
-        foreach (self::getModels() as $memberId => $models) {
-
-            foreach ($models as $model) {
-
-                $model->setReadConnectionService(self::getConnectionName($memberId) . 'Master');
-
-                self::setModel($model);
-
-                $source = self::getModel()->getSource();
-
-                self::getRedis()->delete($source .'@'. $memberId);
-
-                if (method_exists($model, 'getId')) {
-                    self::getRedis()->delete($source .'@'. $model->getId());
-                }
-
-                if (method_exists($model, 'getSocialId')) {
-                    self::getRedis()->delete($source .'@'. $model->getSocialId());
-                }
-            }
-
-        }
-
-        self::$models = array();
     }
 
     /**
@@ -797,11 +505,354 @@ class RedisDb
     }
 
     /**
+     * @param  array $parameters
+     * @return string
+     */
+    private static function _generateFindKey($parameters)
+    {
+        $key = $parameters[0];
+        $key = str_replace(" ", "", $key);
+        $key = str_replace("AND", "_", $key);
+
+        $bind = $parameters['bind'];
+        foreach ($bind as $col => $value) {
+            $key = str_replace("[$col]", $col, $key);
+            $key = str_replace(":$col:", $value, $key);
+        }
+
+        if (isset($parameters['order']))
+            $key .= '_order_' . str_replace(" ", "_", $parameters['order']);
+
+        if (isset($parameters['limit'])) {
+            $value = $parameters['limit'];
+            if (is_array($parameters['limit'])) {
+                foreach ($parameters['limit'] as $value) {
+                    $value .= '_'. $value;
+                }
+            }
+
+            $key .= '_limit_' . $value;
+        }
+
+        if (isset($parameters['group'])) {
+            $value = $parameters['group'];
+            if (is_array($parameters['group'])) {
+                foreach ($parameters['group'] as $value) {
+                    $value .= '_'. $value;
+                }
+            }
+
+            $key .= '_group_' . $value;
+        }
+
+        return $key;
+    }
+
+    /**
+     * @param  array $keys
+     * @return string
+     */
+    public static function generateKey($keys = array())
+    {
+        $keyValues = array();
+
+        if (count($keys) > 0) {
+            foreach ($keys as $key => $value) {
+                if (is_array($key)) {
+                    foreach ($key as $col => $val) {
+                        $keyValues[] = $col . $val;
+                    }
+
+                    continue;
+                }
+
+                $keyValues[] = $key . $value;
+            }
+        }
+
+        return implode('_', $keyValues);
+    }
+
+    /**
+     * @param  \Phalcon\Mvc\Model $model
+     * @return \Phalcon\Mvc\Model
+     */
+    public static function connect($model)
+    {
+        $prefix = self::getPrefix();
+        $source = $model->getSource();
+
+        $isCommon = false;
+        $isAdmin = false;
+
+        // 共通DB
+        $commonDbs = explode(',', self::getConfig()->get('common')->get('dbs'));
+        if (is_array($commonDbs)) {
+            foreach ($commonDbs as $name) {
+                if (substr($source, 0, strlen($name)) !== $name)
+                    continue;
+
+                RedisDb::setCommon($model);
+                $isCommon = true;
+
+                break;
+            }
+        }
+
+        // マスタDB
+        if (!$isCommon) {
+            $adminDbs = explode(',', self::getConfig()->get('admin')->get('dbs'));
+            if (is_array($adminDbs)) {
+                foreach ($adminDbs as $name) {
+                    if (substr($source, 0, strlen($name)) !== $name)
+                        continue;
+
+                    RedisDb::setCon($model);
+                    $isAdmin = true;
+
+                    break;
+                }
+            }
+        }
+
+        // ユーザDB
+        if (!$isCommon && !$isAdmin) {
+            RedisDb::setCon($model, self::getPrefix());
+        }
+
+        // reset
+        self::setModel($model);
+        self::$hashPrefix = $prefix;
+
+    }
+
+    /**
+     * Redisから取得
+     * @param  string $key
+     * @return \Phalcon\Mvc\Model
+     */
+    public static function findRedis($key)
+    {
+        $cacheKey = self::getCacheKey($key);
+
+        if (!isset(self::$cache[$cacheKey]))
+            self::$cache[$cacheKey] =
+                self::getRedis()->hGet(self::getHashKey(), $key);
+
+        return self::$cache[$cacheKey];
+    }
+
+    /**
+     * @return string
+     */
+    public static function getHashKey()
+    {
+        $key = self::getModel()->getSource();
+
+        if (self::getPrefix())
+            $key .= '@'. self::getPrefix();
+
+        return $key;
+    }
+
+    /**
+     * @return null|string
+     */
+    public static function getPrefix()
+    {
+        return self::$hashPrefix;
+    }
+
+    /**
+     * @param array $keys
+     */
+    public static function setPrefix($keys)
+    {
+        self::$hashPrefix = null;
+
+        if (isset($keys['member_id'])) {
+
+            self::$hashPrefix = $keys['member_id'];
+
+        } else if (isset($keys['id'])) {
+
+            self::$hashPrefix = $keys['id'];
+
+        } else if (isset($keys['social_id'])) {
+
+            self::$hashPrefix = $keys['social_id'];
+
+        }
+    }
+
+
+    /**
+     * @param  string $key
+     * @return string
+     */
+    public static function getCacheKey($key)
+    {
+        return self::getHashKey() .'@'. $key;
+    }
+
+    /**
+     * Redisにセット
+     *
+     * @param string             $key
+     * @param \Phalcon\Mvc\Model $value
+     * @param int                $expire
+     */
+    public static function setHash($key, $value, $expire = 0)
+    {
+        // hash key
+        $hashKey = self::getHashKey();
+
+        self::getRedis()->hSet($hashKey, $key, $value);
+
+        // 保持期間があればセット
+        if ($expire > 0 && !self::getRedis()->isTimeout($hashKey)) {
+            self::getRedis()->setTimeout($hashKey, $expire);
+        }
+
+        // 基本は1日保持
+        if (!self::getRedis()->isTimeout($hashKey)) {
+            $expire = 86400;
+
+            if (self::getConfigName() !== 'common')
+                $expire = self::getConfig()->get('default')->get('expire');
+
+            self::getRedis()->setTimeout($hashKey, $expire);
+        }
+    }
+
+    /**
+     * @return string
+     */
+    public static function getConfigName()
+    {
+        return self::getConfig()
+            ->get(self::getModel()->getReadConnectionService())
+            ->get('name');
+    }
+
+    /**
+     * redisを取得
+     *
+     * @return RedisManager
+     */
+    public static function getRedis()
+    {
+        $configs = self::getConfig()->get('server')->get(self::getConfigName())->toArray();
+        return RedisManager::getInstance()->connect($configs);
+    }
+
+    /**
+     * autoClear
+     */
+    public static function autoClear()
+    {
+        foreach (self::getModels() as $memberId => $models) {
+
+            foreach ($models as $model) {
+
+                $model->setReadConnectionService(self::getConnectionName($memberId) . 'Master');
+
+                self::setModel($model);
+
+                $source = $model->getSource();
+
+                self::getRedis()->delete($source .'@'. $memberId);
+
+                if (method_exists($model, 'getId')) {
+                    self::getRedis()->delete($source .'@'. $model->getId());
+                }
+
+                if (method_exists($model, 'getSocialId')) {
+                    self::getRedis()->delete($source .'@'. $model->getSocialId());
+                }
+            }
+
+        }
+
+        self::$models = array();
+    }
+
+    /**
+     * @param  array $parameters
+     * @return array
+     * @throws Exception
+     */
+    public static function _generateParameters($parameters)
+    {
+        if (!is_array($parameters) || !isset($parameters['where']))
+            throw new Exception('findFirst Error Not Found where or String');
+
+        $where = array();
+        $bind  = isset($parameters['bind']) ? $parameters['bind'] : array();
+
+        foreach ($parameters['where'] as $column => $value) {
+
+            if (count($aliased = explode('.', $column)) > 1) {
+                $named_place = $aliased[1];
+                $column = sprintf('[%s].[%s]', $aliased[0], $aliased[1]);
+            } else {
+                $named_place = $column;
+                $column = sprintf('[%s]', $column);
+            }
+
+            if (is_array($value)) {
+
+                // where句で"="以外のオペレータを利用する為の拡張
+                if (isset($value['operator'])) {
+                    $operator  = $value['operator'];
+                    $bindValue = $value['value'];
+                    $where[]   = sprintf('%s %s :%s:', $column, $operator, $named_place);
+                    $bind[ $named_place ] = $bindValue;
+                } else {
+                    $placeholders = array();
+                    $len = count($value);
+                    for ($i=0; $i<$len; $i++) {
+                        $placeholders[] = sprintf(':%s:', $named_place . $i);
+                        $bind[ $named_place . $i ] = $value[$i];
+                    }
+                    $where[] = sprintf('%s IN (%s)', $column, implode(',',$placeholders));
+                }
+
+            } else {
+
+                if ($value === null){
+                    $where[] = sprintf('%s IS NULL', $column);
+
+                } else {
+                    $where[] = sprintf('%s = :%s:', $column, $named_place);
+                    $bind[ $named_place ] = $value;
+                }
+
+            }
+        }
+
+        if (count($where) > 0) {
+
+            $conditions = isset($parameters[0]) ? $parameters[0] : '';
+
+            $parameters[0] = $conditions
+                ? ($conditions . ' AND ' . implode(' AND ', $where))
+                : implode(' AND ', $where);
+
+            $parameters['bind'] = $bind;
+
+        }
+
+        unset($parameters['where']);
+
+        return $parameters;
+    }
+
+    /**
      * @throws Exception
      */
     public static function outputErrorMessage()
     {
-
         $messages = '';
         foreach (self::getModel()->getMessages() as $message) {
             $messages .= $message;
