@@ -511,7 +511,7 @@ class RedisDb
     private static function _generateFindKey($parameters)
     {
 
-        $key = self::generateKey($parameters['cache']);
+        $key = self::generateKey($parameters['keys']);
 
         // order by
         if (isset($parameters['order']))
