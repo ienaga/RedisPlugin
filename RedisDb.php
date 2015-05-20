@@ -6,6 +6,21 @@ use \Exception;
 
 class RedisDb
 {
+    /** operator list */
+    const EQUAL = '=';
+    const NOT_EQUAL = '<>';
+    const GREATER_THAN = '>';
+    const LESS_THAN = '<';
+    const GREATER_EQUAL = '>=';
+    const LESS_EQUAL = '<=';
+    const ISNULL = 'IS NULL';
+    const ISNOTNULL = 'IS NOT NULL';
+    const LIKE = 'LIKE';
+    const ILIKE = 'ILIKE';
+    const IN = 'IN';
+    const NOT_IN = 'NOT IN';
+    const BETWEEN = 'BETWEEN';
+
     /**
      * @var \Phalcon\Mvc\Model
      */
@@ -90,11 +105,12 @@ class RedisDb
      */
     public static function setCommon($model)
     {
-        $type = (self::isTransaction()) ? 'CommonMaster' : 'CommonSlave';
-
         self::setModel($model);
 
-        $model->setReadConnectionService(self::getConnectionName() . $type);
+        $configName  = self::getConnectionName();
+        $configName .= (self::isTransaction()) ? 'CommonMaster' : 'CommonSlave';
+
+        $model->setReadConnectionService($configName);
 
         return $model;
     }
@@ -106,11 +122,12 @@ class RedisDb
      */
     public static function setCon($model, $memberId = null)
     {
-        $type = (self::isTransaction()) ? 'Master' : 'Slave';
-
         self::setModel($model);
 
-        $model->setReadConnectionService(self::getConnectionName($memberId) . $type);
+        $configName  = self::getConnectionName($memberId);
+        $configName .= (self::isTransaction()) ? 'Master' : 'Slave';
+
+        $model->setReadConnectionService($configName);
 
         if (self::isTransaction() && $memberId !== null)
             self::addModels($memberId, $model);
@@ -812,34 +829,103 @@ class RedisDb
                     $operator  = $value['operator'];
                     $bindValue = $value['value'];
 
-                    $where[]   = sprintf('%s %s :%s:', $column, $operator, $named_place);
-                    $bind[$named_place] = $bindValue;
-                    $keys[$named_place] = $operator.$bindValue;
+                    switch ($operator) {
+                        case $operator === self::ISNULL:
+                        case $operator === self::ISNOTNULL:
+
+                            $keys[$named_place] = str_replace(" ", "_", $operator);
+
+                            $val = '';
+
+                            break;
+
+                        case $operator === self::IN:
+                        case $operator === self::NOT_IN:
+
+                            $len = count($bindValue);
+
+                            $placeholders = array();
+                            for ($i = 0; $i < $len; $i++) {
+
+                                $placeholders[] = sprintf(':%s:', $named_place.$i);
+
+                                $bind[$named_place.$i] = $bindValue[$i];
+
+                            }
+
+                            $keys[$named_place] = str_replace(" ", "_", $operator) . implode('_', $bindValue);
+
+                            $val = sprintf('(%s)', implode(',', $placeholders));
+
+                            break;
+
+                        case $operator === self::BETWEEN:
+
+                            $bind[$named_place.'0'] = $bindValue[0];
+                            $bind[$named_place.'1'] = $bindValue[1];
+
+                            $keys[$named_place] = $operator . implode('_', $bindValue);
+
+                            $val = sprintf(':%s: AND :%s:', $bindValue[0], $bindValue[1]);
+
+                            break;
+
+                        default:
+
+                            $bind[$named_place] = $bindValue;
+
+                            $keys[$named_place] = $operator.$bindValue;
+
+                            $val = sprintf(':%s:', $named_place);
+
+                            break;
+                    }
+
                 } else {
+
+                    $operator = self::IN;
+
                     $placeholders = array();
                     $len = count($value);
 
-                    for ($i=0; $i<$len; $i++) {
-                        $placeholders[] = sprintf(':%s:', $named_place . $i);
+                    for ($i = 0; $i < $len; $i++) {
+
+                        $placeholders[] = sprintf(':%s:', $named_place.$i);
+
                         $bind[$named_place.$i] = $value[$i];
+
                     }
 
-                    $keys[$named_place] = implode(',',$value);
-                    $where[] = sprintf('%s IN (%s)', $column, implode(',',$placeholders));
+                    $keys[$named_place] = str_replace(" ", "_", $operator) . implode('_', $value);
+
+                    $val = sprintf('(%s)', implode(',', $placeholders));
                 }
 
             } else {
 
                 if ($value === null){
-                    $where[] = sprintf('%s IS NULL', $column);
+
+                    $operator = self::ISNULL;
+
                     $keys[$named_place] = 'IS_NULL';
+
+                    $val = '';
+
                 } else {
-                    $where[] = sprintf('%s = :%s:', $column, $named_place);
+
+                    $operator = self::EQUAL;
+
                     $bind[$named_place] = $value;
+
                     $keys[$named_place] = '='.$value;
+
+                    $val = sprintf(':%s:', $named_place);
+
                 }
 
             }
+
+            $where[] = sprintf('%s %s %s', $column, $operator, $val);
         }
 
         if (count($where) > 0) {

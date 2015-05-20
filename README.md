@@ -207,6 +207,7 @@ foreach ($config->get('database') as $db => $arguments)
 ## findFirst | find
 ~~~
     EQUAL
+    ------------------
     return RedisDb::findFirst(array(
         'where' => array(
             'member_id' => $memberId,
@@ -220,9 +221,10 @@ foreach ($config->get('database') as $db => $arguments)
             'status_number' => 1
         )
     ), new self);
-
+    ------------------
 
     IN
+    ------------------
     return RedisDb::findFirst(array(
         'where' => array(
             'member_id' => array(1, 3, 6),
@@ -236,38 +238,68 @@ foreach ($config->get('database') as $db => $arguments)
             'status_number' => 1
         )
     ), new self);
+    ------------------
+
+    IS NULL
+    ------------------
+    return RedisDb::findFirst(array(
+        'where' => array(
+            'member_id' => null,
+            'status_number' => 1
+        )
+    ), new self);
+
+    return RedisDb::find(array(
+        'where' => array(
+            'member_id' => null,
+            'status_number' => 1
+        )
+    ), new self);
+    ------------------
 
 
     OPERATOR
+    ▼OPERATOR LIST
+    ------------------
+      RedisDb::EQUAL = '=';
+      RedisDb::NOT_EQUAL = '<>';
+      RedisDb::GREATER_THAN = '>';
+      RedisDb::LESS_THAN = '<';
+      RedisDb::GREATER_EQUAL = '>=';
+      RedisDb::LESS_EQUAL = '<=';
+      RedisDb::ISNULL = 'IS NULL';
+      RedisDb::ISNOTNULL = 'IS NOT NULL';
+      RedisDb::LIKE = 'LIKE';
+      RedisDb::ILIKE = 'ILIKE';
+      RedisDb::const IN = 'IN';
+      RedisDb::NOT_IN = 'NOT IN';
+      RedisDb::BETWEEN = 'BETWEEN';
+    ------------------
+
+    NOT_EQUAL
     return RedisDb::findFirst(array(
         'where' => array(
-            'member_id' => array('operator' => '>', 'value' => 1),
+            'member_id' => array('operator' => RedisDb::NOT_EQUAL, 'value' => 1),
             'status_number' => 1
         )
     ), new self);
 
+    NOT_IN
     return RedisDb::find(array(
         'where' => array(
-            'member_id' => array('operator' => '>', 'value' => 1),
+            'member_id' => array('operator' => RedisDb::NOT_IN, 'value' => array(1, 2, 5)),
             'status_number' => 1
         )
     ), new self);
 
-
-    IS NULL
-    return RedisDb::findFirst(array(
-        'where' => array(
-            'member_id' => null,
-            'status_number' => 1
-        )
-    ), new self);
-
+    BETWEEN
     return RedisDb::find(array(
         'where' => array(
-            'member_id' => null,
+            'member_id' => array('operator' => RedisDb::BETWEEN, 'value' => array(1, 2)),
             'status_number' => 1
         )
     ), new self);
+
 ~~~
 
 ## query
