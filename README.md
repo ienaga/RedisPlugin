@@ -302,14 +302,6 @@ foreach ($config->get('database') as $db => $arguments)
 
 ~~~
 
-## query
-~~~
-    return RedisDb::query(self::query()
-        ->where("member_id = ".$memberId)
-        ->andWhere("status_number = ".1)
-        , new self
-    );
-~~~
 
 ## save
 ~~~
