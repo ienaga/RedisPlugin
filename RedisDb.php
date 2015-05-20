@@ -406,29 +406,9 @@ class RedisDb
      */
     public static function findFirst($parameters, $model, $expire = 0)
     {
-        $parameters = self::_generateParameters($parameters);
+        $result = self::find($parameters, $model, $expire);
 
-        $key = self::_generateFindKey($parameters);
-
-        self::setPrefix($parameters['bind']);
-
-        self::connect($model);
-
-        // redisから検索
-        $result = self::findRedis($key);
-
-        // なければDBから
-        if ($result === false) {
-
-            $result = $model::findFirst($parameters);
-
-            if (!$result)
-                $result = null;
-
-            self::setHash($key, $result, $expire);
-        }
-
-        return $result;
+        return $result[0];
     }
 
     /**
