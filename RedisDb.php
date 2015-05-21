@@ -634,8 +634,7 @@ class RedisDb
         $cacheKey = self::getCacheKey($key);
 
         if (!isset(self::$cache[$cacheKey]))
-            self::$cache[$cacheKey] =
-                self::getRedis()->hGet(self::getHashKey(), $key);
+            self::$cache[$cacheKey] = self::getRedis()->hGet(self::getHashKey(), $key);
 
         return self::$cache[$cacheKey];
     }
@@ -705,21 +704,22 @@ class RedisDb
         // hash key
         $hashKey = self::getHashKey();
 
-        self::getRedis()->hSet($hashKey, $key, $value);
+        $redis = self::getRedis();
+        $redis->hSet($hashKey, $key, $value);
 
         // 保持期間があればセット
-        if ($expire > 0 && !self::getRedis()->isTimeout($hashKey)) {
-            self::getRedis()->setTimeout($hashKey, $expire);
+        if ($expire > 0 && !$redis->isTimeout($hashKey)) {
+            $redis->setTimeout($hashKey, $expire);
         }
 
         // 基本は1日保持
-        if (!self::getRedis()->isTimeout($hashKey)) {
+        if (!$redis->isTimeout($hashKey)) {
             $expire = 86400;
 
             if (self::getConfigName() !== 'common')
                 $expire = self::getConfig()->get('default')->get('expire');
 
-            self::getRedis()->setTimeout($hashKey, $expire);
+            $redis->setTimeout($hashKey, $expire);
         }
     }
 
@@ -762,18 +762,16 @@ class RedisDb
                 $source = $model->getSource();
 
                 self::setModel($model);
-                self::getRedis()->delete($source .'@'. $memberId);
+
+                $redis = self::getRedis();
+                $redis->delete($source .'@'. $memberId);
 
                 if (method_exists($model, 'getId')) {
-                    $key = $model->getId();
-                    self::setModel($model);
-                    self::getRedis()->delete($source .'@'. $key);
+                    $redis->delete($source .'@'. $model->getId());
                 }
 
                 if (method_exists($model, 'getSocialId')) {
-                    $key = $model->getSocialId();
-                    self::setModel($model);
-                    self::getRedis()->delete($source .'@'. $key);
+                    $redis->delete($source .'@'. $model->getSocialId());
                 }
             }
         }
