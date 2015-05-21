@@ -13,7 +13,7 @@ class RedisDb
     const LESS_THAN = '<';
     const GREATER_EQUAL = '>=';
     const LESS_EQUAL = '<=';
-    const ISNULL = 'IS NULL';
+    const IS_NULL = 'IS NULL';
     const IS_NOT_NULL = 'IS NOT NULL';
     const LIKE = 'LIKE';
     const I_LIKE = 'ILIKE';
@@ -813,7 +813,7 @@ class RedisDb
                     $bindValue = $value['value'];
 
                     switch ($operator) {
-                        case $operator === self::ISNULL:
+                        case $operator === self::IS_NULL:
                         case $operator === self::IS_NOT_NULL:
 
                             $keys[$named_place] = str_replace(" ", "_", $operator);

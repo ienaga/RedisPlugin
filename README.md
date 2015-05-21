@@ -267,11 +267,11 @@ foreach ($config->get('database') as $db => $arguments)
       RedisDb::LESS_THAN = '<';
       RedisDb::GREATER_EQUAL = '>=';
       RedisDb::LESS_EQUAL = '<=';
-      RedisDb::ISNULL = 'IS NULL';
-      RedisDb::ISNOTNULL = 'IS NOT NULL';
+      RedisDb::IS_NULL = 'IS NULL';
+      RedisDb::IS_NOT_NULL = 'IS NOT NULL';
       RedisDb::LIKE = 'LIKE';
-      RedisDb::ILIKE = 'ILIKE';
-      RedisDb::const IN = 'IN';
+      RedisDb::I_LIKE = 'ILIKE';
+      RedisDb::IN = 'IN';
       RedisDb::NOT_IN = 'NOT IN';
       RedisDb::BETWEEN = 'BETWEEN';
     ------------------
