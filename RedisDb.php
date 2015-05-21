@@ -408,7 +408,7 @@ class RedisDb
     {
         $result = self::find($parameters, $model, $expire);
 
-        return $result[0];
+        return ($result) ? $result[0] : false;
     }
 
     /**
@@ -787,7 +787,7 @@ class RedisDb
     public static function _generateParameters($parameters)
     {
         if (!is_array($parameters) || !isset($parameters['where']))
-            throw new Exception('findFirst Error Not Found where or String');
+            throw new Exception('Error Not Found where or String');
 
         $where = array();
 
