@@ -749,6 +749,7 @@ class RedisDb
      */
     public static function autoClear()
     {
+
         foreach (self::getModels() as $memberId => $models) {
 
             /** @var \Phalcon\Mvc\Model[] $models */
@@ -764,13 +765,15 @@ class RedisDb
                 self::getRedis()->delete($source .'@'. $memberId);
 
                 if (method_exists($model, 'getId')) {
+                    $key = $model->getId();
                     self::setModel($model);
-                    self::getRedis()->delete($source .'@'. $model->getId());
+                    self::getRedis()->delete($source .'@'. $key);
                 }
 
                 if (method_exists($model, 'getSocialId')) {
+                    $key = $model->getSocialId();
                     self::setModel($model);
-                    self::getRedis()->delete($source .'@'. $model->getSocialId());
+                    self::getRedis()->delete($source .'@'. $key);
                 }
             }
         }
