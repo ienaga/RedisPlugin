@@ -754,23 +754,25 @@ class RedisDb
             /** @var \Phalcon\Mvc\Model[] $models */
             foreach ($models as $model) {
 
-                $model->setReadConnectionService(self::getConnectionName($memberId) . 'Master');
-
-                self::setModel($model);
+                $model->setReadConnectionService(
+                    self::getConnectionName($memberId) . 'Master'
+                );
 
                 $source = $model->getSource();
 
+                self::setModel($model);
                 self::getRedis()->delete($source .'@'. $memberId);
 
                 if (method_exists($model, 'getId')) {
+                    self::setModel($model);
                     self::getRedis()->delete($source .'@'. $model->getId());
                 }
 
                 if (method_exists($model, 'getSocialId')) {
+                    self::setModel($model);
                     self::getRedis()->delete($source .'@'. $model->getSocialId());
                 }
             }
-
         }
 
         self::$models = array();
