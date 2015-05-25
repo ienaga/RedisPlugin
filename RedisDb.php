@@ -6,21 +6,6 @@ use \Exception;
 
 class RedisDb
 {
-    /** operator list */
-    const EQUAL = '=';
-    const NOT_EQUAL = '<>';
-    const GREATER_THAN = '>';
-    const LESS_THAN = '<';
-    const GREATER_EQUAL = '>=';
-    const LESS_EQUAL = '<=';
-    const IS_NULL = 'IS NULL';
-    const IS_NOT_NULL = 'IS NOT NULL';
-    const LIKE = 'LIKE';
-    const I_LIKE = 'ILIKE';
-    const IN = 'IN';
-    const NOT_IN = 'NOT IN';
-    const BETWEEN = 'BETWEEN';
-
     /**
      * @var \Phalcon\Mvc\Model
      */
@@ -363,7 +348,6 @@ class RedisDb
      */
     public static function find($parameters, $model, $expire = 0)
     {
-
         $parameters = self::_createKey($parameters);
 
         self::setPrefix($model, $parameters['bind']);
@@ -787,6 +771,9 @@ class RedisDb
      */
     public static function _createKey($parameters)
     {
+        if ($parameters instanceof RedisCriteria)
+            return $parameters->getConditions();
+
         if (!is_array($parameters) || !isset($parameters['where']))
             throw new Exception('Error Not Found where or String');
 
@@ -814,8 +801,8 @@ class RedisDb
                     $bindValue = $value['value'];
 
                     switch ($operator) {
-                        case $operator === self::IS_NULL:
-                        case $operator === self::IS_NOT_NULL:
+                        case $operator === RedisCriteria::IS_NULL:
+                        case $operator === RedisCriteria::IS_NOT_NULL:
 
                             $keys[$named_place] = str_replace(" ", "_", $operator);
 
@@ -823,8 +810,8 @@ class RedisDb
 
                             break;
 
-                        case $operator === self::IN:
-                        case $operator === self::NOT_IN:
+                        case $operator === RedisCriteria::IN:
+                        case $operator === RedisCriteria::NOT_IN:
 
                             $len = count($bindValue);
 
@@ -843,7 +830,7 @@ class RedisDb
 
                             break;
 
-                        case $operator === self::BETWEEN:
+                        case $operator === RedisCriteria::BETWEEN:
 
                             $bind[$named_place.'0'] = $bindValue[0];
                             $bind[$named_place.'1'] = $bindValue[1];
@@ -889,7 +876,7 @@ class RedisDb
 
                 if ($value === null){
 
-                    $operator = self::ISNULL;
+                    $operator = RedisCriteria::ISNULL;
 
                     $keys[$named_place] = 'IS_NULL';
 
@@ -897,7 +884,7 @@ class RedisDb
 
                 } else {
 
-                    $operator = self::EQUAL;
+                    $operator = RedisCriteria::EQUAL;
 
                     $bind[$named_place] = $value;
 
