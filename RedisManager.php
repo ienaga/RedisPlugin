@@ -59,39 +59,44 @@ class RedisManager
     public function connect($config = array())
     {
         if (!$config) {
-
-            $config = \Phalcon\DI::getDefault()
+            $configs = \Phalcon\DI::getDefault()
                 ->get('config')
                 ->get('redis')
                 ->get('server')
-                ->get('common')
                 ->toArray();
+
+            $config = array_shift($configs);
         }
 
         $host = $config['host'];
         $port = $config['port'];
         $key = $host .':'. $port;
-        if (!isset($this->connections[$key])) {
 
-            $redis = new Redis();
-            $redis->pconnect($host, $port, 0, 'x');
-            $redis->setOption(
-                Redis::OPT_SERIALIZER,
-                Redis::SERIALIZER_PHP
-            );
-
-            $this->connections[$key] = $redis;
-        }
+        if (!isset($this->connections[$key]))
+            $this->connections[$key] = $this->createClient($host, $port);
 
         $select = 0;
-        if (isset($config['select'])) {
+        if (isset($config['select']))
             $select = $config['select'];
-        }
+
 
         self::$redis = $this->connections[$key];
         self::$redis->select($select);
 
         return $this;
+    }
+
+    /**
+     * @param  string $host
+     * @param  int    $port
+     * @return Redis
+     */
+    public function createClient($host = '127.0.0.1', $port = 6379)
+    {
+        $redis = new Redis();
+        $redis->pconnect($host, $port, 0, 'x');
+        $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
+        return $redis;
     }
 
     # ----------------------------------------------------------------------------

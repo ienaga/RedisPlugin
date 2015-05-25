@@ -20,7 +20,7 @@ extension=yaml.so
 ~~~
 
 
-## Phalcon YAML
+## Phalcon YAML [database.yml]
 
 ~~~
 dev:
@@ -102,22 +102,26 @@ stg:
       dbname:   XXXXX
       charset:  utf8
       transaction: false
+~~~
 
-
+## Phalcon YAML [redis.yml]
+~~~
   redis:
     default:
       name: db
       expire: 3600
+    prefix:
+      columns: column, column, column
 
     # common
-      dbs: XXXX, XXXX, XXXX # common DB Name
+      dbs: table, table, table... # common DB Table Name => master_, common_item,
 
     # shard admin
     admin:
       model:  XXXXX # AdminUser
-      method: XXXXX # getUset
+      method: XXXXX # getUser
       column: XXXXX # user_id
-      dbs: XXXX, XXXX, XXXX # common DB Name
+      dbs: table, table, table... # common DB Table Name => admin_, common_members
 
     # shard config master
     shard:
@@ -125,38 +129,37 @@ stg:
       method: XXXXX # getConfig
       column: XXXXX # db_id
 
-    dbMaster:
-      name: AAAAA
-    dbSlave:
-      name: AAAAA
-    dbCommonMaster:
-      name: BBBBB
-    dbCommonSlave:
-      name: BBBBB
-    dbMember1Master:
-      name: CCCCC
-    dbMember1Slave:
-      name: CCCCC
-    dbMember2Master:
-      name: DDDDD
-    dbMember2Slave:
-      name: DDDDD
-
     server:
-      AAAAA:
-        host: 127.0.0.1
-        port: 6379
-        select: 0
-      BBBBB:
-        host: 127.0.0.1
+      dbMaster:
+        host: XXXXX
         port: 6379
         select: 1
-      CCCCC:
-        host: 127.0.0.1
+      dbSlave:
+        host: XXXXX
+        port: 6379
+        select: 1
+      dbCommonMaster:
+        host: XXXXX
+        port: 6379
+        select: 0
+      dbCommonSlave:
+        host: XXXXX
+        port: 6379
+        select: 0
+      dbMember1Master:
+        host: XXXXX
         port: 6379
         select: 2
-      DDDDD:
-        host: 127.0.0.1
+      dbMember1Slave:
+        host: XXXXX
+        port: 6379
+        select: 2
+      dbMember2Master:
+        host: XXXXX
+        port: 6379
+        select: 3
+      dbMember2Slave:
+        host: XXXXX
         port: 6379
         select: 3
 ~~~
