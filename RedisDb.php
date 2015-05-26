@@ -779,13 +779,45 @@ class RedisDb
         if (!is_array($parameters) || !isset($parameters['where']))
             throw new Exception('Error Not Found where or String');
 
+        /** @var \Phalcon\Db\Index[] $indexes */
+        $indexes = $model->getModelsMetaData()->readIndexes($model->getSource());
+
+        $params = $parameters['where'];
+
+        $indexParams = array();
+
+        // indexがあれば並べなおす
+        if ($indexes) {
+
+            foreach ($indexes as $index) {
+
+                $columns = $index->getColumns();
+
+                if (!isset($params[$columns[0]]))
+                    continue;
+
+                foreach ($columns as $column) {
+                    if (!isset($params[$column]))
+                        break;
+
+                    $indexParams[$column] = $params[$column];
+                    unset($params[$column]);
+                }
+
+                break;
+            }
+
+        }
+
+        $indexParams = array_merge($indexParams, $params);
+
         $where = array();
 
         $bind  = isset($parameters['bind']) ? $parameters['bind'] : array();
 
         $keys = array();
 
-        foreach ($parameters['where'] as $column => $value) {
+        foreach ($indexParams as $column => $value) {
 
             if (count($aliased = explode('.', $column)) > 1) {
                 $named_place = $aliased[1];

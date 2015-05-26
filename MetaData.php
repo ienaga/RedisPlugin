@@ -99,6 +99,52 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
         }
 
         $this->_cache[$key] = $data;
+
+        $this->writeIndexes($key);
+    }
+
+    /**
+     * @param string $key
+     */
+    public function writeIndexes($key)
+    {
+        if (!$key)
+            return;
+
+        $keys = explode('-', $key);
+        if (3 > count($keys))
+            return;
+
+        $source = array_pop($keys);
+
+        $class = '';
+        foreach (explode("_", $source) as $value) {
+            $class .= ucfirst($value);
+        }
+
+        /** @var \Phalcon\Mvc\Model $model */
+        $model = new $class;
+        $indexes = $model->getReadConnection()->describeIndexes($source);
+
+        $cacheKey = $source . '-index';
+
+        $this->getRedis()->hSet(self::CACHE_KEY, $cacheKey, $indexes);
+
+        $this->_cache[$cacheKey] = $indexes;
+    }
+
+    /**
+     * @param  string $key
+     * @return null
+     */
+    public function readIndexes($key)
+    {
+        $key .= '-index';
+
+        if (!isset($this->_cache[$key]))
+            $this->_cache[$key] = $this->getRedis()->hGet(self::CACHE_KEY, $key);
+
+        return ($this->_cache[$key]) ? $this->_cache[$key] : null;
     }
 
     /**

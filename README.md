@@ -123,6 +123,7 @@ stg:
       columns: column, column, column
 
     # common
+    common:
       dbs: table, table, table... # common DB Table Name => master_, common_item,
 
 
