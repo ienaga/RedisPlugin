@@ -20,6 +20,15 @@ extension=yaml.so
 ~~~
 
 
+## Phalcon services.php
+~~~
+/**
+ * If the configuration specify the use of metadata adapter use it or use memory otherwise
+ */
+$di->set('modelsMetadata', function () { return new \RedisPlugin\MetaData(); });
+~~~
+
+
 ## Phalcon YAML [database.yml]
 
 ~~~
@@ -116,6 +125,15 @@ stg:
     # common
       dbs: table, table, table... # common DB Table Name => master_, common_item,
 
+
+    # shard config master
+    shard:
+      enabled: true
+      model:  XXXXX # AdminConfig
+      method: XXXXX # getConfig
+      column: XXXXX # db_id
+
+
     # shard admin
     admin:
       model:  XXXXX # AdminUser
@@ -123,11 +141,6 @@ stg:
       column: XXXXX # user_id
       dbs: table, table, table... # common DB Table Name => admin_, common_members
 
-    # shard config master
-    shard:
-      model:  XXXXX # AdminConfig
-      method: XXXXX # getConfig
-      column: XXXXX # db_id
 
     server:
       dbMaster:

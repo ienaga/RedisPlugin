@@ -175,7 +175,10 @@ class RedisDb
      */
     public static function getConnectionName($memberId = null)
     {
-        if ((int) $memberId > 0) {
+
+        $mode = self::getConfig()->get('shard')->get('enabled');
+
+        if ($mode && (int) $memberId > 0) {
 
             $adminMember = self::getAdminMember($memberId);
 
