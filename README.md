@@ -264,25 +264,25 @@ foreach ($config->get('database') as $db => $arguments)
     OPERATOR
     ▼OPERATOR LIST
     ------------------
-      RedisCriteria::EQUAL = '=';
-      RedisCriteria::NOT_EQUAL = '<>';
-      RedisCriteria::GREATER_THAN = '>';
-      RedisCriteria::LESS_THAN = '<';
-      RedisCriteria::GREATER_EQUAL = '>=';
-      RedisCriteria::LESS_EQUAL = '<=';
-      RedisCriteria::IS_NULL = 'IS NULL';
-      RedisCriteria::IS_NOT_NULL = 'IS NOT NULL';
-      RedisCriteria::LIKE = 'LIKE';
-      RedisCriteria::I_LIKE = 'ILIKE';
-      RedisCriteria::IN = 'IN';
-      RedisCriteria::NOT_IN = 'NOT IN';
-      RedisCriteria::BETWEEN = 'BETWEEN';
+      Criteria::EQUAL = '=';
+      Criteria::NOT_EQUAL = '<>';
+      Criteria::GREATER_THAN = '>';
+      Criteria::LESS_THAN = '<';
+      Criteria::GREATER_EQUAL = '>=';
+      Criteria::LESS_EQUAL = '<=';
+      Criteria::IS_NULL = 'IS NULL';
+      Criteria::IS_NOT_NULL = 'IS NOT NULL';
+      Criteria::LIKE = 'LIKE';
+      Criteria::I_LIKE = 'ILIKE';
+      Criteria::IN = 'IN';
+      Criteria::NOT_IN = 'NOT IN';
+      Criteria::BETWEEN = 'BETWEEN';
     ------------------
 
     NOT_EQUAL
     return RedisDb::findFirst(array(
         'where' => array(
-            'member_id' => array('operator' => RedisCriteria::NOT_EQUAL, 'value' => 1),
+            'member_id' => array('operator' => Criteria::NOT_EQUAL, 'value' => 1),
             'status_number' => 1
         )
     ), new self);
@@ -290,7 +290,7 @@ foreach ($config->get('database') as $db => $arguments)
     NOT_IN
     return RedisDb::find(array(
         'where' => array(
-            'member_id' => array('operator' => RedisCriteria::NOT_IN, 'value' => array(1, 2, 5)),
+            'member_id' => array('operator' => Criteria::NOT_IN, 'value' => array(1, 2, 5)),
             'status_number' => 1
         )
     ), new self);
@@ -298,7 +298,7 @@ foreach ($config->get('database') as $db => $arguments)
     BETWEEN
     return RedisDb::find(array(
         'where' => array(
-            'member_id' => array('operator' => RedisCriteria::BETWEEN, 'value' => array(1, 2)),
+            'member_id' => array('operator' => Criteria::BETWEEN, 'value' => array(1, 2)),
             'status_number' => 1
         )
     ), new self);
@@ -308,20 +308,20 @@ foreach ($config->get('database') as $db => $arguments)
 
 ## Criteria
 ~~~
-    $criteria = new RedisCriteria(new self);
+    $criteria = new Criteria(new self);
     return $criteria
         ->add('id', $id)
         ->add('status_number', self::AVAILABLE)
         ->findFirst();
 
-    $criteria = new RedisCriteria(new self);
+    $criteria = new Criteria(new self);
     return $criteria
         ->add('id', $id)
         ->add('status_number', self::AVAILABLE)
         ->find();
 
     LIMIT | ORDER BY | GROUP BY
-    $criteria = new RedisCriteria(new self);
+    $criteria = new Criteria(new self);
     return $criteria
         ->add('id', $id)
         ->add('type', $type)
@@ -333,13 +333,13 @@ foreach ($config->get('database') as $db => $arguments)
 
     IN
     return $criteria
-        ->add('id', array(1,2,6), RedisCriteria::IN)
+        ->add('id', array(1,2,6), Criteria::IN)
         ->add('status_number', self::AVAILABLE)
         ->find();
 
     BETWEEN
     return $criteria
-        ->add('id', array(1, 20), RedisCriteria::BETWEEN)
+        ->add('id', array(1, 20), Criteria::BETWEEN)
         ->add('status_number', self::AVAILABLE)
         ->find();
 ~~~

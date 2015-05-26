@@ -1,7 +1,7 @@
 <?php
 namespace RedisPlugin;
 
-class RedisCriteria
+class Criteria
 {
     /** operator list */
     const EQUAL = '=';
@@ -99,9 +99,6 @@ class RedisCriteria
      */
     public function getConditions()
     {
-        if (isset($this->conditions['where']))
-            $this->conditions = RedisDb::_createKey($this->conditions);
-
         return $this->conditions;
     }
 
@@ -148,7 +145,7 @@ class RedisCriteria
      */
     public function findFirst()
     {
-        return RedisDb::findFirst($this, $this->getModel(), $this->getExpire());
+        return RedisDb::findFirst($this->getConditions(), $this->getModel(), $this->getExpire());
     }
 
     /**
@@ -156,6 +153,6 @@ class RedisCriteria
      */
     public function find()
     {
-        return RedisDb::find($this, $this->getModel(), $this->getExpire());
+        return RedisDb::find($this->getConditions(), $this->getModel(), $this->getExpire());
     }
 }

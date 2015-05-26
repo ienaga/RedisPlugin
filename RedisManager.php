@@ -54,7 +54,7 @@ class RedisManager
 
     /**
      * @param  array $config
-     * @return $this
+     * @return RedisManager
      */
     public function connect($config = array())
     {

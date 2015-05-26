@@ -348,11 +348,12 @@ class RedisDb
      */
     public static function find($parameters, $model, $expire = 0)
     {
-        $parameters = self::_createKey($parameters);
+        $parameters = self::_createKey($parameters, $model);
 
         self::setPrefix($model, $parameters['bind']);
 
         self::connect($model, self::getPrefix());
+
 
         $key = self::_generateFindKey($parameters);
         unset($parameters['keys']);
@@ -766,14 +767,12 @@ class RedisDb
 
     /**
      * @param  array $parameters
+     * @param  \Phalcon\Mvc\Model $model
      * @return array
      * @throws Exception
      */
-    public static function _createKey($parameters)
+    public static function _createKey($parameters, $model)
     {
-        if ($parameters instanceof RedisCriteria)
-            return $parameters->getConditions();
-
         if (!is_array($parameters) || !isset($parameters['where']))
             throw new Exception('Error Not Found where or String');
 
@@ -801,8 +800,8 @@ class RedisDb
                     $bindValue = $value['value'];
 
                     switch ($operator) {
-                        case $operator === RedisCriteria::IS_NULL:
-                        case $operator === RedisCriteria::IS_NOT_NULL:
+                        case $operator === Criteria::IS_NULL:
+                        case $operator === Criteria::IS_NOT_NULL:
 
                             $keys[$named_place] = str_replace(" ", "_", $operator);
 
@@ -810,8 +809,8 @@ class RedisDb
 
                             break;
 
-                        case $operator === RedisCriteria::IN:
-                        case $operator === RedisCriteria::NOT_IN:
+                        case $operator === Criteria::IN:
+                        case $operator === Criteria::NOT_IN:
 
                             $len = count($bindValue);
 
@@ -830,7 +829,7 @@ class RedisDb
 
                             break;
 
-                        case $operator === RedisCriteria::BETWEEN:
+                        case $operator === Criteria::BETWEEN:
 
                             $bind[$named_place.'0'] = $bindValue[0];
                             $bind[$named_place.'1'] = $bindValue[1];
@@ -876,7 +875,7 @@ class RedisDb
 
                 if ($value === null){
 
-                    $operator = RedisCriteria::ISNULL;
+                    $operator = Criteria::ISNULL;
 
                     $keys[$named_place] = 'IS_NULL';
 
@@ -884,7 +883,7 @@ class RedisDb
 
                 } else {
 
-                    $operator = RedisCriteria::EQUAL;
+                    $operator = Criteria::EQUAL;
 
                     $bind[$named_place] = $value;
 
@@ -901,17 +900,14 @@ class RedisDb
 
         if (count($where) > 0) {
 
-            $conditions = isset($parameters[0]) ? $parameters[0] : '';
-
-            $parameters[0] = $conditions
-                ? ($conditions . ' AND ' . implode(' AND ', $where))
-                : implode(' AND ', $where);
+            $parameters[0] = implode(' AND ', $where);
 
             $parameters['bind'] = $bind;
 
             ksort($keys);
 
             $parameters['keys'] = $keys;
+
         }
 
         unset($parameters['where']);
