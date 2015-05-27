@@ -300,7 +300,10 @@ use \RedisPlugin\Criteria;
     NOT_EQUAL
     return RedisDb::findFirst(array(
         'where' => array(
-            'member_id' => array('operator' => Criteria::NOT_EQUAL, 'value' => 1),
+            'member_id' => array(
+                'operator' => Criteria::NOT_EQUAL,
+                'value' => 1
+            ),
             'status_number' => 1
         )
     ), new self);
@@ -308,7 +311,10 @@ use \RedisPlugin\Criteria;
     NOT_IN
     return RedisDb::find(array(
         'where' => array(
-            'member_id' => array('operator' => Criteria::NOT_IN, 'value' => array(1, 2, 5)),
+            'member_id' => array(
+                'operator' => Criteria::NOT_IN,
+                'value' => array(1, 2, 5)
+            ),
             'status_number' => 1
         )
     ), new self);
@@ -316,7 +322,10 @@ use \RedisPlugin\Criteria;
     BETWEEN
     return RedisDb::find(array(
         'where' => array(
-            'member_id' => array('operator' => Criteria::BETWEEN, 'value' => array(1, 2)),
+            'member_id' => array(
+                'operator' => Criteria::BETWEEN,
+                'value' => array(1, 2)
+            ),
             'status_number' => 1
         )
     ), new self);
