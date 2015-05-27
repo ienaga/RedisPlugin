@@ -393,6 +393,7 @@ use \RedisPlugin\RedisDb;
 and by making the autoIndex to true, the issue is rearranged to best to match queries to index.
 
     e.g. PRIMARY = type, INDEX = id, status_number
+
     $criteria = new Criteria(new self);
     return $criteria
         ->limit(10)
