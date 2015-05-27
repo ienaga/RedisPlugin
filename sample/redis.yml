@@ -1,0 +1,65 @@
+prd:
+stg:
+dev:
+  redis:
+    default:
+      name: db
+      expire: 3600
+      autoIndex: true
+    prefix:
+      columns: column, column, column
+
+    # common
+    common:
+      dbs: table, table, table... # common DB Table Name => master_, common_item,
+
+
+    # shard config master
+    shard:
+      enabled: true
+      model:  XXXXX # AdminConfig
+      method: XXXXX # getConfig
+      column: XXXXX # db_id
+
+
+    # shard admin
+    admin:
+      model:  XXXXX # AdminUser
+      method: XXXXX # getUser
+      column: XXXXX # user_id
+      dbs: table, table, table... # common DB Table Name => admin_, common_members
+
+
+    server:
+      dbMaster:
+        host: XXXXX
+        port: 6379
+        select: 1
+      dbSlave:
+        host: XXXXX
+        port: 6379
+        select: 1
+      dbCommonMaster:
+        host: XXXXX
+        port: 6379
+        select: 0
+      dbCommonSlave:
+        host: XXXXX
+        port: 6379
+        select: 0
+      dbMember1Master:
+        host: XXXXX
+        port: 6379
+        select: 2
+      dbMember1Slave:
+        host: XXXXX
+        port: 6379
+        select: 2
+      dbMember2Master:
+        host: XXXXX
+        port: 6379
+        select: 3
+      dbMember2Slave:
+        host: XXXXX
+        port: 6379
+        select: 3

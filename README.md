@@ -23,9 +23,9 @@ extension=yaml.so
 ## Phalcon YAML [database.yml]
 
 ~~~
-dev:
 prd:
 stg:
+dev:
   database:
     dbMaster:
       adapter:  Mysql
