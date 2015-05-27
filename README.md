@@ -391,6 +391,8 @@ use \RedisPlugin\RedisDb;
 ~~~
 ※autoIndexをtrueにする事で、indexに一番マッチするクエリに並び替えて発行します。
 
+use \RedisPlugin\Criteria;
+
     e.g. PRIMARY = type, INDEX = id, status_number
 
     $criteria = new Criteria(new self);
