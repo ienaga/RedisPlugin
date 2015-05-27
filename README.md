@@ -181,7 +181,7 @@ $yml = yaml_parse_file(XXX.yml);
 
 ~~~
 /**
- * Database connection is created based in the parameters defined in the configuration file
+ * Database connection
  */
 
 use Phalcon\Db\Adapter\Pdo\Mysql as DbAdapter;
@@ -214,7 +214,7 @@ foreach ($config->get('database') as $db => $arguments)
 
 
 /**
- * If the configuration specify the use of metadata adapter use it or use memory otherwise
+ * modelsMetadata
  */
 $di->set('modelsMetadata', function () { return new \RedisPlugin\MetaData(); });
 
@@ -390,7 +390,6 @@ use \RedisPlugin\RedisDb;
 ## autoIndex
 ~~~
 ※autoIndexをtrueにする事で、indexに一番マッチするクエリに並び替えて発行します。
-and by making the autoIndex to true, the issue is rearranged to best to match queries to index.
 
     e.g. PRIMARY = type, INDEX = id, status_number
 
