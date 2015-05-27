@@ -119,6 +119,7 @@ stg:
     default:
       name: db
       expire: 3600
+      autoIndex: true
     prefix:
       columns: column, column, column
 

@@ -776,48 +776,51 @@ class RedisDb
      */
     public static function _createKey($parameters, $model)
     {
+
         if (!is_array($parameters) || !isset($parameters['where']))
             throw new Exception('Error Not Found where or String');
 
-        /** @var \Phalcon\Db\Index[] $indexes */
-        $indexes = $model->getModelsMetaData()->readIndexes($model->getSource());
-
         $params = $parameters['where'];
 
+
         $indexParams = array();
-
-        // indexがあれば並べなおす
-        if ($indexes) {
-
-            foreach ($indexes as $index) {
-
-                $columns = $index->getColumns();
-
-                if (!isset($params[$columns[0]]))
-                    continue;
-
-                foreach ($columns as $column) {
-                    if (!isset($params[$column]))
-                        break;
-
-                    $indexParams[$column] = $params[$column];
-                    unset($params[$column]);
-                }
-
-                break;
-            }
-
-        }
-
-        $indexParams = array_merge($indexParams, $params);
-
         $where = array();
-
+        $keys = array();
         $bind  = isset($parameters['bind']) ? $parameters['bind'] : array();
 
-        $keys = array();
+        // 一番マッチするindexにあわせてクエリを発行
+        if (self::getConfig()->get('default')->get('autoIndex')) {
+            /** @var \Phalcon\Db\Index[] $indexes */
+            $indexes = $model->getModelsMetaData()->readIndexes($model->getSource());
 
-        foreach ($indexParams as $column => $value) {
+            if ($indexes) {
+
+                foreach ($indexes as $index) {
+
+                    $columns = $index->getColumns();
+
+                    if (!isset($params[$columns[0]]))
+                        continue;
+
+                    $chkParams = array();
+                    foreach ($columns as $column) {
+                        if (!isset($params[$column]))
+                            break;
+
+                        $chkParams[$column] = $params[$column];
+                    }
+
+                    if (count($chkParams) > count($indexParams)) {
+                        $indexParams = $chkParams;
+                    }
+                }
+            }
+
+            $params = array_merge($indexParams, $params);
+        }
+
+        // クエリを発行
+        foreach ($params as $column => $value) {
 
             if (count($aliased = explode('.', $column)) > 1) {
                 $named_place = $aliased[1];

@@ -16,6 +16,11 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
     const EXPIRE = 3600;
 
     /**
+     * @var string
+     */
+    const INDEXES_KEY = 'meta-indexes-%s';
+
+    /**
      * @var array
      */
     protected $options = array();
@@ -25,6 +30,7 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
      */
     protected $_cache = array();
 
+
     /**
      * @param array $options
      */
@@ -32,6 +38,7 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
     {
 
         if (!$options) {
+
             $configs = \Phalcon\DI::getDefault()
                 ->get('config')
                 ->get('redis')
@@ -80,7 +87,8 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
     public function read($key)
     {
         if (!isset($this->_cache[$key]))
-            $this->_cache[$key] = $this->getRedis()->hGet(self::CACHE_KEY, $key);
+            $this->_cache[$key] =
+                $this->getRedis()->hGet(self::CACHE_KEY, $key);
 
         return ($this->_cache[$key]) ? $this->_cache[$key] : null;
     }
@@ -126,7 +134,7 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
         $model = new $class;
         $indexes = $model->getReadConnection()->describeIndexes($source);
 
-        $cacheKey = $source . '-index';
+        $cacheKey = $this->getIndexesKey($source);
 
         $this->getRedis()->hSet(self::CACHE_KEY, $cacheKey, $indexes);
 
@@ -134,17 +142,27 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
     }
 
     /**
-     * @param  string $key
+     * @param  string $source
      * @return null
      */
-    public function readIndexes($key)
+    public function readIndexes($source)
     {
-        $key .= '-index';
+        $cacheKey = $this->getIndexesKey($source);
 
-        if (!isset($this->_cache[$key]))
-            $this->_cache[$key] = $this->getRedis()->hGet(self::CACHE_KEY, $key);
+        if (!isset($this->_cache[$cacheKey]))
+            $this->_cache[$cacheKey] =
+                $this->getRedis()->hGet(self::CACHE_KEY, $cacheKey);
 
-        return ($this->_cache[$key]) ? $this->_cache[$key] : null;
+        return ($this->_cache[$cacheKey]) ? $this->_cache[$cacheKey] : null;
+    }
+
+    /**
+     * @param  string $source
+     * @return string
+     */
+    public function getIndexesKey($source)
+    {
+        return sprintf(self::INDEXES_KEY, $source);
     }
 
     /**
