@@ -20,15 +20,6 @@ extension=yaml.so
 ~~~
 
 
-## Phalcon services.php
-~~~
-/**
- * If the configuration specify the use of metadata adapter use it or use memory otherwise
- */
-$di->set('modelsMetadata', function () { return new \RedisPlugin\MetaData(); });
-~~~
-
-
 ## Phalcon YAML [database.yml]
 
 ~~~
@@ -220,7 +211,16 @@ foreach ($config->get('database') as $db => $arguments)
 
     }
 }
+
+
+/**
+ * If the configuration specify the use of metadata adapter use it or use memory otherwise
+ */
+$di->set('modelsMetadata', function () { return new \RedisPlugin\MetaData(); });
+
+
 ~~~
+
 
 ## findFirst | find
 ~~~
