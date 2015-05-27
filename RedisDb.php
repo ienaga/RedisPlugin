@@ -103,6 +103,7 @@ class RedisDb
         self::setModel($model);
 
         $configName  = self::getConnectionName($memberId);
+        $configName .= (self::isCommon($model)) ? 'Common' : '';
         $configName .= (self::isTransaction()) ? 'Master' : 'Slave';
 
         $model->setReadConnectionService($configName);
@@ -522,11 +523,7 @@ class RedisDb
      */
     public static function connect($model, $prefix)
     {
-        if (!self::isCommon($model)) {
-            RedisDb::setCon($model, !self::isAdmin($model) ? $prefix : null);
-        } else {
-            RedisDb::setCommon($model);
-        }
+        RedisDb::setCon($model, !self::isCommon($model) && !self::isAdmin($model) ? $prefix : null);
 
         // reset
         self::setModel($model);
