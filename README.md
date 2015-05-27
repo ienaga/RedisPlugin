@@ -333,13 +333,13 @@ use \RedisPlugin\Criteria;
     $criteria = new Criteria(new self);
     return $criteria
         ->add('id', $id)
-        ->add('status_number', self::AVAILABLE)
+        ->add('status_number', $status)
         ->findFirst();
 
     $criteria = new Criteria(new self);
     return $criteria
         ->add('id', $id)
-        ->add('status_number', self::AVAILABLE)
+        ->add('status_number', $status)
         ->find();
 
     LIMIT | ORDER BY | GROUP BY
@@ -347,7 +347,7 @@ use \RedisPlugin\Criteria;
     return $criteria
         ->add('id', $id)
         ->add('type', $type)
-        ->add('status_number', self::AVAILABLE)
+        ->add('status_number', $status)
         ->limit(10)
         ->order('id DESC')
         ->group('type')
@@ -356,13 +356,13 @@ use \RedisPlugin\Criteria;
     IN
     return $criteria
         ->add('id', array(1,2,6), Criteria::IN)
-        ->add('status_number', self::AVAILABLE)
+        ->add('status_number', $status)
         ->find();
 
     BETWEEN
     return $criteria
         ->add('id', array(1, 20), Criteria::BETWEEN)
-        ->add('status_number', self::AVAILABLE)
+        ->add('status_number', $status)
         ->find();
 ~~~
 
@@ -376,3 +376,34 @@ use \RedisPlugin\RedisDb;
     $model->setStatus(1);
     RedisDb::save($model);
 ~~~
+
+
+## autoIndex
+~~~
+※autoIndexをtrueにする事で、indexに一番マッチするクエリに並び替えて発行します。
+and by making the autoIndex to true, the issue is rearranged to best to match queries to index.
+
+    e.g. PRIMARY = type, INDEX = id, status_number
+    $criteria = new Criteria(new self);
+    return $criteria
+        ->limit(10)
+        ->add('type', $type)
+        ->group('type')
+        ->add('id', $id)
+        ->order('id DESC')
+        ->add('status_number', $status)
+        ->find();
+
+    ↓
+
+    SELECT * FROM `table`
+    WHERE `id` = :id:
+    AND `status_number` = :status:
+    AND `type` = :type:
+    GROUP BY `type`
+    ORDER BY `id` DESC
+    LIMIT 10
+
+
+~~~
+
