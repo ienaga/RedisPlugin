@@ -57,6 +57,7 @@ class RedisDb
     public static function save($model, $data = null, $whiteList = null)
     {
         self::setPrefix($model);
+
         self::connect($model, self::getPrefix());
 
         $model->setTransaction(self::getTransaction(self::getPrefix()));
@@ -590,10 +591,21 @@ class RedisDb
 
             $property = trim($column);
 
-            if (!property_exists($model, $property) || !$keys || !isset($keys[$property]))
-                continue;
+            if ($keys) {
 
-            self::$hashPrefix = (!$keys) ? $model->{$property} : $keys[$property];
+                if (!isset($keys[$property]))
+                    continue;
+
+                self::$hashPrefix = $keys[$property];
+
+            } else {
+
+                if (!property_exists($model, $property))
+                    continue;
+
+                self::$hashPrefix = $model->{$property};
+
+            }
 
             break;
 
