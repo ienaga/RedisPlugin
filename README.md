@@ -369,6 +369,8 @@ use \RedisPlugin\Criteria;
 
 ## save
 ~~~
+use \RedisPlugin\RedisDb;
+
     $model = new self;
     $model->setMemberId($memberId);
     $model->setStatus(1);
