@@ -59,8 +59,7 @@ class RedisDb
         self::setPrefix($model);
         self::connect($model, self::getPrefix());
 
-        $prefix = (self::isCommon($model) || self::isAdmin($model)) ? null : self::getPrefix();
-        $model->setTransaction(self::getTransaction($prefix));
+        $model->setTransaction(self::getTransaction(self::getPrefix()));
 
         if (!$model->save($data, $whiteList))
             RedisDb::outputErrorMessage($model);
@@ -361,7 +360,6 @@ class RedisDb
 
         self::connect($model, self::getPrefix());
 
-
         $key = self::_generateFindKey($parameters);
         unset($parameters['keys']);
 
@@ -519,15 +517,20 @@ class RedisDb
 
     /**
      * @param \Phalcon\Mvc\Model $model
-     * @param $prefix
+     * @param mixed $prefix
      */
-    public static function connect($model, $prefix)
+    public static function connect($model, $prefix = null)
     {
-        RedisDb::setCon($model, !self::isCommon($model) && !self::isAdmin($model) ? $prefix : null);
+        $_prefix = $prefix;
+        if ($prefix) {
+            $prefix = (!self::isCommon($model) && !self::isAdmin($model)) ? $prefix : null;
+        }
+
+        RedisDb::setCon($model, $prefix);
 
         // reset
         self::setModel($model);
-        self::$hashPrefix = $prefix;
+        self::$hashPrefix = $_prefix;
     }
 
     /**
