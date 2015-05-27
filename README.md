@@ -224,6 +224,9 @@ $di->set('modelsMetadata', function () { return new \RedisPlugin\MetaData(); });
 
 ## findFirst | find
 ~~~
+use \RedisPlugin\RedisDb;
+use \RedisPlugin\Criteria;
+
     EQUAL
     ------------------
     return RedisDb::findFirst(array(
@@ -323,6 +326,10 @@ $di->set('modelsMetadata', function () { return new \RedisPlugin\MetaData(); });
 
 ## Criteria
 ~~~
+use \RedisPlugin\RedisDb;
+use \RedisPlugin\Criteria;
+
+
     $criteria = new Criteria(new self);
     return $criteria
         ->add('id', $id)
