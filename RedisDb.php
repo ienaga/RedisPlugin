@@ -1,8 +1,11 @@
 <?php
 
+
 namespace RedisPlugin;
 
+
 use \Exception;
+
 
 class RedisDb
 {

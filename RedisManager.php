@@ -1,16 +1,11 @@
 <?php
-/**
- * RedisManager.php
- *
- * @copyright   Copyright (c) 2013 sonicmoov Co.,Ltd.
- * @package
- * @subpackage
- * @version     $Id$
- */
+
 
 namespace RedisPlugin;
 
+
 use \Redis;
+
 
 class RedisManager
 {
@@ -81,7 +76,7 @@ class RedisManager
 
 
         self::$redis = $this->connections[$key];
-        self::$redis->select($select);
+        $this->getRedis()->select($select);
 
         return $this;
     }
@@ -99,6 +94,14 @@ class RedisManager
         return $redis;
     }
 
+    /**
+     * @return null|Redis
+     */
+    public function getRedis()
+    {
+        return self::$redis;
+    }
+
     # ----------------------------------------------------------------------------
     # KVS
     # ----------------------------------------------------------------------------
@@ -111,7 +114,7 @@ class RedisManager
      */
     public function get($key)
     {
-        return self::$redis->get($key);
+        return $this->getRedis()->get($key);
     }
 
     /**
@@ -122,16 +125,7 @@ class RedisManager
      */
     public function mGet($keys = array())
     {
-        return self::$redis->mGet($keys);
-    }
-
-    /**
-     * @param $key
-     * @return mixed
-     */
-    public function gets($key)
-    {
-        return self::$redis->keys($key);
+        return $this->getRedis()->mGet($keys);
     }
 
     /**
@@ -144,7 +138,7 @@ class RedisManager
      */
     public function set($key, $value, $expire = -1)
     {
-        return self::$redis->set($key, $expire, $value);
+        return $this->getRedis()->set($key, $value, $expire);
     }
 
     /**
@@ -156,18 +150,18 @@ class RedisManager
      */
     public function exists($key, $expire = -1)
     {
-        return self::$redis->exists($key, $expire);
+        return $this->getRedis()->exists($key, $expire);
     }
 
     /**
      * delete
      *
-     * @param  string $key
+     * @param  mixed $key
      * @return bool
      */
     public function delete($key)
     {
-        return self::$redis->delete($key);
+        return $this->getRedis()->delete($key);
     }
 
     /**
@@ -179,7 +173,7 @@ class RedisManager
      */
     public function incr($key, $value)
     {
-        return self::$redis->incr($key, $value);
+        return $this->getRedis()->incr($key, $value);
     }
 
     /**
@@ -191,7 +185,7 @@ class RedisManager
      */
     public function decr($key, $value)
     {
-        return self::$redis->decr($key, $value);
+        return $this->getRedis()->decr($key, $value);
     }
 
     /**
@@ -203,7 +197,7 @@ class RedisManager
      */
     public function setTimeout($key, $time)
     {
-        return self::$redis->setTimeout($key, $time);
+        return $this->getRedis()->setTimeout($key, $time);
     }
 
     /**
@@ -212,7 +206,7 @@ class RedisManager
      */
     public function getTtl($key)
     {
-        return self::$redis->ttl($key);
+        return $this->getRedis()->ttl($key);
     }
 
 
@@ -224,7 +218,7 @@ class RedisManager
      */
     public function isTimeout($key)
     {
-        return (self::$redis->ttl($key) > 0);
+        return ($this->getTtl($key) > 0);
     }
 
     # ----------------------------------------------------------------------------
@@ -240,7 +234,7 @@ class RedisManager
      */
     public function rPush($key, $value)
     {
-        return self::$redis->rPush($key, $value);
+        return $this->getRedis()->rPush($key, $value);
     }
 
     /**
@@ -252,7 +246,7 @@ class RedisManager
      */
     public function lPush($key, $value)
     {
-        return self::$redis->rPush($key, $value);
+        return $this->getRedis()->lPush($key, $value);
     }
 
     /**
@@ -263,7 +257,7 @@ class RedisManager
      */
     public function lLen($key)
     {
-        return self::$redis->lLen($key);
+        return $this->getRedis()->lLen($key);
     }
 
 
@@ -282,7 +276,7 @@ class RedisManager
      */
     public function hSet($key, $filed, $value)
     {
-        return self::$redis->hSet($key, $filed, $value);
+        return $this->getRedis()->hSet($key, $filed, $value);
     }
 
     /**
@@ -294,7 +288,7 @@ class RedisManager
      */
     public function hGet($key, $filed)
     {
-        return self::$redis->hGet($key, $filed);
+        return $this->getRedis()->hGet($key, $filed);
     }
 
     /**
@@ -306,7 +300,7 @@ class RedisManager
      */
     public function hDel($key, $filed)
     {
-        return self::$redis->hDel($key, $filed);
+        return $this->getRedis()->hDel($key, $filed);
     }
 
     /**
@@ -315,7 +309,7 @@ class RedisManager
      */
     public function hLen($key)
     {
-        return self::$redis->hLen($key);
+        return $this->getRedis()->hLen($key);
     }
 
     /**
@@ -324,7 +318,7 @@ class RedisManager
      */
     public function hKeys($key)
     {
-        return self::$redis->hKeys($key);
+        return $this->getRedis()->hKeys($key);
     }
 
     /**
@@ -333,7 +327,7 @@ class RedisManager
      */
     public function hVals($key)
     {
-        return self::$redis->hVals($key);
+        return $this->getRedis()->hVals($key);
     }
 
     /**
@@ -344,7 +338,7 @@ class RedisManager
     {
         $results = array();
 
-        $array = self::$redis->hGetAll($key);
+        $array = $this->getRedis()->hGetAll($key);
         foreach($array as $key => $value){
             $results[$key] = $value;
         }
@@ -365,7 +359,7 @@ class RedisManager
      */
     public function sAdd($key, $value)
     {
-        return self::$redis->sAdd($key, $value);
+        return $this->getRedis()->sAdd($key, $value);
     }
 
     /**
@@ -376,7 +370,7 @@ class RedisManager
      */
     public function sMembers($key)
     {
-        return self::$redis->sMembers($key);
+        return $this->getRedis()->sMembers($key);
     }
 
 
@@ -389,7 +383,7 @@ class RedisManager
      */
     public function sRandMember($key, $count = null)
     {
-        return self::$redis->sRandMember($key, $count);
+        return $this->getRedis()->sRandMember($key, $count);
     }
 
     /**
@@ -401,7 +395,7 @@ class RedisManager
      */
     public function sRem($key, $value)
     {
-        return self::$redis->sRem($key, $value);
+        return $this->getRedis()->sRem($key, $value);
     }
 
 
@@ -419,7 +413,7 @@ class RedisManager
      */
     public function zAdd($key, $score, $userId)
     {
-        return self::$redis->zAdd($key, $score, $userId);
+        return $this->getRedis()->zAdd($key, $score, $userId);
     }
 
     /**
@@ -430,7 +424,7 @@ class RedisManager
      */
     public function zScore($key, $userId)
     {
-        return self::$redis->zScore($key, $userId);
+        return $this->getRedis()->zScore($key, $userId);
     }
 
     /**
@@ -442,7 +436,7 @@ class RedisManager
      */
     public function zCount($key, $score, $option = '+inf')
     {
-        return self::$redis->zCount($key, $score, $option);
+        return $this->getRedis()->zCount($key, $score, $option);
     }
 
     /**
@@ -467,7 +461,7 @@ class RedisManager
      */
     public function zRank($key, $userId)
     {
-        return self::$redis->zRank($key, $userId);
+        return $this->getRedis()->zRank($key, $userId);
     }
 
     /**
@@ -493,7 +487,7 @@ class RedisManager
      */
     public function zRevRange($key, $offset = 0, $limit = -1, $bool = true)
     {
-        return self::$redis->zRevRange($key, $offset, $limit, $bool);
+        return $this->getRedis()->zRevRange($key, $offset, $limit, $bool);
     }
 
 
@@ -506,7 +500,7 @@ class RedisManager
      */
     public function beginTransaction()
     {
-        self::$redis->multi();
+        $this->getRedis()->multi();
     }
 
     /**
@@ -516,7 +510,7 @@ class RedisManager
      */
     public function commit()
     {
-        return self::$redis->exec();
+        return $this->getRedis()->exec();
     }
 
     /**
@@ -526,7 +520,7 @@ class RedisManager
      */
     public function rollback()
     {
-        return self::$redis->discard();
+        return $this->getRedis()->discard();
     }
 
     /**
