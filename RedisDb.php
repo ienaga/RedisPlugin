@@ -608,7 +608,6 @@ class RedisDb
             }
 
             break;
-
         }
     }
 
