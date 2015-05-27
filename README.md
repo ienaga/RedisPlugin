@@ -235,7 +235,7 @@ $di->set('modelsMetadata', function () { return new \RedisPlugin\MetaData(); });
 use \RedisPlugin\RedisDb;
 use \RedisPlugin\Criteria;
 
-    EQUAL
+    ■EQUAL
     ------------------
     return RedisDb::findFirst(array(
         'where' => array(
@@ -252,7 +252,8 @@ use \RedisPlugin\Criteria;
     ), new self);
     ------------------
 
-    IN
+
+    ■IN
     ------------------
     return RedisDb::findFirst(array(
         'where' => array(
@@ -269,7 +270,8 @@ use \RedisPlugin\Criteria;
     ), new self);
     ------------------
 
-    IS NULL
+
+    ■IS NULL
     ------------------
     return RedisDb::findFirst(array(
         'where' => array(
@@ -287,7 +289,6 @@ use \RedisPlugin\Criteria;
     ------------------
 
 
-    OPERATOR
     ▼OPERATOR LIST
     ------------------
       Criteria::EQUAL = '=';
@@ -305,7 +306,8 @@ use \RedisPlugin\Criteria;
       Criteria::BETWEEN = 'BETWEEN';
     ------------------
 
-    NOT_EQUAL
+    ■NOT_EQUAL
+    ------------------
     return RedisDb::findFirst(array(
         'where' => array(
             'member_id' => array(
@@ -315,8 +317,11 @@ use \RedisPlugin\Criteria;
             'status_number' => 1
         )
     ), new self);
+    ------------------
 
-    NOT_IN
+
+    ■NOT_IN
+    ------------------
     return RedisDb::find(array(
         'where' => array(
             'member_id' => array(
@@ -326,8 +331,11 @@ use \RedisPlugin\Criteria;
             'status_number' => 1
         )
     ), new self);
+    ------------------
 
-    BETWEEN
+
+    ■BETWEEN
+    ------------------
     return RedisDb::find(array(
         'where' => array(
             'member_id' => array(
@@ -337,6 +345,7 @@ use \RedisPlugin\Criteria;
             'status_number' => 1
         )
     ), new self);
+    ------------------
 
 ~~~
 
@@ -346,20 +355,28 @@ use \RedisPlugin\Criteria;
 use \RedisPlugin\RedisDb;
 use \RedisPlugin\Criteria;
 
-
+    ■findFirst
+    ------------------
     $criteria = new Criteria(new self);
     return $criteria
         ->add('id', $id)
         ->add('status_number', $status)
         ->findFirst();
+    ------------------
 
+
+    ■find
+    ------------------
     $criteria = new Criteria(new self);
     return $criteria
         ->add('id', $id)
         ->add('status_number', $status)
         ->find();
+    ------------------
 
-    LIMIT | ORDER BY | GROUP BY
+
+    ■LIMIT | ORDER BY | GROUP BY
+    ------------------
     $criteria = new Criteria(new self);
     return $criteria
         ->add('id', $id)
@@ -369,18 +386,27 @@ use \RedisPlugin\Criteria;
         ->order('id DESC')
         ->group('type')
         ->find();
+    ------------------
 
-    IN
+
+    ■IN
+    ------------------
     return $criteria
         ->add('id', array(1,2,6), Criteria::IN)
         ->add('status_number', $status)
         ->find();
+    ------------------
 
-    BETWEEN
+
+    ■BETWEEN
+    ------------------
     return $criteria
         ->add('id', array(1, 20), Criteria::BETWEEN)
         ->add('status_number', $status)
         ->find();
+    ------------------
+
+    
 ~~~
 
 
