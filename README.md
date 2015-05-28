@@ -229,225 +229,222 @@ $di->set('modelsMetadata', function () { return new \RedisPlugin\MetaData(); });
 
 ~~~
 
+## find | findFirst 簡易版
 
-## findFirst | find
 ~~~
+<php
+
+use \RedisPlugin\RedisDb;
+
+class Robot extends \Phalcon\Mvc\Model
+{
+
+    /**
+     * @param  int    $id
+     * @param  string $type
+     * @return Robot
+     */
+    public static function findFirst($id, $type)
+    {
+        return RedisDb::findFirst(array(
+            'where' => array(
+                'id' => $id,
+                'type' => $type
+            )
+        ), new self);
+    }
+
+    /**
+     * @param  int    $id
+     * @param  string $type
+     * @return Robot[]
+     */
+    public static function find($id, $type)
+    {
+        return RedisDb::find(array(
+            'where' => array(
+                'id' => $id,
+                'type' => $type
+            )
+        ), new self);
+    }
+}
+
+~~~
+
+
+## find | findFirst 比較演算子
+
+~~~
+<php
+
 use \RedisPlugin\RedisDb;
 use \RedisPlugin\Criteria;
 
-    ■EQUAL
-    ------------------
-    return RedisDb::findFirst(array(
-        'where' => array(
-            'member_id' => $memberId,
-            'status_number' => 1
-        )
-    ), new self);
-
-    return RedisDb::find(array(
-        'where' => array(
-            'member_id' => $memberId,
-            'status_number' => 1
-        )
-    ), new self);
-    ------------------
-
-
-    ■IN
-    ------------------
-    return RedisDb::findFirst(array(
-        'where' => array(
-            'member_id' => array(1, 3, 6),
-            'status_number' => 1
-        )
-    ), new self);
-
-    return RedisDb::find(array(
-        'where' => array(
-            'member_id' => array(1, 3, 6),
-            'status_number' => 1
-        )
-    ), new self);
-    ------------------
+class Robot extends \Phalcon\Mvc\Model
+{
+    // LIST
+    // Criteria::EQUAL = '=';
+    // Criteria::NOT_EQUAL = '<>';
+    // Criteria::GREATER_THAN = '>';
+    // Criteria::LESS_THAN = '<';
+    // Criteria::GREATER_EQUAL = '>=';
+    // Criteria::LESS_EQUAL = '<=';
+    // Criteria::IS_NULL = 'IS NULL';
+    // Criteria::IS_NOT_NULL = 'IS NOT NULL';
+    // Criteria::LIKE = 'LIKE';
+    // Criteria::I_LIKE = 'ILIKE';
+    // Criteria::IN = 'IN';
+    // Criteria::NOT_IN = 'NOT IN';
+    // Criteria::BETWEEN = 'BETWEEN';
 
 
-    ■IS NULL
-    ------------------
-    return RedisDb::findFirst(array(
-        'where' => array(
-            'member_id' => null,
-            'status_number' => 1
-        )
-    ), new self);
-
-    return RedisDb::find(array(
-        'where' => array(
-            'member_id' => null,
-            'status_number' => 1
-        )
-    ), new self);
-    ------------------
+    public static function in($id, $type)
+    {
+        return RedisDb::findFirst(array(
+            'where' => array(
+                'id' => array(
+                    'operator' => Criteria::IN,
+                    'value' => array(1,6,10)
+                ),
+                'type' => $type
+            )
+        ), new self);
+    }
 
 
-    ▼OPERATOR LIST
-    ------------------
-      Criteria::EQUAL = '=';
-      Criteria::NOT_EQUAL = '<>';
-      Criteria::GREATER_THAN = '>';
-      Criteria::LESS_THAN = '<';
-      Criteria::GREATER_EQUAL = '>=';
-      Criteria::LESS_EQUAL = '<=';
-      Criteria::IS_NULL = 'IS NULL';
-      Criteria::IS_NOT_NULL = 'IS NOT NULL';
-      Criteria::LIKE = 'LIKE';
-      Criteria::I_LIKE = 'ILIKE';
-      Criteria::IN = 'IN';
-      Criteria::NOT_IN = 'NOT IN';
-      Criteria::BETWEEN = 'BETWEEN';
-    ------------------
-
-    ■NOT_EQUAL
-    ------------------
-    return RedisDb::findFirst(array(
-        'where' => array(
-            'member_id' => array(
-                'operator' => Criteria::NOT_EQUAL,
-                'value' => 1
-            ),
-            'status_number' => 1
-        )
-    ), new self);
-    ------------------
+    public static function not_in($id, $type)
+    {
+        return RedisDb::find(array(
+            'where' => array(
+                'id' => array(
+                    'operator' => Criteria::NOT_IN,
+                    'value' => array(1,6,10)
+                ),
+                'type' => $type
+            )
+        ), new self);
+    }
 
 
-    ■NOT_IN
-    ------------------
-    return RedisDb::find(array(
-        'where' => array(
-            'member_id' => array(
-                'operator' => Criteria::NOT_IN,
-                'value' => array(1, 2, 5)
-            ),
-            'status_number' => 1
-        )
-    ), new self);
-    ------------------
-
-
-    ■BETWEEN
-    ------------------
-    return RedisDb::find(array(
-        'where' => array(
-            'member_id' => array(
-                'operator' => Criteria::BETWEEN,
-                'value' => array(1, 2)
-            ),
-            'status_number' => 1
-        )
-    ), new self);
-    ------------------
+    public static function between($start, $end)
+    {
+        return RedisDb::findFirst(array(
+            'where' => array(
+                'id' => array(
+                    'operator' => Criteria::BETWEEN,
+                    'value' => array($start, $end)
+                ),
+                'type' => $type
+            )
+        ), new self);
+    }
+}
 
 ~~~
 
 
 ## Criteria
+
 ~~~
+<php
+
 use \RedisPlugin\RedisDb;
 use \RedisPlugin\Criteria;
 
-    ■findFirst
-    ------------------
-    $criteria = new Criteria(new self);
-    return $criteria
-        ->add('id', $id)
-        ->add('status_number', $status)
-        ->findFirst();
-    ------------------
+class Robot extends \Phalcon\Mvc\Model
+{
 
+    public static function findFirst($id, $type)
+    {
+        $criteria = new Criteria(new self);
+        return $criteria
+            ->add('id', $id)
+            ->add('type', $type, Criteria::NOT_EQUAL)
+            ->group('type')
+            ->findFirst();
+    }
 
-    ■find
-    ------------------
-    $criteria = new Criteria(new self);
-    return $criteria
-        ->add('id', $id)
-        ->add('status_number', $status)
-        ->find();
-    ------------------
+    public static function find($id, $start, $end)
+    {
+        $criteria = new Criteria(new self);
+         return $criteria
+            ->add('id', array($id), Criteria::IN)
+            ->add('type', array($start, $end), Criteria::BETWEEN)
+            ->limit(10, 30)
+            ->order('type DESC')
+            ->find();
+    }
+}
 
-
-    ■LIMIT | ORDER BY | GROUP BY
-    ------------------
-    $criteria = new Criteria(new self);
-    return $criteria
-        ->add('id', $id)
-        ->add('type', $type)
-        ->add('status_number', $status)
-        ->limit(10)
-        ->order('id DESC')
-        ->group('type')
-        ->find();
-    ------------------
-
-
-    ■IN
-    ------------------
-    return $criteria
-        ->add('id', array(1,2,6), Criteria::IN)
-        ->add('status_number', $status)
-        ->find();
-    ------------------
-
-
-    ■BETWEEN
-    ------------------
-    return $criteria
-        ->add('id', array(1, 20), Criteria::BETWEEN)
-        ->add('status_number', $status)
-        ->find();
-    ------------------
-
-    
 ~~~
 
 
 ## save
+
 ~~~
+<php
+
 use \RedisPlugin\RedisDb;
 
-    $model = new self;
-    $model->setMemberId($memberId);
-    $model->setStatus(1);
-    RedisDb::save($model);
+class Robot extends \Phalcon\Mvc\Model
+{
+    /**
+     * @param  int    $id
+     * @param  string $type
+     * @return Robot
+     */
+    public static function insert($id, $type)
+    {
+        $robot= new Robot;
+        $robot->setId($id);
+        $robot->setType($type);
+        return RedisDb::save($robot);
+    }
+}
+
 ~~~
 
 
 ## autoIndex
-~~~
-※autoIndexをtrueにする事で、indexに一番マッチするクエリに並び替えて発行します。
 
+※autoIndexをtrueにする事で、PRIMARYもしくはINDEXに一番マッチするクエリに並び替えて発行。
+
+~~~
+
+<php
+
+use \RedisPlugin\RedisDb;
 use \RedisPlugin\Criteria;
 
-    e.g. PRIMARY = type, INDEX = id, status_number
+class Robot extends \Phalcon\Mvc\Model
+{
+    // e.g. PRIMARY = type, INDEX = id, status
 
-    $criteria = new Criteria(new self);
-    return $criteria
-        ->limit(10)
-        ->add('type', $type)
-        ->group('type')
-        ->add('id', $id)
-        ->order('id DESC')
-        ->add('status_number', $status)
-        ->find();
+    public static function find($id, $status, $name)
+    {
+        $criteria = new Criteria(new self);
+        return $criteria
+            ->limit(10)
+            ->add('name', $name)
+            ->group('type')
+            ->add('id', $id)
+            ->order('id DESC')
+            ->add('status', $status)
+            ->find();
 
-    ↓
-
-    SELECT * FROM `table`
-    WHERE `id` = :id:
-    AND `status_number` = :status:
-    AND `type` = :type:
-    GROUP BY `type`
-    ORDER BY `id` DESC
-    LIMIT 10
+        /**
+         * この場合、INDEXにマッチしたカラムの数が多いのでINDEXにあわせて発行する
+         * SELECT * FROM `table`
+         * WHERE `id` = :id:
+         * AND `status_number` = :status:
+         * AND `type` = :type:
+         * GROUP BY `type`
+         * ORDER BY `id` DESC
+         * LIMIT 10
+         */
+    }
+}
 
 
 ~~~

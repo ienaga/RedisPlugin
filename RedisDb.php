@@ -720,7 +720,7 @@ class RedisDb
 
             if ($indexes) {
 
-                foreach ($indexes as $index) {
+                foreach ($indexes as $key => $index) {
 
                     $columns = $index->getColumns();
 
@@ -738,6 +738,10 @@ class RedisDb
                     if (count($chkParams) > count($indexParams)) {
                         $indexParams = $chkParams;
                     }
+
+                    // PRIMARY優先
+                    if ($key === 0)
+                        break;
                 }
             }
 
