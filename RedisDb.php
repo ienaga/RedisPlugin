@@ -702,10 +702,10 @@ class RedisDb
     public static function _createKey($parameters, $model)
     {
 
-        if (!is_array($parameters) || !isset($parameters['where']))
-            throw new Exception('Error Not Found where or String');
+        if (!is_array($parameters) || !isset($parameters['query']))
+            throw new Exception('Error Not Found query is array');
 
-        $params = $parameters['where'];
+        $query = $parameters['query'];
 
 
         $indexParams = array();
@@ -713,8 +713,9 @@ class RedisDb
         $keys = array();
         $bind  = isset($parameters['bind']) ? $parameters['bind'] : array();
 
-        // 一番マッチするindexにあわせてクエリを発行
+        // 一番マッチするindexにあわせてクエリを発行(PRIMARY優先)
         if (self::getConfig()->get('default')->get('autoIndex')) {
+
             /** @var \Phalcon\Db\Index[] $indexes */
             $indexes = $model->getModelsMetaData()->readIndexes($model->getSource());
 
@@ -724,15 +725,15 @@ class RedisDb
 
                     $columns = $index->getColumns();
 
-                    if (!isset($params[$columns[0]]))
+                    if (!isset($query[$columns[0]]))
                         continue;
 
                     $chkParams = array();
                     foreach ($columns as $column) {
-                        if (!isset($params[$column]))
+                        if (!isset($query[$column]))
                             break;
 
-                        $chkParams[$column] = $params[$column];
+                        $chkParams[$column] = $query[$column];
                     }
 
                     if (count($chkParams) > count($indexParams)) {
@@ -745,11 +746,11 @@ class RedisDb
                 }
             }
 
-            $params = array_merge($indexParams, $params);
+            $query = array_merge($indexParams, $query);
         }
 
         // クエリを発行
-        foreach ($params as $column => $value) {
+        foreach ($query as $column => $value) {
 
             if (count($aliased = explode('.', $column)) > 1) {
                 $named_place = $aliased[1];
@@ -761,7 +762,6 @@ class RedisDb
 
             if (is_array($value)) {
 
-                // where句で"="以外のオペレータを利用する為の拡張
                 if (isset($value['operator'])) {
                     $operator  = $value['operator'];
                     $bindValue = $value['value'];
@@ -877,7 +877,7 @@ class RedisDb
 
         }
 
-        unset($parameters['where']);
+        unset($parameters['query']);
 
         return $parameters;
     }

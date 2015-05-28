@@ -24,7 +24,7 @@ class Criteria
     /**
      * @var array
      */
-    private $conditions = array('where' => array());
+    private $conditions = array('query' => array());
 
     /**
      * @var null
@@ -56,7 +56,7 @@ class Criteria
      */
     public function add($column, $value, $operator = self::EQUAL)
     {
-        $this->conditions['where'][$column] = array(
+        $this->conditions['query'][$column] = array(
             'operator' => $operator,
             'value' => $value
         );

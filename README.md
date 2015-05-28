@@ -247,7 +247,7 @@ class Robot extends \Phalcon\Mvc\Model
     public static function findFirst($id, $type)
     {
         return RedisDb::findFirst(array(
-            'where' => array(
+            'query' => array(
                 'id' => $id,
                 'type' => $type
             )
@@ -262,7 +262,7 @@ class Robot extends \Phalcon\Mvc\Model
     public static function find($id, $type)
     {
         return RedisDb::find(array(
-            'where' => array(
+            'query' => array(
                 'id' => $id,
                 'type' => $type
             )
@@ -302,7 +302,7 @@ class Robot extends \Phalcon\Mvc\Model
     public static function in($id, $type)
     {
         return RedisDb::findFirst(array(
-            'where' => array(
+            'query' => array(
                 'id' => array(
                     'operator' => Criteria::IN,
                     'value' => array(1,6,10)
@@ -316,7 +316,7 @@ class Robot extends \Phalcon\Mvc\Model
     public static function not_in($id, $type)
     {
         return RedisDb::find(array(
-            'where' => array(
+            'query' => array(
                 'id' => array(
                     'operator' => Criteria::NOT_IN,
                     'value' => array(1,6,10)
@@ -330,7 +330,7 @@ class Robot extends \Phalcon\Mvc\Model
     public static function between($start, $end)
     {
         return RedisDb::findFirst(array(
-            'where' => array(
+            'query' => array(
                 'id' => array(
                     'operator' => Criteria::BETWEEN,
                     'value' => array($start, $end)
