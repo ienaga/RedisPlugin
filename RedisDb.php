@@ -40,6 +40,16 @@ class RedisDb
     private static $hashPrefix = null;
 
     /**
+     * @var \Phalcon\Mvc\Model
+     */
+    private static $_configModel = null;
+
+    /**
+     * @var \Phalcon\Mvc\Model
+     */
+    private static $_adminModel = null;
+
+    /**
      * @param  null $memberId
      * @return \Phalcon\Mvc\Model\TransactionInterface
      */
@@ -64,6 +74,8 @@ class RedisDb
 
         if (!$model->save($data, $whiteList))
             RedisDb::outputErrorMessage($model);
+
+        self::addModels($model);
 
         return $model;
     }
@@ -108,9 +120,6 @@ class RedisDb
 
         $model->setReadConnectionService($configName);
 
-        if (self::isTransaction() && $memberId !== null)
-            self::addModels($memberId, $model);
-
         return $model;
     }
 
@@ -131,15 +140,11 @@ class RedisDb
     }
 
     /**
-     * @param $memberId
-     * @param $model
+     * @param \Phalcon\Mvc\Model $model
      */
-    public static function addModels($memberId, $model)
+    public static function addModels($model)
     {
-        if (!isset(self::$models[$memberId]))
-            self::$models[$memberId] = array();
-
-        self::$models[$memberId][] = $model;
+        self::$models[] = $model;
     }
 
     /**
@@ -316,10 +321,17 @@ class RedisDb
     {
         $config = self::getConfig()->get('shard');
 
-        $dbConfig = call_user_func(array(
-            $config->get('model'),
-            $config->get('method')
-        ), $dbId);
+        if (!self::$_configModel) {
+            $class = $config->get('model');
+            self::$_configModel = new $class;
+        }
+
+        $query = array();
+        $query[$config->get('primary')] = $dbId;
+
+        $dbConfig = self::findFirst(array(
+            'query' => $query
+        ), self::$_configModel);
 
         if ($dbConfig)
             return $dbConfig->{$config->get('column')};
@@ -336,10 +348,17 @@ class RedisDb
     {
         $config = self::getConfig()->get('admin');
 
-        $adminMember = call_user_func(array(
-            $config->get('model'),
-            $config->get('method')
-        ), $memberId);
+        if (!self::$_adminModel) {
+            $class = $config->get('model');
+            self::$_adminModel = new $class;
+        }
+
+        $query = array();
+        $query[$config->get('primary')] = $memberId;
+
+        $adminMember = self::findFirst(array(
+            'query' => $query
+        ), self::$_adminModel);
 
         if (!$adminMember)
             throw new Exception('Not Created Admin Member');
@@ -664,30 +683,14 @@ class RedisDb
     public static function autoClear()
     {
 
-        foreach (self::getModels() as $memberId => $models) {
+        foreach (self::getModels() as $model) {
 
-            /** @var \Phalcon\Mvc\Model[] $models */
-            foreach ($models as $model) {
+            self::setPrefix($model);
 
-                $model->setReadConnectionService(
-                    self::getConnectionName($memberId) . 'Master'
-                );
+            self::connect($model, self::getPrefix());
 
-                $source = $model->getSource();
-
-                self::setModel($model);
-
-                $redis = self::getRedis($model);
-                $redis->delete($source .'@'. $memberId);
-
-                if (method_exists($model, 'getId')) {
-                    $redis->delete($source .'@'. $model->getId());
-                }
-
-                if (method_exists($model, 'getSocialId')) {
-                    $redis->delete($source .'@'. $model->getSocialId());
-                }
-            }
+            $redis = self::getRedis($model);
+            $redis->delete(self::getHashKey($model));
         }
 
         self::$models = array();
@@ -703,12 +706,18 @@ class RedisDb
     {
 
         if (!is_array($parameters) || !isset($parameters['query']))
-            throw new Exception('Error Not Found query is array');
+            throw new Exception('Error Not Found parameters');
+
+
+        if (!isset($parameters['query'])) {
+
+        }
+
 
         $query = $parameters['query'];
 
 
-        $indexParams = array();
+        $indexQuery = array();
         $where = array();
         $keys = array();
         $bind  = isset($parameters['bind']) ? $parameters['bind'] : array();
@@ -728,16 +737,16 @@ class RedisDb
                     if (!isset($query[$columns[0]]))
                         continue;
 
-                    $chkParams = array();
+                    $chkQuery = array();
                     foreach ($columns as $column) {
                         if (!isset($query[$column]))
                             break;
 
-                        $chkParams[$column] = $query[$column];
+                        $chkQuery[$column] = $query[$column];
                     }
 
-                    if (count($chkParams) > count($indexParams)) {
-                        $indexParams = $chkParams;
+                    if (count($chkQuery) > count($indexQuery)) {
+                        $indexQuery = $chkQuery;
                     }
 
                     // PRIMARY優先
@@ -746,7 +755,7 @@ class RedisDb
                 }
             }
 
-            $query = array_merge($indexParams, $query);
+            $query = array_merge($indexQuery, $query);
         }
 
         // クエリを発行

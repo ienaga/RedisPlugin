@@ -9,25 +9,26 @@ dev:
     prefix:
       columns: column, column, column
 
+
     # common
     common:
       dbs: table, table, table... # common DB Table Name => master_, common_item,
+
+
+    # shard admin
+    admin:
+      model:  XXXXX # AdminUser
+      primary: XXXXX # default:id
+      column: XXXXX # user_id
+      dbs: table, table, table... # common DB Table Name => admin_, common_members
 
 
     # shard config master
     shard:
       enabled: true
       model:  XXXXX # AdminConfig
-      method: XXXXX # getConfig
+      primary: XXXXX # default:id
       column: XXXXX # db_id
-
-
-    # shard admin
-    admin:
-      model:  XXXXX # AdminUser
-      method: XXXXX # getUser
-      column: XXXXX # user_id
-      dbs: table, table, table... # common DB Table Name => admin_, common_members
 
 
     server:

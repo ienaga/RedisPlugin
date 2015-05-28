@@ -120,27 +120,28 @@ dev:
       expire: 3600
       autoIndex: true
     prefix:
-      columns: column, column, column
+      columns: column, column, column # e.g. user_id, id, social_id
+
 
     # common
     common:
-      dbs: table, table, table... # common DB Table Name => master_, common_item,
+      dbs: table, table, table... # e.g.  master_, common_item,
 
 
     # shard config master
     shard:
       enabled: true
       model:  XXXXX # AdminConfig
-      method: XXXXX # getConfig
+      primary: XXXXX # default:id
       column: XXXXX # db_id
 
 
     # shard admin
     admin:
       model:  XXXXX # AdminUser
-      method: XXXXX # getUser
+      primary: XXXXX # default:id
       column: XXXXX # user_id
-      dbs: table, table, table... # common DB Table Name => admin_, common_members
+      dbs: table, table, table... # e.g. admin_, common_members
 
 
     server:
