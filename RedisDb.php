@@ -766,13 +766,20 @@ class RedisDb
         $keys = array();
         $bind  = isset($parameters['bind']) ? $parameters['bind'] : array();
 
-        // 一番マッチするindexにあわせてクエリを発行(PRIMARY優先)
-        if (self::getConfig()->get('default')->get('autoIndex')) {
+        // 設定確認・個別確認
+        $autoIndex = self::getConfig()->get('default')->get('autoIndex');
+        if (isset($parameters['autoIndex'])) {
+            $autoIndex = $parameters['autoIndex'];
+            unset($parameters['autoIndex']);
+        }
+
+        if ($autoIndex) {
 
             $indexes = self::getIndexes($model);
 
             if ($indexes) {
 
+                // 一番マッチするindexにあわせてクエリを発行(PRIMARY優先)
                 foreach ($indexes as $key => $index) {
 
                     $columns = $index->getColumns();

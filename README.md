@@ -363,6 +363,19 @@ class Robot extends \Phalcon\Mvc\Model
         ), new self);
     }
 
+    // autoIndex => falseで個別にautoIndexをコントロール
+    public static function no_autoIndex($id, $type)
+    {
+        return RedisDb::find(array(
+            'query' => array(
+                'id' => $id,
+                'type' => $type
+            ),
+            'autoIndex' => false
+        ), new self);
+    }
+
+
     public static function order($id, $type)
     {
         return RedisDb::find(array(
@@ -479,6 +492,20 @@ class Robot extends \Phalcon\Mvc\Model
             ->cache(false)
             ->find();
     }
+
+    // ->autoIndex($boolean)でautoIndexをコントロール
+    public static function no_autoIndex($id, $start, $end)
+    {
+        $criteria = new Criteria(new self);
+         return $criteria
+            ->add('id', array($id), Criteria::IN)
+            ->add('type', array($start, $end), Criteria::BETWEEN)
+            ->limit(10, 30)
+            ->order('type DESC')
+            ->autoIndex(false)
+            ->find();
+    }
+
 }
 
 ~~~

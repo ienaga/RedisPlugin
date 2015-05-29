@@ -117,6 +117,18 @@ class Criteria
     }
 
     /**
+     * @param  bool $bool
+     * @return $this
+     */
+    public function autoIndex($bool = false)
+    {
+        $this->conditions['autoIndex'] = $bool;
+
+        return $this;
+    }
+
+
+    /**
      * @return array
      */
     public function getConditions()

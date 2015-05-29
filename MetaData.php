@@ -12,11 +12,6 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
     const CACHE_KEY = '__MetaData';
 
     /**
-     * @var int
-     */
-    const EXPIRE = 3600;
-
-    /**
      * @var string
      */
     const INDEXES_KEY = 'meta-indexes-%s';
@@ -50,7 +45,8 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
             $options['port'] = 6379;
 
         if (!isset($options['lifetime']))
-            $options['lifetime'] = self::EXPIRE;
+            $options['lifetime'] = \Phalcon\DI::getDefault()->get('redis')->get('default')->get('expire');
+
 
         if (!isset($options['select']))
             $options['select'] = 0;
