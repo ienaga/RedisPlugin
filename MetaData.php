@@ -45,7 +45,11 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
             $options['port'] = 6379;
 
         if (!isset($options['lifetime']))
-            $options['lifetime'] = \Phalcon\DI::getDefault()->get('redis')->get('default')->get('expire');
+            $options['lifetime'] = \Phalcon\DI::getDefault()
+                ->get('config')
+                ->get('redis')
+                ->get('default')
+                ->get('expire');
 
 
         if (!isset($options['select']))
