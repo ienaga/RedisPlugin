@@ -114,7 +114,11 @@ dev:
 
 ## Phalcon YAML [redis.yml]
 ~~~
+prd:
+stg:
+dev:
   redis:
+    enabled: true # false => cache off
     default:
       name: db
       expire: 3600
@@ -125,24 +129,22 @@ dev:
 
     # common
     common:
-      dbs: table, table, table... # e.g.  master_, common_item,
+      dbs: table, table, table... # e.g.  master_, mt_item,
+
+
+    # admin
+    admin:
+      model:  XXXXX # AdminUser
+      column: XXXXX # admin_config_id
+      dbs: table, table, table... # e.g. admin_, ad_members
 
 
     # shard config master
     shard:
       enabled: true
-      model:  XXXXX # AdminConfig
-      primary: XXXXX # default:id
-      column: XXXXX # db_id
-
-
-    # shard admin
-    admin:
-      model:  XXXXX # AdminUser
-      primary: XXXXX # default:id
-      column: XXXXX # user_id
-      dbs: table, table, table... # e.g. admin_, common_members
-
+      control:
+        model:  XXXXX # AdminConfig
+        column: XXXXX # config_name
 
     server:
       dbMaster:

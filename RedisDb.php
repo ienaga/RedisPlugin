@@ -12,32 +12,32 @@ class RedisDb
     /**
      * @var \Phalcon\Mvc\Model
      */
-    private static $model = null;
+    protected static $model = null;
 
     /**
      * @var \Phalcon\Mvc\Model\Transaction[]
      */
-    private static $connections = array();
+    protected static $connections = array();
 
     /**
      * @var bool
      */
-    private static $isTransaction = false;
+    protected static $isTransaction = false;
 
     /**
      * @var array
      */
-    private static $models = array();
+    protected static $models = array();
 
     /**
      * @var array
      */
-    private static $cache = array();
+    protected static $cache = array();
 
     /**
      * @var string
      */
-    private static $hashPrefix = null;
+    protected static $hashPrefix = null;
 
     /**
      * @var \Phalcon\Mvc\Model
@@ -48,6 +48,7 @@ class RedisDb
      * @var \Phalcon\Mvc\Model
      */
     private static $_adminModel = null;
+
 
     /**
      * @param  null $memberId
@@ -91,28 +92,11 @@ class RedisDb
 
     /**
      * @param  \Phalcon\Mvc\Model $model
-     * @return \Phalcon\Mvc\Model
-     */
-    public static function setCommon($model)
-    {
-        self::setModel($model);
-
-        $configName  = self::getConnectionName();
-        $configName .= (self::isTransaction()) ? 'CommonMaster' : 'CommonSlave';
-
-        $model->setReadConnectionService($configName);
-
-        return $model;
-    }
-
-    /**
-     * @param  \Phalcon\Mvc\Model $model
-     * @param  int|null           $memberId
-     * @return \Phalcon\Mvc\Model
+     * @param  mixed $memberId
+     * @return mixed
      */
     public static function setCon($model, $memberId = null)
     {
-        self::setModel($model);
 
         $configName  = self::getConnectionName($memberId);
         $configName .= (self::isCommon($model)) ? 'Common' : '';
@@ -121,22 +105,6 @@ class RedisDb
         $model->setReadConnectionService($configName);
 
         return $model;
-    }
-
-    /**
-     * @return \Phalcon\Mvc\Model
-     */
-    public static function getModel()
-    {
-        return self::$model;
-    }
-
-    /**
-     * @param \Phalcon\Mvc\Model $model
-     */
-    public static function setModel($model)
-    {
-        self::$model = $model;
     }
 
     /**
@@ -170,10 +138,9 @@ class RedisDb
      */
     public static function setConForConfigName($model, $configName)
     {
-        $type =  (self::isTransaction()) ? 'Master' : 'Slave';
+        $configName .=  (self::isTransaction()) ? 'Master' : 'Slave';
 
-        $model->setReadConnectionService($configName . $type);
-        self::setModel($model);
+        $model->setReadConnectionService($configName);
 
         return $model;
     }
@@ -319,19 +286,22 @@ class RedisDb
      */
     public static function getMemberConfigName($dbId)
     {
-        $config = self::getConfig()->get('shard');
+        $config = self::getConfig()->get('shard')->get('control');
 
         if (!self::$_configModel) {
+
             $class = $config->get('model');
-            self::$_configModel = new $class;
+
+            $model = new $class;
+
+            self::$_configModel = $model;
+
         }
 
-        $query = array();
-        $query[$config->get('primary')] = $dbId;
-
-        $dbConfig = self::findFirst(array(
-            'query' => $query
-        ), self::$_configModel);
+        $dbConfig = self::findFirst(
+            array('query' => array('id' => $dbId)),
+            self::$_configModel
+        );
 
         if ($dbConfig)
             return $dbConfig->{$config->get('column')};
@@ -349,16 +319,19 @@ class RedisDb
         $config = self::getConfig()->get('admin');
 
         if (!self::$_adminModel) {
+
             $class = $config->get('model');
-            self::$_adminModel = new $class;
+
+            $model = new $class;
+
+            self::$_adminModel = $model;
+
         }
 
-        $query = array();
-        $query[$config->get('primary')] = $memberId;
-
-        $adminMember = self::findFirst(array(
-            'query' => $query
-        ), self::$_adminModel);
+        $adminMember = self::findFirst(
+            array('query' => array('id' => $memberId)),
+            self::$_adminModel
+        );
 
         if (!$adminMember)
             throw new Exception('Not Created Admin Member');
@@ -374,6 +347,7 @@ class RedisDb
      */
     public static function find($parameters, $model, $expire = 0)
     {
+
         $parameters = self::_createKey($parameters, $model);
 
         self::setPrefix($model, $parameters['bind']);
@@ -394,7 +368,8 @@ class RedisDb
             if (!$result)
                 $result = array();
 
-            self::setHash($model, $key, $result, $expire);
+            if (self::getConfig()->get('enabled'))
+                self::setHash($model, $key, $result, $expire);
         }
 
         return $result;
@@ -549,7 +524,6 @@ class RedisDb
         RedisDb::setCon($model, $prefix);
 
         // reset
-        self::setModel($model);
         self::$hashPrefix = $_prefix;
     }
 
@@ -706,16 +680,9 @@ class RedisDb
     {
 
         if (!is_array($parameters) || !isset($parameters['query']))
-            throw new Exception('Error Not Found parameters');
-
-
-        if (!isset($parameters['query'])) {
-
-        }
-
+            throw new Exception('Not Found query in parameters');
 
         $query = $parameters['query'];
-
 
         $indexQuery = array();
         $where = array();

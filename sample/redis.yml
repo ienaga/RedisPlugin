@@ -2,33 +2,33 @@ prd:
 stg:
 dev:
   redis:
+    enabled: true # false => cache off
     default:
       name: db
       expire: 3600
       autoIndex: true
     prefix:
-      columns: column, column, column
+      columns: column, column, column # e.g. user_id, id, social_id
 
 
     # common
     common:
-      dbs: table, table, table... # common DB Table Name => master_, common_item,
+      dbs: table, table, table... # e.g.  master_, common_item,
 
 
-    # shard admin
+    # admin
     admin:
       model:  XXXXX # AdminUser
-      primary: XXXXX # default:id
-      column: XXXXX # user_id
-      dbs: table, table, table... # common DB Table Name => admin_, common_members
+      column: XXXXX # admin_config_id
+      dbs: table, table, table... # e.g. admin_, ad_members
 
 
     # shard config master
     shard:
       enabled: true
-      model:  XXXXX # AdminConfig
-      primary: XXXXX # default:id
-      column: XXXXX # db_id
+      control:
+        model:  XXXXX # AdminConfig
+        column: XXXXX # config_name
 
 
     server:
