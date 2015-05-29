@@ -33,23 +33,21 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
 
 
     /**
-     * @param array $options
+     * __construct
      */
-    public function __construct($options = array())
+    public function __construct()
     {
-        $configs = \Phalcon\DI::getDefault()
+        $options = \Phalcon\DI::getDefault()
             ->get('config')
             ->get('redis')
-            ->get('server')
+            ->get('metadata')
             ->toArray();
 
-        $config = array_shift($configs);
-
         if (!isset($options['host']))
-            $options['host'] = $config['host'];
+            $options['host'] = '127.0.0.1';
 
         if (!isset($options['port']))
-            $options['port'] = $config['port'];
+            $options['port'] = 6379;
 
         if (!isset($options['lifetime']))
             $options['lifetime'] = self::EXPIRE;

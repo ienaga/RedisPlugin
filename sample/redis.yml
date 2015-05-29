@@ -60,6 +60,12 @@ dev:
         column: XXXXX # name
 
 
+    metadata:
+      host: XXXXX
+      port: 6379
+      select: 0
+
+
     server:
       dbMaster:
         host: XXXXX
