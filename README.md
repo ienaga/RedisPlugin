@@ -479,33 +479,6 @@ class Robot extends \Phalcon\Mvc\Model
             )
         ), new self);
     }
-
-    // ->cache($boolean)でキャッシュをコントロール
-    public static function no_cache($id, $start, $end)
-    {
-        $criteria = new Criteria(new self);
-         return $criteria
-            ->add('id', array($id), Criteria::IN)
-            ->add('type', array($start, $end), Criteria::BETWEEN)
-            ->limit(10, 30)
-            ->order('type DESC')
-            ->cache(false)
-            ->find();
-    }
-
-    // ->autoIndex($boolean)でautoIndexをコントロール
-    public static function no_autoIndex($id, $start, $end)
-    {
-        $criteria = new Criteria(new self);
-         return $criteria
-            ->add('id', array($id), Criteria::IN)
-            ->add('type', array($start, $end), Criteria::BETWEEN)
-            ->limit(10, 30)
-            ->order('type DESC')
-            ->autoIndex(false)
-            ->find();
-    }
-
 }
 
 ~~~
@@ -540,6 +513,32 @@ class Robot extends \Phalcon\Mvc\Model
             ->add('type', array($start, $end), Criteria::BETWEEN)
             ->limit(10, 5) // limit, offset
             ->order('type DESC')
+            ->find();
+    }
+
+    // ->cache($boolean)でキャッシュをコントロール
+    public static function no_cache($id, $start, $end)
+    {
+        $criteria = new Criteria(new self);
+         return $criteria
+            ->add('id', array($id), Criteria::IN)
+            ->add('type', array($start, $end), Criteria::BETWEEN)
+            ->limit(10, 30)
+            ->order('type DESC')
+            ->cache(false)
+            ->find();
+    }
+
+    // ->autoIndex($boolean)でautoIndexをコントロール
+    public static function no_autoIndex($id, $start, $end)
+    {
+        $criteria = new Criteria(new self);
+         return $criteria
+            ->add('id', array($id), Criteria::IN)
+            ->add('type', array($start, $end), Criteria::BETWEEN)
+            ->limit(10, 30)
+            ->order('type DESC')
+            ->autoIndex(false)
             ->find();
     }
 }
