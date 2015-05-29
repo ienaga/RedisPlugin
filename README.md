@@ -261,13 +261,7 @@ dev:
 ~~~
 
 
-## Phalcon config.php
-
-~~~
-$yml = yaml_parse_file(XXX.yml);
-~~~
-
-## Phalcon services.php
+## app/config/services.php
 
 ~~~
 /**
