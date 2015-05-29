@@ -98,6 +98,17 @@ class Criteria
     }
 
     /**
+     * @param  bool $bool
+     * @return $this
+     */
+    public function cache($bool = false)
+    {
+        $this->conditions['cache'] = $bool;
+
+        return $this;
+    }
+
+    /**
      * @return array
      */
     public function getConditions()

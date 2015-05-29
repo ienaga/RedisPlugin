@@ -399,12 +399,18 @@ class RedisDb
         // なければDBから
         if ($result === false) {
 
+            $cache = true;
+            if (isset($parameters['cache'])) {
+                $cache = $parameters['cache'];
+                unset($parameters['cache']);
+            }
+
             $result = $model::find($parameters);
 
             if (!$result)
                 $result = array();
 
-            if (self::getConfig()->get('enabled'))
+            if ($cache && self::getConfig()->get('enabled'))
                 self::setHash($model, $key, $result, $expire);
         }
 
