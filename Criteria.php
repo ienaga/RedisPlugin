@@ -65,12 +65,20 @@ class Criteria
     }
 
     /**
-     * @param  array|string $value
+     * @param  int $limit
+     * @param  int $offset
      * @return $this
      */
-    public function limit($value)
+    public function limit($limit, $offset = null)
     {
-        $this->conditions['limit'] = $value;
+        if ($offset) {
+            $this->conditions['limit'] = array(
+                'number' => $limit,
+                'offset' => $offset
+            );
+        } else {
+            $this->conditions['limit'] = $limit;
+        }
 
         return $this;
     }

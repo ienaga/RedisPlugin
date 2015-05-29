@@ -344,6 +344,51 @@ class Robot extends \Phalcon\Mvc\Model
             )
         ), new self);
     }
+
+    // cache => falseで個別にキャッシュをコントロール
+    public static function no_cache($id, $type)
+    {
+        return RedisDb::find(array(
+            'query' => array(
+                'id' => $id,
+                'type' => $type
+            ),
+            'cache' => false
+        ), new self);
+    }
+
+    public static function order($id, $type)
+    {
+        return RedisDb::find(array(
+            'query' => array(
+                'id' => $id,
+                'type' => $type
+            ),
+            'order' => 'id DESC'
+        ), new self);
+    }
+
+    public static function group($id, $type)
+    {
+        return RedisDb::find(array(
+            'query' => array(
+                'id' => $id,
+                'type' => $type
+            ),
+            'group' => 'id'
+        ), new self);
+    }
+
+    public static function limit($id, $type)
+    {
+        return RedisDb::find(array(
+            'query' => array(
+                'id' => $id,
+                'type' => $type
+            ),
+            'limit' => 10 // array('number' => 10, 'offset' => 5)
+        ), new self);
+    }
 }
 
 ~~~
@@ -415,6 +460,19 @@ class Robot extends \Phalcon\Mvc\Model
             )
         ), new self);
     }
+
+    // ->cache($boolean)でキャッシュをコントロール
+    public static function no_cache($id, $start, $end)
+    {
+        $criteria = new Criteria(new self);
+         return $criteria
+            ->add('id', array($id), Criteria::IN)
+            ->add('type', array($start, $end), Criteria::BETWEEN)
+            ->limit(10, 30)
+            ->order('type DESC')
+            ->cache(false)
+            ->find();
+    }
 }
 
 ~~~
@@ -447,7 +505,7 @@ class Robot extends \Phalcon\Mvc\Model
          return $criteria
             ->add('id', array($id), Criteria::IN)
             ->add('type', array($start, $end), Criteria::BETWEEN)
-            ->limit(10, 30)
+            ->limit(10, 5) // limit, offset
             ->order('type DESC')
             ->find();
     }

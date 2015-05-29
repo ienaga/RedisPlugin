@@ -436,36 +436,71 @@ class RedisDb
      */
     private static function _generateFindKey($parameters)
     {
-
+        // base
         $key = self::generateKey($parameters['keys']);
 
+        $addKeys = array();
+
         // order by
-        if (isset($parameters['order']))
-            $key .= '_order_' . str_replace(" ", "_", $parameters['order']);
+        if (isset($parameters['order'])) {
+
+            $addKeys[] = 'order';
+
+            $fields = explode(',', $parameters['order']);
+
+            foreach ($fields as $field) {
+
+                $field = trim($field);
+
+                $values = explode(' ', $field);
+
+                if (count($values) === 2) {
+
+                    $addKeys[] = $values[0];
+                    $addKeys[] = strtoupper($values[1]);
+
+                } else {
+
+                    $addKeys[] = $field;
+
+                }
+            }
+        }
 
         // limit
         if (isset($parameters['limit'])) {
-            $value = $parameters['limit'];
-            if (is_array($parameters['limit'])) {
-                foreach ($parameters['limit'] as $value) {
-                    $value .= '_'. $value;
-                }
-            }
 
-            $key .= '_limit_' . $value;
+            $addKeys[] = 'limit';
+
+            if (is_array($parameters['limit'])) {
+
+                foreach ($parameters['limit'] as $value) {
+                    $addKeys[] = $value;
+                }
+
+            } else {
+
+                $addKeys[] = $parameters['limit'];
+
+            }
         }
 
         // group by
         if (isset($parameters['group'])) {
-            $value = $parameters['group'];
-            if (is_array($parameters['group'])) {
-                foreach ($parameters['group'] as $value) {
-                    $value .= '_'. $value;
-                }
-            }
 
-            $key .= '_group_' . $value;
+            $addKeys[] = 'group';
+
+            $fields = explode(',', $parameters['group']);
+
+            foreach ($fields as $field) {
+
+                $addKeys[] = trim($field);
+
+            }
         }
+
+        if ($addKeys)
+            $key .= '_' . implode('_', $addKeys);
 
         return $key;
     }
