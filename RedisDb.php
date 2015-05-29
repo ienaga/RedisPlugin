@@ -45,9 +45,19 @@ class RedisDb
     private static $_configModel = null;
 
     /**
+     * @var array
+     */
+    private static $_configQuery = array();
+
+    /**
      * @var \Phalcon\Mvc\Model
      */
     private static $_adminModel = null;
+
+    /**
+     * @var array
+     */
+    private static $_adminQuery = array();
 
 
     /**
@@ -281,10 +291,10 @@ class RedisDb
     }
 
     /**
-     * @param  mixed $dbId
+     * @param  mixed $id
      * @return \Phalcon\Mvc\Model
      */
-    public static function getMemberConfigName($dbId)
+    public static function getMemberConfigName($id)
     {
         $config = self::getConfig()->get('shard')->get('control');
 
@@ -296,12 +306,16 @@ class RedisDb
 
             self::$_configModel = $model;
 
+            $indexes = self::getIndexes($model);
+
+            $primary = 'id';
+            if (isset($indexes['PRIMARY']))
+                $primary = $indexes['PRIMARY']->getColumns()[0];
+
+            self::$_configQuery = array('query' => array($primary => $id));
         }
 
-        $dbConfig = self::findFirst(
-            array('query' => array('id' => $dbId)),
-            self::$_configModel
-        );
+        $dbConfig = self::findFirst(self::$_configQuery, self::$_configModel);
 
         if ($dbConfig)
             return $dbConfig->{$config->get('column')};
@@ -326,17 +340,39 @@ class RedisDb
 
             self::$_adminModel = $model;
 
+            $indexes = self::getIndexes($model);
+
+            $primary = 'id';
+            if (isset($indexes['PRIMARY']))
+                $primary = $indexes['PRIMARY']->getColumns()[0];
+
+            self::$_adminQuery = array('query' => array($primary => $memberId));
+
         }
 
-        $adminMember = self::findFirst(
-            array('query' => array('id' => $memberId)),
-            self::$_adminModel
-        );
+        $adminMember = self::findFirst(self::$_adminQuery, self::$_adminModel);
 
         if (!$adminMember)
             throw new Exception('Not Created Admin Member');
 
         return $adminMember;
+    }
+
+    /**
+     * @param  \Phalcon\Mvc\Model $model
+     * @return \Phalcon\Db\Index[]
+     */
+    public static function getIndexes($model)
+    {
+        $source = $model->getSource();
+        $indexes = $model->getModelsMetaData()->readIndexes($source);
+
+        if (self::isCommon($model) || self::isAdmin($model)) {
+            self::connect($model);
+            $indexes = $model->getReadConnection()->describeIndexes($source);
+        }
+
+        return $indexes;
     }
 
     /**
@@ -692,8 +728,7 @@ class RedisDb
         // 一番マッチするindexにあわせてクエリを発行(PRIMARY優先)
         if (self::getConfig()->get('default')->get('autoIndex')) {
 
-            /** @var \Phalcon\Db\Index[] $indexes */
-            $indexes = $model->getModelsMetaData()->readIndexes($model->getSource());
+            $indexes = self::getIndexes($model);
 
             if ($indexes) {
 

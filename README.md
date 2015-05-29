@@ -27,8 +27,57 @@ sudo vim /etc/php.d/yaml.ini
 extension=yaml.so
 ~~~
 
+## app/config/config.php
 
-## Phalcon YAML [database.yml]
+~~~
+
+$dir = __DIR__ .'/../../app/';
+$env = getenv('PLATFORM');
+$ignore_file = array('routing');
+
+
+$configYml = array();
+if ($configDir = opendir($dir.'config')) {
+
+    while (($file = readdir($configDir)) !== false) {
+
+        $exts = explode('.', $file);
+
+        if ($exts[1] !== 'yml')
+            continue;
+
+        $file_name = $exts[0];
+        if ($ignore_file && in_array($file_name, $ignore_file))
+            continue;
+
+        $yml = yaml_parse_file($dir . "config/{$file_name}.yml");
+        $configYml = array_merge($configYml, $yml[$env]);
+
+        if (isset($yml['all'])) {
+            $configYml = array_merge($configYml, $yml['all']);
+        }
+
+    }
+
+    closedir($configDir);
+}
+
+$application = array(
+    'application' => array(
+        'controllersDir' => $dir . 'controllers/',
+        'modelsDir'      => $dir . 'models/',
+        'viewsDir'       => $dir . 'views/',
+        'pluginsDir'     => $dir . 'plugins/',
+        'libraryDir'     => $dir . 'library/',
+        'cacheDir'       => $dir . 'cache/',
+    )
+);
+
+return new \Phalcon\Config(array_merge($application, $configYml));
+
+~~~
+
+## app/config/database.yml
 
 ~~~
 prd:
@@ -112,7 +161,7 @@ dev:
       transaction: false
 ~~~
 
-## Phalcon YAML [redis.yml]
+## app/config/redis.yml
 ~~~
 prd:
 stg:
@@ -123,34 +172,64 @@ dev:
       name: db
       expire: 3600
       autoIndex: true
-    prefix:
+    prefix: # 対象のカラムがModelに存在したら使用。左から順に優先。存在が確認できた時点でbreak
       columns: column, column, column # e.g. user_id, id, social_id
 
 
+    # 共通のマスタがあれば登録「table_」と共有部分だけの記載はtable_*と同義
     # common
     common:
-      dbs: table, table, table... # e.g.  master_, mt_item,
+      dbs: table, table, table... # e.g.  master_, access_log
 
 
-    # admin
     admin:
+      # ユーザマスタ
+      # e.g.
+      #    CREATE TABLE IF NOT EXISTS `admin_user` (
+      #      `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+      #      `social_id` varchar(255) NOT NULL COMMENT 'ソーシャルID',
+      #      `admin_config_db_id` tinyint(3) unsigned NOT NULL COMMENT 'AdminConfigDb.ID',
+      #      `admin_flag` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '0=一般、1=管理者',
+      #      `status_number` tinyint(3) unsigned NOT NULL DEFAULT '0',
+      #      `created_at` datetime NOT NULL,
+      #      `updated_at` datetime NOT NULL,
+      #      PRIMARY KEY (`id`),
+      #      UNIQUE KEY `social_id` (`social_id`)
+      #    ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
       model:  XXXXX # AdminUser
-      column: XXXXX # admin_config_id
-      dbs: table, table, table... # e.g. admin_, ad_members
+      column: XXXXX # admin_config_db_id
+
+      # ユーザマスタの登録「table_」と共有部分だけの記載はtable_*と同義
+      dbs: table, table, table... # e.g. admin_, user_ranking
 
 
-    # shard config master
     shard:
-      enabled: true
+      enabled: true # Shardingを使用しないばあいはfalse
+
+      # Shardingをコントロールするテーブルとカラム
+      #
+      # e.g.
+      #    CREATE TABLE IF NOT EXISTS `admin_config_db` (
+      #      `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+      #      `name` varchar(50) NOT NULL COMMENT 'DBコンフィグ名',
+      #      `gravity` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '重み(振り分け用)',
+      #      `status_number` tinyint(3) unsigned NOT NULL DEFAULT '0',
+      #      PRIMARY KEY (`id`)
+      #    ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+      #    INSERT INTO `admin_config_db` (`id`, `name`, `gravity`, `status_number`) VALUES
+      #    (1, 'dbMember1', 50, 0),
+      #    (2, 'dbMember2', 50, 0);
+      # shard config master
       control:
-        model:  XXXXX # AdminConfig
-        column: XXXXX # config_name
+        model:  XXXXX # AdminConfigDb
+        column: XXXXX # name
+
 
     server:
       dbMaster:
         host: XXXXX
         port: 6379
-        select: 1
+        select: 1 # redis select [データベースインデックス]
       dbSlave:
         host: XXXXX
         port: 6379
