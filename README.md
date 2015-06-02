@@ -1,6 +1,10 @@
 RedisPlugin for Phalcon (The correspondence of MySQL sharding.)
 ======
 
+# commentary
+
+http://qiita.com/ienaga/items/6bbf1c5e95a133d347ac
+
 
 ## Version
 
