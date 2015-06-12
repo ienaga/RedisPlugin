@@ -33,6 +33,8 @@ class RedisDb
      * @var array
      */
     protected static $cache = array();
+    protected static $admin_cache = array();
+    protected static $config_cache = array();
 
     /**
      * @var string
@@ -166,9 +168,11 @@ class RedisDb
 
         if ($mode && (int) $memberId > 0) {
 
-            $adminMember = self::getAdminMember($memberId);
+            if (!isset(self::$admin_cache[$memberId]))
+                self::$admin_cache[$memberId] = self::getAdminMember($memberId);
 
-            if ($adminMember) {
+            $adminMember = self::$admin_cache[$memberId];
+            if (self::$admin_cache[$memberId]) {
                 $column = self::getConfig()->get('admin')->get('column');
                 return self::getMemberConfigName($adminMember->{$column});
             }
@@ -315,7 +319,10 @@ class RedisDb
             self::$_configQuery = array('query' => array($primary => $id));
         }
 
-        $dbConfig = self::findFirst(self::$_configQuery, self::$_configModel);
+        if (!isset(self::$config_cache[$id]))
+            self::$config_cache[$id] = self::findFirst(self::$_configQuery, self::$_configModel);
+
+        $dbConfig = self::$config_cache[$id];
 
         if ($dbConfig)
             return $dbConfig->{$config->get('column')};
