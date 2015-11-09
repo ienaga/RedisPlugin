@@ -829,8 +829,8 @@ class RedisDb
 
         $indexQuery = array();
         $where = array();
-        $keys = array();
-        $bind  = isset($parameters['bind']) ? $parameters['bind'] : array();
+        self::$keys = array();
+        self::$bind  = isset($parameters['bind']) ? $parameters['bind'] : array();
 
         // 設定確認・個別確認
         $autoIndex = self::getConfig()->get('default')->get('autoIndex');
@@ -878,8 +878,6 @@ class RedisDb
         }
 
         // クエリを発行
-        self::$bind = array();
-        self::$keys = array();
         foreach ($query as $column => $value) {
 
             $where[] = implode(' ', self::buildQuery($column, $value));
@@ -900,6 +898,11 @@ class RedisDb
 
         unset($parameters['query']);
 
+        $filePath = '/tmp/' . 'thomas.log';
+        $logString =  str_repeat('#', 80) . "\n";
+        $logString .= var_export($parameters, true) . "\n";
+        @file_put_contents($filePath, $logString, FILE_APPEND);
+
         return $parameters;
     }
 
@@ -913,8 +916,8 @@ class RedisDb
 
         if (count($aliased = explode('.', $column)) > 1) {
 
-            $column = sprintf('[%s].[%s]', $aliased[0], $aliased[1]);
             $named_place = $aliased[1];
+            $column = sprintf('[%s].[%s]', $aliased[0], $aliased[1]);
 
         } else if (is_int($column)) {
 
@@ -922,8 +925,9 @@ class RedisDb
             $value['operator'] = Criteria::ADD_OR;
 
         } else {
-            $column = sprintf('[%s]', $column);
+
             $named_place = $column;
+            $column = sprintf('[%s]', $column);
 
         }
 
@@ -954,11 +958,13 @@ class RedisDb
 
                             $placeholders[] = sprintf(':%s:', $named_place.$i);
 
-                            $bind[$named_place.$i] = $bindValue[$i];
+                            self::$bind[$named_place.$i] = $bindValue[$i];
 
                         }
 
-                        $keys[$named_place] = str_replace(" ", "_", $operator) . implode('_', $bindValue);
+                        self::$keys[$named_place] =
+                            str_replace(" ", "_", $operator)
+                                . implode('_', $bindValue);
 
                         $query = sprintf('(%s)', implode(',', $placeholders));
 
@@ -966,16 +972,18 @@ class RedisDb
 
                     case $operator === Criteria::BETWEEN:
 
-                        $bind[$named_place.'0'] = $bindValue[0];
-                        $bind[$named_place.'1'] = $bindValue[1];
+                        self::$bind[$named_place.'0'] = $bindValue[0];
+                        self::$bind[$named_place.'1'] = $bindValue[1];
 
-                        $keys[$named_place] = $operator . implode('_', $bindValue);
+                        self::$keys[$named_place] = $operator . implode('_', $bindValue);
 
                         $query = sprintf(':%s: AND :%s:', $bindValue[0], $bindValue[1]);
 
                         break;
 
                     case $operator === Criteria::ADD_OR:
+
+                        self::$keys[] = $operator;
 
                         $operator = '';
 
@@ -992,9 +1000,9 @@ class RedisDb
 
                     default:
 
-                        $bind[$named_place] = $bindValue;
+                        self::$bind[$named_place] = $bindValue;
 
-                        $keys[$named_place] = $operator.$bindValue;
+                        self::$keys[$named_place] = $operator.$bindValue;
 
                         $query = sprintf(':%s:', $named_place);
 
@@ -1012,11 +1020,11 @@ class RedisDb
 
                     $placeholders[] = sprintf(':%s:', $named_place.$i);
 
-                    $bind[$named_place.$i] = $value[$i];
+                    self::$bind[$named_place.$i] = $value[$i];
 
                 }
 
-                $keys[$named_place] = str_replace(" ", "_", $operator) . implode('_', $value);
+                self::$keys[$named_place] = str_replace(" ", "_", $operator) . implode('_', $value);
 
                 $query = sprintf('(%s)', implode(',', $placeholders));
             }
@@ -1027,7 +1035,7 @@ class RedisDb
 
                 $operator = Criteria::ISNULL;
 
-                $keys[$named_place] = 'IS_NULL';
+                self::$keys[$named_place] = 'IS_NULL';
 
                 $query = '';
 
@@ -1048,9 +1056,9 @@ class RedisDb
 
                 $operator = Criteria::EQUAL;
 
-                $bind[$named_place] = $value;
+                self::$bind[$named_place] = $value;
 
-                $keys[$named_place] = '='.$value;
+                self::$keys[$named_place] = '='.$value;
 
                 $query = sprintf(':%s:', $named_place);
 
