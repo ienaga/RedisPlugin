@@ -20,6 +20,7 @@ class Criteria
     const IN = 'IN';
     const NOT_IN = 'NOT IN';
     const BETWEEN = 'BETWEEN';
+    const ADD_OR = 'OR';
 
     /**
      * @var array
@@ -56,12 +57,39 @@ class Criteria
      */
     public function add($column, $value, $operator = self::EQUAL)
     {
-        $this->conditions['query'][$column] = array(
-            'operator' => $operator,
-            'value' => $value
+        $this->conditions['query'][$column] =
+            $this->_buildArray($value, $operator);
+
+        return $this;
+    }
+
+    /**
+     * @param  string $column
+     * @param  mixed  $value
+     * @param  string $operator
+     * @return $this
+     */
+    public function addOr($column, $value, $operator = self::EQUAL)
+    {
+        $this->conditions['query'][] = array(
+            'operator' => self::ADD_OR,
+            $column => $this->_buildArray($value, $operator)
         );
 
         return $this;
+    }
+
+    /**
+     * @param  mixed  $value
+     * @param  string $operator
+     * @return array
+     */
+    private function _buildArray($value, $operator = self::EQUAL)
+    {
+        return array(
+            'operator' => $operator,
+            'value' => $value
+        );
     }
 
     /**

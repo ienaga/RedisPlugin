@@ -28,6 +28,8 @@ class RedisDb
      * @var array
      */
     protected static $models = array();
+    protected static $bind = array();
+    protected static $keys = array();
 
     /**
      * @var array
@@ -68,7 +70,9 @@ class RedisDb
      */
     public static function getTransaction($memberId = null)
     {
-        return self::addMasterConnection(self::getConnectionName($memberId) . 'Master');
+        return self::addMasterConnection(
+            self::getConnectionName($memberId) . 'Master'
+        );
     }
 
     /**
@@ -85,8 +89,11 @@ class RedisDb
 
         $model->setTransaction(self::getTransaction(self::getPrefix()));
 
-        if (!$model->save($data, $whiteList))
+        if (!$model->save($data, $whiteList)) {
+
             RedisDb::outputErrorMessage($model);
+
+        }
 
         self::addModels($model);
 
@@ -168,13 +175,18 @@ class RedisDb
 
         if ($mode && (int) $memberId > 0) {
 
-            if (!isset(self::$admin_cache[$memberId]))
+            if (!isset(self::$admin_cache[$memberId])) {
+
                 self::$admin_cache[$memberId] = self::getAdminMember($memberId);
+
+            }
 
             $adminMember = self::$admin_cache[$memberId];
             if (self::$admin_cache[$memberId]) {
+
                 $column = self::getConfig()->get('admin')->get('column');
                 return self::getMemberConfigName($adminMember->{$column});
+
             }
         }
 
@@ -195,10 +207,10 @@ class RedisDb
                 ->get($configName)
                 ->get('transaction_name');
 
-            /** @var \Phalcon\Mvc\Model\Transaction\Manager $transactionManager */
-            $transactionManager = \Phalcon\DI::getDefault()->getShared($service);
+            /** @var \Phalcon\Mvc\Model\Transaction\Manager $manager */
+            $manager = \Phalcon\DI::getDefault()->getShared($service);
 
-            self::$connections[$configName] = $transactionManager->get();
+            self::$connections[$configName] = $manager->get();
         }
 
         return self::$connections[$configName];
@@ -257,10 +269,10 @@ class RedisDb
             // Activeなトランザクションがある場合だけrollbackする
             $service = $config->get($configName)->get('transaction_name');
 
-            /** @var \Phalcon\Mvc\Model\Transaction\Manager $transactionManager */
-            $transactionManager = \Phalcon\DI::getDefault()->getShared($service);
+            /** @var \Phalcon\Mvc\Model\Transaction\Manager $manager */
+            $manager = \Phalcon\DI::getDefault()->getShared($service);
 
-            if ($transactionManager->has()) {
+            if ($manager->has()) {
 
                 try {
 
@@ -313,14 +325,22 @@ class RedisDb
             $indexes = self::getIndexes($model);
 
             $primary = 'id';
-            if (isset($indexes['PRIMARY']))
+            if (isset($indexes['PRIMARY'])) {
+
                 $primary = $indexes['PRIMARY']->getColumns()[0];
+
+            }
 
             self::$_configQuery = array('query' => array($primary => $id));
         }
 
-        if (!isset(self::$config_cache[$id]))
-            self::$config_cache[$id] = self::findFirst(self::$_configQuery, self::$_configModel);
+        if (!isset(self::$config_cache[$id])) {
+            self::$config_cache[$id] = self::findFirst(
+                self::$_configQuery,
+                self::$_configModel
+            );
+        }
+
 
         $dbConfig = self::$config_cache[$id];
 
@@ -350,8 +370,11 @@ class RedisDb
             $indexes = self::getIndexes($model);
 
             $primary = 'id';
-            if (isset($indexes['PRIMARY']))
+            if (isset($indexes['PRIMARY'])) {
+
                 $primary = $indexes['PRIMARY']->getColumns()[0];
+
+            }
 
             self::$_adminQuery = array('query' => array($primary => $memberId));
 
@@ -375,8 +398,10 @@ class RedisDb
         $indexes = $model->getModelsMetaData()->readIndexes($source);
 
         if (self::isCommon($model) || self::isAdmin($model)) {
+
             self::connect($model);
             $indexes = $model->getReadConnection()->describeIndexes($source);
+
         }
 
         return $indexes;
@@ -408,17 +433,26 @@ class RedisDb
 
             $cache = true;
             if (isset($parameters['cache'])) {
+
                 $cache = $parameters['cache'];
                 unset($parameters['cache']);
+
             }
 
             $result = $model::find($parameters);
 
-            if (!$result)
+            if (!$result) {
+
                 $result = array();
 
-            if ($cache && self::getConfig()->get('enabled'))
+            }
+
+            if ($cache && self::getConfig()->get('enabled')) {
+
                 self::setHash($model, $key, $result, $expire);
+
+            }
+
         }
 
         return $result;
@@ -482,7 +516,9 @@ class RedisDb
             if (is_array($parameters['limit'])) {
 
                 foreach ($parameters['limit'] as $value) {
+
                     $addKeys[] = $value;
+
                 }
 
             } else {
@@ -506,8 +542,11 @@ class RedisDb
             }
         }
 
-        if ($addKeys)
+        if ($addKeys) {
+
             $key .= '_' . implode('_', $addKeys);
+
+        }
 
         return $key;
     }
@@ -524,8 +563,11 @@ class RedisDb
             foreach ($keys as $key => $value) {
 
                 if (is_array($key)) {
+
                     foreach ($key as $col => $val) {
+
                         $keyValues[] = $col . $val;
+
                     }
 
                     continue;
@@ -554,6 +596,7 @@ class RedisDb
         if (is_array($commonDbs)) {
 
             foreach ($commonDbs as $name) {
+
                 $name = trim($name);
 
                 if (substr($source, 0, strlen($name)) !== $name)
@@ -582,6 +625,7 @@ class RedisDb
         if (is_array($adminDbs)) {
 
             foreach ($adminDbs as $name) {
+
                 $name = trim($name);
 
                 if (substr($source, 0, strlen($name)) !== $name)
@@ -602,7 +646,11 @@ class RedisDb
     {
         $_prefix = $prefix;
         if ($prefix) {
-            $prefix = (!self::isCommon($model) && !self::isAdmin($model)) ? $prefix : null;
+
+            $prefix = (!self::isCommon($model) && !self::isAdmin($model))
+                ? $prefix
+                : null;
+
         }
 
         RedisDb::setCon($model, $prefix);
@@ -620,8 +668,13 @@ class RedisDb
     {
         $cacheKey = self::getCacheKey($model, $key);
 
-        if (!isset(self::$cache[$cacheKey]))
-            self::$cache[$cacheKey] = self::getRedis($model)->hGet(self::getHashKey($model), $key);
+        if (!isset(self::$cache[$cacheKey])) {
+
+            self::$cache[$cacheKey] = self::getRedis($model)
+                ->hGet(self::getHashKey($model), $key);
+
+        }
+
 
         return self::$cache[$cacheKey];
     }
@@ -634,8 +687,11 @@ class RedisDb
     {
         $key = $model->getSource();
 
-        if (self::getPrefix())
+        if (self::getPrefix()) {
+
             $key .= '@'. self::getPrefix();
+
+        }
 
         return $key;
     }
@@ -716,8 +772,11 @@ class RedisDb
             ? self::getConfig()->get('default')->get('expire')
             : $expire;
 
-        if ($expire > 0 && !$redis->isTimeout($hashKey))
+        if ($expire > 0 && !$redis->isTimeout($hashKey)) {
+
             $redis->setTimeout($hashKey, $expire);
+
+        }
     }
 
     /**
@@ -776,8 +835,10 @@ class RedisDb
         // 設定確認・個別確認
         $autoIndex = self::getConfig()->get('default')->get('autoIndex');
         if (isset($parameters['autoIndex'])) {
+
             $autoIndex = $parameters['autoIndex'];
             unset($parameters['autoIndex']);
+
         }
 
         if ($autoIndex) {
@@ -796,6 +857,7 @@ class RedisDb
 
                     $chkQuery = array();
                     foreach ($columns as $column) {
+
                         if (!isset($query[$column]))
                             break;
 
@@ -816,136 +878,196 @@ class RedisDb
         }
 
         // クエリを発行
+        self::$bind = array();
+        self::$keys = array();
+
         foreach ($query as $column => $value) {
 
             if (count($aliased = explode('.', $column)) > 1) {
-                $named_place = $aliased[1];
+
                 $column = sprintf('[%s].[%s]', $aliased[0], $aliased[1]);
+
             } else {
-                $named_place = $column;
+
                 $column = sprintf('[%s]', $column);
-            }
-
-            if (is_array($value)) {
-
-                if (isset($value['operator'])) {
-                    $operator  = $value['operator'];
-                    $bindValue = $value['value'];
-
-                    switch ($operator) {
-                        case $operator === Criteria::IS_NULL:
-                        case $operator === Criteria::IS_NOT_NULL:
-
-                            $keys[$named_place] = str_replace(" ", "_", $operator);
-
-                            $val = '';
-
-                            break;
-
-                        case $operator === Criteria::IN:
-                        case $operator === Criteria::NOT_IN:
-
-                            $len = count($bindValue);
-
-                            $placeholders = array();
-                            for ($i = 0; $i < $len; $i++) {
-
-                                $placeholders[] = sprintf(':%s:', $named_place.$i);
-
-                                $bind[$named_place.$i] = $bindValue[$i];
-
-                            }
-
-                            $keys[$named_place] = str_replace(" ", "_", $operator) . implode('_', $bindValue);
-
-                            $val = sprintf('(%s)', implode(',', $placeholders));
-
-                            break;
-
-                        case $operator === Criteria::BETWEEN:
-
-                            $bind[$named_place.'0'] = $bindValue[0];
-                            $bind[$named_place.'1'] = $bindValue[1];
-
-                            $keys[$named_place] = $operator . implode('_', $bindValue);
-
-                            $val = sprintf(':%s: AND :%s:', $bindValue[0], $bindValue[1]);
-
-                            break;
-
-                        default:
-
-                            $bind[$named_place] = $bindValue;
-
-                            $keys[$named_place] = $operator.$bindValue;
-
-                            $val = sprintf(':%s:', $named_place);
-
-                            break;
-                    }
-
-                } else {
-
-                    $operator = self::IN;
-
-                    $placeholders = array();
-                    $len = count($value);
-
-                    for ($i = 0; $i < $len; $i++) {
-
-                        $placeholders[] = sprintf(':%s:', $named_place.$i);
-
-                        $bind[$named_place.$i] = $value[$i];
-
-                    }
-
-                    $keys[$named_place] = str_replace(" ", "_", $operator) . implode('_', $value);
-
-                    $val = sprintf('(%s)', implode(',', $placeholders));
-                }
-
-            } else {
-
-                if ($value === null){
-
-                    $operator = Criteria::ISNULL;
-
-                    $keys[$named_place] = 'IS_NULL';
-
-                    $val = '';
-
-                } else {
-
-                    $operator = Criteria::EQUAL;
-
-                    $bind[$named_place] = $value;
-
-                    $keys[$named_place] = '='.$value;
-
-                    $val = sprintf(':%s:', $named_place);
-
-                }
 
             }
 
-            $where[] = sprintf('%s %s %s', $column, $operator, $val);
+            $where[] = implode(' ', self::buildQuery($column, $value));
         }
 
         if (count($where) > 0) {
 
             $parameters[0] = implode(' AND ', $where);
 
-            $parameters['bind'] = $bind;
+            $parameters['bind'] = self::$bind;
 
-            ksort($keys);
+            ksort(self::$keys);
 
-            $parameters['keys'] = $keys;
+            $parameters['keys'] = self::$keys;
 
         }
 
         unset($parameters['query']);
 
         return $parameters;
+    }
+
+    /**
+     * @param  mixed $column
+     * @param  mixed $value
+     * @return array
+     */
+    public static function buildQuery($column, $value)
+    {
+
+        if (count($aliased = explode('.', $column)) > 1) {
+
+            $named_place = $aliased[1];
+
+        } else {
+
+            $named_place = $column;
+
+        }
+
+        if (is_array($value)) {
+
+            if (isset($value['operator'])) {
+                $operator  = $value['operator'];
+                $bindValue = $value['value'];
+
+                switch ($operator) {
+                    case $operator === Criteria::IS_NULL:
+                    case $operator === Criteria::IS_NOT_NULL:
+
+                        $keys[$named_place] = str_replace(" ", "_", $operator);
+
+                        $query = '';
+
+                        break;
+
+                    case $operator === Criteria::IN:
+                    case $operator === Criteria::NOT_IN:
+
+                        $len = count($bindValue);
+
+                        $placeholders = array();
+                        for ($i = 0; $i < $len; $i++) {
+
+                            $placeholders[] = sprintf(':%s:', $named_place.$i);
+
+                            $bind[$named_place.$i] = $bindValue[$i];
+
+                        }
+
+                        $keys[$named_place] = str_replace(" ", "_", $operator) . implode('_', $bindValue);
+
+                        $query = sprintf('(%s)', implode(',', $placeholders));
+
+                        break;
+
+                    case $operator === Criteria::BETWEEN:
+
+                        $bind[$named_place.'0'] = $bindValue[0];
+                        $bind[$named_place.'1'] = $bindValue[1];
+
+                        $keys[$named_place] = $operator . implode('_', $bindValue);
+
+                        $query = sprintf(':%s: AND :%s:', $bindValue[0], $bindValue[1]);
+
+                        break;
+
+                    case $operator === Criteria::ADD_OR:
+
+                        $column = '';
+                        $operator = '';
+
+                        $queryStrings = array();
+                        foreach ($value as $col => $val) {
+
+                            $queryStrings[] = implode(' ', self::buildQuery($col, $val));
+
+                        }
+
+                        $query = '(' . implode(' OR ', $queryStrings) . ')';
+
+                        break;
+
+                    default:
+
+                        $bind[$named_place] = $bindValue;
+
+                        $keys[$named_place] = $operator.$bindValue;
+
+                        $query = sprintf(':%s:', $named_place);
+
+                        break;
+                }
+
+            } else {
+
+                $operator = self::IN;
+
+                $placeholders = array();
+                $len = count($value);
+
+                for ($i = 0; $i < $len; $i++) {
+
+                    $placeholders[] = sprintf(':%s:', $named_place.$i);
+
+                    $bind[$named_place.$i] = $value[$i];
+
+                }
+
+                $keys[$named_place] = str_replace(" ", "_", $operator) . implode('_', $value);
+
+                $query = sprintf('(%s)', implode(',', $placeholders));
+            }
+
+        } else {
+
+            if ($value === null) {
+
+                $operator = Criteria::ISNULL;
+
+                $keys[$named_place] = 'IS_NULL';
+
+                $query = '';
+
+            } else if (is_array($value)) {
+
+                $column = '';
+                $operator = '';
+
+                $queryStrings = array();
+                foreach ($value as $col => $val) {
+
+                    $queryStrings[] = implode(' ', self::buildQuery($col, $val));
+
+                }
+
+                $query = '(' . implode(' OR ', $queryStrings) . ')';
+
+            } else {
+
+                $operator = Criteria::EQUAL;
+
+                $bind[$named_place] = $value;
+
+                $keys[$named_place] = '='.$value;
+
+                $query = sprintf(':%s:', $named_place);
+
+            }
+
+        }
+
+        return array(
+            'column' => $column,
+            'operator' => $operator,
+            'query' => $query
+        );
     }
 
     /**
