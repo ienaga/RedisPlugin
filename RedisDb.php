@@ -880,20 +880,10 @@ class RedisDb
         // クエリを発行
         self::$bind = array();
         self::$keys = array();
-
         foreach ($query as $column => $value) {
 
-            if (count($aliased = explode('.', $column)) > 1) {
-
-                $column = sprintf('[%s].[%s]', $aliased[0], $aliased[1]);
-
-            } else {
-
-                $column = sprintf('[%s]', $column);
-
-            }
-
             $where[] = implode(' ', self::buildQuery($column, $value));
+
         }
 
         if (count($where) > 0) {
@@ -914,8 +904,8 @@ class RedisDb
     }
 
     /**
-     * @param  mixed $column
-     * @param  mixed $value
+     * @param  mixed  $column
+     * @param  mixed  $value
      * @return array
      */
     public static function buildQuery($column, $value)
@@ -923,10 +913,16 @@ class RedisDb
 
         if (count($aliased = explode('.', $column)) > 1) {
 
+            $column = sprintf('[%s].[%s]', $aliased[0], $aliased[1]);
             $named_place = $aliased[1];
 
-        } else {
+        } else if (is_int($column)) {
 
+            $column = '';
+            $value['operator'] = Criteria::ADD_OR;
+
+        } else {
+            $column = sprintf('[%s]', $column);
             $named_place = $column;
 
         }
@@ -934,6 +930,7 @@ class RedisDb
         if (is_array($value)) {
 
             if (isset($value['operator'])) {
+
                 $operator  = $value['operator'];
                 $bindValue = $value['value'];
 
@@ -980,7 +977,6 @@ class RedisDb
 
                     case $operator === Criteria::ADD_OR:
 
-                        $column = '';
                         $operator = '';
 
                         $queryStrings = array();
@@ -1037,7 +1033,6 @@ class RedisDb
 
             } else if (is_array($value)) {
 
-                $column = '';
                 $operator = '';
 
                 $queryStrings = array();
