@@ -8,7 +8,7 @@ http://qiita.com/ienaga/items/6bbf1c5e95a133d347ac
 
 ## Version
 
-PHP 5.4.x/5.5.x/5.6.x
+PHP 5.x/7.x
 
 Phalcon 1.x/2.x  
 
