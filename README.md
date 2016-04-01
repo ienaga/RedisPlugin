@@ -1,6 +1,21 @@
 RedisPlugin for Phalcon (The correspondence of MySQL sharding.)
 ======
 
+# License
+
+MIT License.
+
+
+# Version
+
+1.0.0
+
+
+# redis clients
+
+http://redis.io/clients
+
+
 # commentary
 
 http://qiita.com/ienaga/items/6bbf1c5e95a133d347ac
