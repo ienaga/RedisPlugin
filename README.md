@@ -16,7 +16,7 @@ MIT License.
 ```javascript
 {
     "require": {
-       "ienaga/redis-phalcon-library": "*"
+       "ienaga/phalcon-redis-plugin": "*"
     }
 }
 ```
