@@ -1,15 +1,7 @@
 RedisPlugin for Phalcon (The correspondence of MySQL sharding.)
 ======
 
-# License
-
-MIT License.
-
-
-# Version
-
-1.0.0
-
+[![Latest Stable Version](https://poser.pugx.org/ienaga/phalcon-redis-plugin/v/stable)](https://packagist.org/packages/ienaga/phalcon-redis-plugin) [![Total Downloads](https://poser.pugx.org/ienaga/phalcon-redis-plugin/downloads)](https://packagist.org/packages/ienaga/phalcon-redis-plugin) [![Latest Unstable Version](https://poser.pugx.org/ienaga/phalcon-redis-plugin/v/unstable)](https://packagist.org/packages/ienaga/phalcon-redis-plugin) [![License](https://poser.pugx.org/ienaga/phalcon-redis-plugin/license)](https://packagist.org/packages/ienaga/phalcon-redis-plugin)
 
 # Composer
 
