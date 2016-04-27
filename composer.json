@@ -1,0 +1,23 @@
+{
+    "name": "ienaga/phalcon-redis-plugin",
+    "homepage": "https://github.com/ienaga/RedisPlugin",
+    "description": "RedisPlugin for Phalcon (The correspondence of MySQL sharding.)",
+    "keywords": ["redis", "phalcon"],
+    "type": "library",
+    "license": "MIT",
+    "authors":[
+        {
+            "name": "Toshiyuki Ienaga",
+            "email": "ienaga@tvon.jp"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*"
+    },
+    "autoload": {
+        "psr-0": {
+            "RedisPlugin\\": ""
+        }
+    },
+    "target-dir": "RedisPlugin"
+}
