@@ -29,26 +29,24 @@ Phalcon 1.x/2.x
 
 
 ## phpredis
-~~~
-sudo pecl install redis
-sudo vim /etc/php.d/redis.ini
-extension=redis.so
-~~~
+```linux
+sudo yum install php-pecl-redis
+```
 
 
 ## YAML
 
-~~~
+```linux
 sudo yum install libyaml libyaml-devel
 
 sudo pecl install YAML
 sudo vim /etc/php.d/yaml.ini
 extension=yaml.so
-~~~
+```
 
 ## app/config/config.php
 
-~~~
+```php
 
 $dir = __DIR__ .'/../../app/';
 $env = getenv('PLATFORM');
@@ -94,11 +92,11 @@ $application = array(
 
 return new \Phalcon\Config(array_merge($application, $configYml));
 
-~~~
+```
 
 ## app/config/database.yml
 
-~~~
+```yaml
 prd:
 stg:
 dev:
@@ -178,10 +176,10 @@ dev:
       dbname:   XXXXX
       charset:  utf8
       transaction: false
-~~~
+```
 
 ## app/config/redis.yml
-~~~
+```yaml
 prd:
 stg:
 dev:
@@ -283,12 +281,12 @@ dev:
         host: XXXXX
         port: 6379
         select: 3
-~~~
+```
 
 
 ## app/config/services.php
 
-~~~
+```php
 /**
  * Database connection
  */
@@ -328,11 +326,11 @@ foreach ($config->get('database') as $db => $arguments)
 $di->set('modelsMetadata', function () { return new \RedisPlugin\MetaData(); });
 
 
-~~~
+```
 
 ## find | findFirst 簡易版
 
-~~~
+```php
 <php
 
 use \RedisPlugin\RedisDb;
@@ -429,12 +427,12 @@ class Robot extends \Phalcon\Mvc\Model
     }
 }
 
-~~~
+```
 
 
 ## find | findFirst 比較演算子
 
-~~~
+```php
 <php
 
 use \RedisPlugin\RedisDb;
@@ -500,12 +498,12 @@ class Robot extends \Phalcon\Mvc\Model
     }
 }
 
-~~~
+```
 
 
 ## Criteria
 
-~~~
+```php
 <php
 
 use \RedisPlugin\RedisDb;
@@ -562,12 +560,12 @@ class Robot extends \Phalcon\Mvc\Model
     }
 }
 
-~~~
+```
 
 
 ## save
 
-~~~
+```php
 <php
 
 use \RedisPlugin\RedisDb;
@@ -588,14 +586,14 @@ class Robot extends \Phalcon\Mvc\Model
     }
 }
 
-~~~
+```
 
 
 ## autoIndex
 
 ※autoIndexをtrueにする事で、PRIMARYもしくはINDEXに一番マッチするクエリに並び替えて発行。
 
-~~~
+```php
 
 <php
 
@@ -632,5 +630,5 @@ class Robot extends \Phalcon\Mvc\Model
 }
 
 
-~~~
+```
 
