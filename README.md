@@ -11,10 +11,15 @@ MIT License.
 1.0.0
 
 
-# redis clients
+# Composer
 
-http://redis.io/clients
-
+```javascript
+{
+    "require": {
+       "ienaga/redis-phalcon-library": "*"
+    }
+}
+```
 
 # commentary
 
