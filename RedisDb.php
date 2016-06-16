@@ -80,6 +80,7 @@ class RedisDb
      * @param  array $data
      * @param  array $whiteList
      * @return \Phalcon\Mvc\Model
+     * 
      */
     public static function save($model, $data = null, $whiteList = null)
     {
@@ -100,6 +101,32 @@ class RedisDb
         return $model;
     }
 
+    /**
+     * @param  \Phalcon\Mvc\Model $model
+     * @param  array $data
+     * @param  array $whiteList
+     * @return \Phalcon\Mvc\Model
+     * @throws Exception
+     */
+    public static function delete($model, $data = null, $whiteList = null)
+    {
+        self::setPrefix($model);
+
+        self::connect($model, self::getPrefix());
+
+        $model->setTransaction(self::getTransaction(self::getPrefix()));
+
+        if (!$model->delete($data, $whiteList)) {
+
+            RedisDb::outputErrorMessage($model);
+
+        }
+
+        self::addModels($model);
+
+        return $model;
+    }
+    
     /**
      * @param  string $configName
      * @return \Phalcon\Mvc\Model\TransactionInterface
