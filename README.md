@@ -328,7 +328,6 @@ $di->set('modelsMetadata', function () { return new \RedisPlugin\MetaData(); });
 ## find | findFirst 簡易版
 
 ```php
-<php
 
 use \RedisPlugin\RedisDb;
 
@@ -430,7 +429,6 @@ class Robot extends \Phalcon\Mvc\Model
 ## find | findFirst 比較演算子
 
 ```php
-<php
 
 use \RedisPlugin\RedisDb;
 use \RedisPlugin\Criteria;
@@ -501,7 +499,6 @@ class Robot extends \Phalcon\Mvc\Model
 ## Criteria
 
 ```php
-<php
 
 use \RedisPlugin\RedisDb;
 use \RedisPlugin\Criteria;
@@ -563,7 +560,6 @@ class Robot extends \Phalcon\Mvc\Model
 ## save
 
 ```php
-<php
 
 use \RedisPlugin\RedisDb;
 
@@ -591,8 +587,6 @@ class Robot extends \Phalcon\Mvc\Model
 ※autoIndexをtrueにする事で、PRIMARYもしくはINDEXに一番マッチするクエリに並び替えて発行。
 
 ```php
-
-<php
 
 use \RedisPlugin\RedisDb;
 use \RedisPlugin\Criteria;
