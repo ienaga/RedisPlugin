@@ -61,19 +61,19 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
     }
 
     /**
-     * @param $options
-     */
-    public function setOptions($options)
-    {
-        $this->options = $options;
-    }
-
-    /**
      * @return array
      */
     public function getOptions()
     {
         return $this->options;
+    }
+
+    /**
+     * @param $options
+     */
+    public function setOptions($options)
+    {
+        $this->options = $options;
     }
 
     /**
@@ -86,15 +86,58 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
 
     /**
      * @param  string $key
+     * @return bool|mixed
+     */
+    public function getRedisValue($key)
+    {
+        $value = $this->getRedis()->hGet(self::CACHE_KEY, $key);
+        $this->setCache($key, $value);
+        return $value;
+    }
+
+    /**
+     * @param string $key
+     * @param mixed $value
+     */
+    public function setRedisValue($key, $value)
+    {
+        $this->getRedis()->hSet(self::CACHE_KEY, $key, $value);
+        if (!$this->getRedis()->isTimeout(self::CACHE_KEY)) {
+            $options = $this->getOptions();
+            $this->getRedis()->setTimeout(self::CACHE_KEY, $options['lifetime']);
+        }
+        $this->setCache($key, $value);
+    }
+
+    /**
+     * @param  string $key
+     * @return mixed|null
+     */
+    public function getCache($key)
+    {
+        $cache = (!isset($this->_cache[$key]))
+            ? $this->getRedisValue($key)
+            : $this->_cache[$key];
+
+        return ($cache) ? $cache : null;
+    }
+
+    /**
+     * @param string $key
+     * @param mixed $value
+     */
+    public function setCache($key, $value)
+    {
+        $this->_cache[$key] = $value;
+    }
+
+    /**
+     * @param  string $key
      * @return array
      */
     public function read($key)
     {
-        if (!isset($this->_cache[$key]))
-            $this->_cache[$key] =
-                $this->getRedis()->hGet(self::CACHE_KEY, $key);
-
-        return ($this->_cache[$key]) ? $this->_cache[$key] : null;
+        return $this->getCache($key);
     }
 
     /**
@@ -103,15 +146,7 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
      */
     public function write($key, $data)
     {
-        $this->getRedis()->hSet(self::CACHE_KEY, $key, $data);
-
-        if (!$this->getRedis()->isTimeout(self::CACHE_KEY)) {
-            $options = $this->getOptions();
-            $this->getRedis()->setTimeout(self::CACHE_KEY, $options['lifetime']);
-        }
-
-        $this->_cache[$key] = $data;
-
+        $this->setRedisValue($key, $data);
         $this->writeIndexes($key);
     }
 
@@ -139,10 +174,7 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
         $indexes = $model->getReadConnection()->describeIndexes($source);
 
         $cacheKey = $this->getIndexesKey($source);
-
-        $this->getRedis()->hSet(self::CACHE_KEY, $cacheKey, $indexes);
-
-        $this->_cache[$cacheKey] = $indexes;
+        $this->setRedisValue($cacheKey, $indexes);
     }
 
     /**
@@ -151,13 +183,7 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
      */
     public function readIndexes($source)
     {
-        $cacheKey = $this->getIndexesKey($source);
-
-        if (!isset($this->_cache[$cacheKey]))
-            $this->_cache[$cacheKey] =
-                $this->getRedis()->hGet(self::CACHE_KEY, $cacheKey);
-
-        return ($this->_cache[$cacheKey]) ? $this->_cache[$cacheKey] : null;
+        return $this->getCache($this->getIndexesKey($source));
     }
 
     /**

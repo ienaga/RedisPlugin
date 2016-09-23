@@ -44,10 +44,10 @@ class Criteria
      */
     public function __construct($model, $expire = 0)
     {
-        $this->setModel($model);
-        $this->setExpire($expire);
+        $this
+            ->setModel($model)
+            ->setExpire($expire);
     }
-
 
     /**
      * @param  string $column
@@ -61,6 +61,37 @@ class Criteria
             $this->_buildArray($value, $operator);
 
         return $this;
+    }
+
+    /**
+     * @param  string $column
+     * @param  array $values
+     * @return Criteria
+     */
+    public function in($column, $values = array())
+    {
+        return $this->add($column, $values, self::IN);
+    }
+
+    /**
+     * @param  string $column
+     * @param  array $values
+     * @return Criteria
+     */
+    public function notIn($column, $values = array())
+    {
+        return $this->add($column, $values, self::NOT_IN);
+    }
+
+    /**
+     * @param  string $column
+     * @param  mixed $start
+     * @param  mixed $end
+     * @return Criteria
+     */
+    public function between($column, $start, $end)
+    {
+        return $this->add($column, array($start, $end), self::BETWEEN);
     }
 
     /**
@@ -155,7 +186,6 @@ class Criteria
         return $this;
     }
 
-
     /**
      * @return array
      */
@@ -184,6 +214,14 @@ class Criteria
     }
 
     /**
+     * @return int
+     */
+    public function getExpire()
+    {
+        return $this->expire;
+    }
+
+    /**
      * @param  int $expire
      * @return $this
      */
@@ -192,14 +230,6 @@ class Criteria
         $this->expire = $expire;
 
         return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getExpire()
-    {
-        return $this->expire;
     }
 
     /**

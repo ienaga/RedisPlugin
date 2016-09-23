@@ -438,7 +438,7 @@ class RedisDb
      * @param  array              $parameters
      * @param  \Phalcon\Mvc\Model $model
      * @param  int                $expire
-     * @return \Phalcon\Mvc\Model
+     * @return \Phalcon\Mvc\Model[]
      */
     public static function find($parameters, $model, $expire = 0)
     {
@@ -924,11 +924,6 @@ class RedisDb
         }
 
         unset($parameters['query']);
-
-        $filePath = '/tmp/' . 'thomas.log';
-        $logString =  str_repeat('#', 80) . "\n";
-        $logString .= var_export($parameters, true) . "\n";
-        @file_put_contents($filePath, $logString, FILE_APPEND);
 
         return $parameters;
     }
