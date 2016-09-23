@@ -128,16 +128,12 @@ class Criteria
      * @param  int $offset
      * @return $this
      */
-    public function limit($limit, $offset = null)
+    public function limit($limit, $offset = 0)
     {
-        if ($offset) {
-            $this->conditions['limit'] = array(
-                'number' => $limit,
-                'offset' => $offset
-            );
-        } else {
-            $this->conditions['limit'] = $limit;
-        }
+        $this->conditions['limit'] = array(
+            'number' => $limit,
+            'offset' => $offset
+        );
 
         return $this;
     }
