@@ -4,49 +4,74 @@
 namespace RedisPlugin;
 
 
-class Criteria
+use RedisPlugin\CriteriaInterface;
+use RedisPlugin\RedisDb;
+
+
+class Criteria implements CriteriaInterface
 {
     /** operator list */
-    const EQUAL = '=';
-    const NOT_EQUAL = '<>';
-    const GREATER_THAN = '>';
-    const LESS_THAN = '<';
-    const GREATER_EQUAL = '>=';
-    const LESS_EQUAL = '<=';
-    const IS_NULL = 'IS NULL';
-    const IS_NOT_NULL = 'IS NOT NULL';
-    const LIKE = 'LIKE';
-    const I_LIKE = 'ILIKE';
-    const IN = 'IN';
-    const NOT_IN = 'NOT IN';
-    const BETWEEN = 'BETWEEN';
-    const ADD_OR = 'OR';
+    const EQUAL         = "=";
+    const NOT_EQUAL     = "<>";
+    const GREATER_THAN  = ">";
+    const LESS_THAN     = "<";
+    const GREATER_EQUAL = ">=";
+    const LESS_EQUAL    = "<=";
+    const IS_NULL       = "IS NULL";
+    const IS_NOT_NULL   = "IS NOT NULL";
+    const LIKE          = "LIKE";
+    const I_LIKE        = "ILIKE";
+    const IN            = "IN";
+    const NOT_IN        = "NOT IN";
+    const BETWEEN       = "BETWEEN";
+    const ADD_OR        = "OR";
+    const ASC           = "ASC";
+    const DESC          = "DESC";
+
 
     /**
      * @var array
      */
-    private $conditions = array('query' => array());
+    protected $conditions = array("query" => array());
+
+    /**
+     * @var array
+     */
+    protected $order = array();
+
+    /**
+     * @var array
+     */
+    protected $group = array();
 
     /**
      * @var null
      */
-    private $model = null;
+    protected $model = null;
 
     /**
      * @var int
      */
-    private $expire = 0;
+    protected $expire = 0;
 
 
     /**
      * @param \Phalcon\Mvc\Model $model
      * @param int $expire
      */
-    public function __construct($model, $expire = 0)
+    public function __construct($model = null, $expire = 0)
     {
         $this
             ->setModel($model)
             ->setExpire($expire);
+    }
+
+    /**
+     * @return static
+     */
+    public static function create()
+    {
+        return new static();
     }
 
     /**
@@ -57,15 +82,15 @@ class Criteria
      */
     public function add($column, $value, $operator = self::EQUAL)
     {
-        $this->conditions['query'][$column] =
-            $this->_buildArray($value, $operator);
+        $this->conditions["query"][$column] =
+            $this->buildArray($value, $operator);
 
         return $this;
     }
 
     /**
      * @param  string $column
-     * @param  array $values
+     * @param  array  $values
      * @return Criteria
      */
     public function in($column, $values = array())
@@ -75,7 +100,7 @@ class Criteria
 
     /**
      * @param  string $column
-     * @param  array $values
+     * @param  array  $values
      * @return Criteria
      */
     public function notIn($column, $values = array())
@@ -102,9 +127,9 @@ class Criteria
      */
     public function addOr($column, $value, $operator = self::EQUAL)
     {
-        $this->conditions['query'][] = array(
-            'operator' => self::ADD_OR,
-            $column => $this->_buildArray($value, $operator)
+        $this->conditions["query"][] = array(
+            "operator" => self::ADD_OR,
+            $column    => $this->buildArray($value, $operator)
         );
 
         return $this;
@@ -115,11 +140,11 @@ class Criteria
      * @param  string $operator
      * @return array
      */
-    private function _buildArray($value, $operator = self::EQUAL)
+    protected function buildArray($value, $operator = self::EQUAL)
     {
         return array(
-            'operator' => $operator,
-            'value' => $value
+            "operator" => $operator,
+            "value"    => $value
         );
     }
 
@@ -130,9 +155,9 @@ class Criteria
      */
     public function limit($limit, $offset = 0)
     {
-        $this->conditions['limit'] = array(
-            'number' => $limit,
-            'offset' => $offset
+        $this->conditions["limit"] = array(
+            "number" => $limit,
+            "offset" => $offset
         );
 
         return $this;
@@ -140,11 +165,12 @@ class Criteria
 
     /**
      * @param  string $value
+     * @param  string $sort
      * @return $this
      */
-    public function order($value)
+    public function order($value, $sort = self::ASC)
     {
-        $this->conditions['order'] = $value;
+        $this->order[] = $value ." ". $sort;
 
         return $this;
     }
@@ -155,7 +181,7 @@ class Criteria
      */
     public function group($value)
     {
-        $this->conditions['group'] = $value;
+        $this->group[] = $value;
 
         return $this;
     }
@@ -166,7 +192,7 @@ class Criteria
      */
     public function cache($bool = false)
     {
-        $this->conditions['cache'] = $bool;
+        $this->conditions["cache"] = $bool;
 
         return $this;
     }
@@ -177,7 +203,7 @@ class Criteria
      */
     public function autoIndex($bool = false)
     {
-        $this->conditions['autoIndex'] = $bool;
+        $this->conditions["autoIndex"] = $bool;
 
         return $this;
     }
@@ -187,6 +213,35 @@ class Criteria
      */
     public function getConditions()
     {
+        return $this->conditions;
+    }
+
+    /**
+     * @param  array $condition
+     * @return $this
+     */
+    public function setConditions($condition = array())
+    {
+        $this->conditions = $condition;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function buildCondition()
+    {
+        // order by
+        if (count($this->order)) {
+            $this->conditions["order"] = join(", ", $this->order);
+        }
+
+        // group by
+        if (count($this->group)) {
+            $this->conditions["group"] = join(", ", $this->group);
+        }
+
         return $this->conditions;
     }
 
@@ -202,7 +257,7 @@ class Criteria
      * @param  \Phalcon\Mvc\Model $model
      * @return $this
      */
-    public function setModel($model)
+    public function setModel(\Phalcon\Mvc\Model $model)
     {
         $this->model = $model;
 
@@ -233,7 +288,7 @@ class Criteria
      */
     public function findFirst()
     {
-        return RedisDb::findFirst($this->getConditions(), $this->getModel(), $this->getExpire());
+        return RedisDb::findFirst($this->buildCondition(), $this->getModel(), $this->getExpire());
     }
 
     /**
@@ -241,6 +296,22 @@ class Criteria
      */
     public function find()
     {
-        return RedisDb::find($this->getConditions(), $this->getModel(), $this->getExpire());
+        return RedisDb::find($this->buildCondition(), $this->getModel(), $this->getExpire());
+    }
+
+    /**
+     * TODO
+     */
+    public function delete()
+    {
+
+    }
+
+    /**
+     * TODO
+     */
+    public function update()
+    {
+
     }
 }

@@ -5,9 +5,10 @@ namespace RedisPlugin;
 
 
 use \Exception;
+use RedisPlugin\RedisDbInterface;
 
 
-class RedisDb
+class RedisDb implements RedisDbInterface
 {
     /**
      * @var \Phalcon\Mvc\Model
@@ -63,7 +64,14 @@ class RedisDb
      */
     private static $_adminQuery = array();
 
-
+    /**
+     * @return \Phalcon\DiInterface
+     */
+    public function getDI()
+    {
+        return \Phalcon\DI::getDefault();
+    }
+    
     /**
      * @param  null $memberId
      * @return \Phalcon\Mvc\Model\TransactionInterface
@@ -71,7 +79,7 @@ class RedisDb
     public static function getTransaction($memberId = null)
     {
         return self::addMasterConnection(
-            self::getConnectionName($memberId) . 'Master'
+            self::getConnectionName($memberId) . "Master"
         );
     }
 
@@ -133,7 +141,7 @@ class RedisDb
      */
     public static function getTransactionForConfigName($configName)
     {
-        return self::addMasterConnection($configName . 'Master');
+        return self::addMasterConnection($configName . "Master");
     }
 
     /**
@@ -145,8 +153,8 @@ class RedisDb
     {
 
         $configName  = self::getConnectionName($memberId);
-        $configName .= (self::isCommon($model)) ? 'Common' : '';
-        $configName .= (self::isTransaction()) ? 'Master' : 'Slave';
+        $configName .= (self::isCommon($model)) ? "Common" : "";
+        $configName .= (self::isTransaction()) ? "Master" : "Slave";
 
         $model->setReadConnectionService($configName);
 
@@ -174,7 +182,7 @@ class RedisDb
      */
     public static function getConfig()
     {
-        return \Phalcon\DI::getDefault()->get('config')->get('redis');
+        return \Phalcon\DI::getDefault()->get("config")->get("redis");
     }
 
     /**
@@ -184,7 +192,7 @@ class RedisDb
      */
     public static function setConForConfigName($model, $configName)
     {
-        $configName .=  (self::isTransaction()) ? 'Master' : 'Slave';
+        $configName .=  (self::isTransaction()) ? "Master" : "Slave";
 
         $model->setReadConnectionService($configName);
 
@@ -198,7 +206,7 @@ class RedisDb
     public static function getConnectionName($memberId = null)
     {
 
-        $mode = self::getConfig()->get('shard')->get('enabled');
+        $mode = self::getConfig()->get("shard")->get("enabled");
 
         if ($mode && (int) $memberId > 0) {
 
@@ -211,13 +219,13 @@ class RedisDb
             $adminMember = self::$admin_cache[$memberId];
             if (self::$admin_cache[$memberId]) {
 
-                $column = self::getConfig()->get('admin')->get('column');
+                $column = self::getConfig()->get("admin")->get("column");
                 return self::getMemberConfigName($adminMember->{$column});
 
             }
         }
 
-        return self::getConfig()->get('default')->get('name');
+        return self::getConfig()->get("default")->get("name");
     }
 
     /**
@@ -229,10 +237,10 @@ class RedisDb
         if (!isset(self::$connections[$configName])) {
 
             $service = \Phalcon\DI::getDefault()
-                ->get('config')
-                ->get('database')
+                ->get("config")
+                ->get("database")
                 ->get($configName)
-                ->get('transaction_name');
+                ->get("transaction_name");
 
             /** @var \Phalcon\Mvc\Model\Transaction\Manager $manager */
             $manager = \Phalcon\DI::getDefault()->getShared($service);
@@ -289,12 +297,12 @@ class RedisDb
     {
         $rollback = false;
 
-        $config = \Phalcon\DI::getDefault()->get('config')->get('database');
+        $config = \Phalcon\DI::getDefault()->get("config")->get("database");
 
         foreach (self::$connections as $configName => $connection) {
 
             // Activeなトランザクションがある場合だけrollbackする
-            $service = $config->get($configName)->get('transaction_name');
+            $service = $config->get($configName)->get("transaction_name");
 
             /** @var \Phalcon\Mvc\Model\Transaction\Manager $manager */
             $manager = \Phalcon\DI::getDefault()->getShared($service);
@@ -326,9 +334,9 @@ class RedisDb
             return;
 
         error_log(
-            '[rollback] MESSAGE:'. $e->getMessage()
-            .' - FILE:'.$e->getFile()
-            .' - LINE:'.$e->getLine()
+            "[rollback] MESSAGE:". $e->getMessage()
+            ." - FILE:".$e->getFile()
+            ." - LINE:".$e->getLine()
             .$e->getTraceAsString()
         );
     }
@@ -339,11 +347,11 @@ class RedisDb
      */
     public static function getMemberConfigName($id)
     {
-        $config = self::getConfig()->get('shard')->get('control');
+        $config = self::getConfig()->get("shard")->get("control");
 
         if (!self::$_configModel) {
 
-            $class = $config->get('model');
+            $class = $config->get("model");
 
             $model = new $class;
 
@@ -351,14 +359,14 @@ class RedisDb
 
             $indexes = self::getIndexes($model);
 
-            $primary = 'id';
-            if (isset($indexes['PRIMARY'])) {
+            $primary = "id";
+            if (isset($indexes["PRIMARY"])) {
 
-                $primary = $indexes['PRIMARY']->getColumns()[0];
+                $primary = $indexes["PRIMARY"]->getColumns()[0];
 
             }
 
-            self::$_configQuery = array('query' => array($primary => $id));
+            self::$_configQuery = array("query" => array($primary => $id));
         }
 
         if (!isset(self::$config_cache[$id])) {
@@ -372,9 +380,9 @@ class RedisDb
         $dbConfig = self::$config_cache[$id];
 
         if ($dbConfig)
-            return $dbConfig->{$config->get('column')};
+            return $dbConfig->{$config->get("column")};
 
-        return self::getConfig()->get('default')->get('name');
+        return self::getConfig()->get("default")->get("name");
     }
 
     /**
@@ -384,11 +392,11 @@ class RedisDb
      */
     public static function getAdminMember($memberId)
     {
-        $config = self::getConfig()->get('admin');
+        $config = self::getConfig()->get("admin");
 
         if (!self::$_adminModel) {
 
-            $class = $config->get('model');
+            $class = $config->get("model");
 
             $model = new $class;
 
@@ -396,21 +404,21 @@ class RedisDb
 
             $indexes = self::getIndexes($model);
 
-            $primary = 'id';
-            if (isset($indexes['PRIMARY'])) {
+            $primary = "id";
+            if (isset($indexes["PRIMARY"])) {
 
-                $primary = $indexes['PRIMARY']->getColumns()[0];
+                $primary = $indexes["PRIMARY"]->getColumns()[0];
 
             }
 
-            self::$_adminQuery = array('query' => array($primary => $memberId));
+            self::$_adminQuery = array("query" => array($primary => $memberId));
 
         }
 
         $adminMember = self::findFirst(self::$_adminQuery, self::$_adminModel);
 
         if (!$adminMember)
-            throw new Exception('Not Created Admin Member');
+            throw new Exception("Not Created Admin Member");
 
         return $adminMember;
     }
@@ -445,12 +453,12 @@ class RedisDb
 
         $parameters = self::_createKey($parameters, $model);
 
-        self::setPrefix($model, $parameters['bind']);
+        self::setPrefix($model, $parameters["bind"]);
 
         self::connect($model, self::getPrefix());
 
         $key = self::_generateFindKey($parameters);
-        unset($parameters['keys']);
+        unset($parameters["keys"]);
 
         // redisから検索
         $result = self::findRedis($model, $key);
@@ -459,10 +467,10 @@ class RedisDb
         if ($result === false) {
 
             $cache = true;
-            if (isset($parameters['cache'])) {
+            if (isset($parameters["cache"])) {
 
-                $cache = $parameters['cache'];
-                unset($parameters['cache']);
+                $cache = $parameters["cache"];
+                unset($parameters["cache"]);
 
             }
 
@@ -474,7 +482,7 @@ class RedisDb
 
             }
 
-            if ($cache && self::getConfig()->get('enabled')) {
+            if ($cache && self::getConfig()->get("enabled")) {
 
                 self::setHash($model, $key, $result, $expire);
 
@@ -505,22 +513,22 @@ class RedisDb
     private static function _generateFindKey($parameters)
     {
         // base
-        $key = self::generateKey($parameters['keys']);
+        $key = self::generateKey($parameters["keys"]);
 
         $addKeys = array();
 
         // order by
-        if (isset($parameters['order'])) {
+        if (isset($parameters["order"])) {
 
-            $addKeys[] = 'order';
+            $addKeys[] = "order";
 
-            $fields = explode(',', $parameters['order']);
+            $fields = explode(",", $parameters["order"]);
 
             foreach ($fields as $field) {
 
                 $field = trim($field);
 
-                $values = explode(' ', $field);
+                $values = explode(" ", $field);
 
                 if (count($values) === 2) {
 
@@ -536,13 +544,13 @@ class RedisDb
         }
 
         // limit
-        if (isset($parameters['limit'])) {
+        if (isset($parameters["limit"])) {
 
-            $addKeys[] = 'limit';
+            $addKeys[] = "limit";
 
-            if (is_array($parameters['limit'])) {
+            if (is_array($parameters["limit"])) {
 
-                foreach ($parameters['limit'] as $value) {
+                foreach ($parameters["limit"] as $value) {
 
                     $addKeys[] = $value;
 
@@ -550,17 +558,17 @@ class RedisDb
 
             } else {
 
-                $addKeys[] = $parameters['limit'];
+                $addKeys[] = $parameters["limit"];
 
             }
         }
 
         // group by
-        if (isset($parameters['group'])) {
+        if (isset($parameters["group"])) {
 
-            $addKeys[] = 'group';
+            $addKeys[] = "group";
 
-            $fields = explode(',', $parameters['group']);
+            $fields = explode(",", $parameters["group"]);
 
             foreach ($fields as $field) {
 
@@ -571,7 +579,7 @@ class RedisDb
 
         if ($addKeys) {
 
-            $key .= '_' . implode('_', $addKeys);
+            $key .= "_" . implode("_", $addKeys);
 
         }
 
@@ -604,7 +612,7 @@ class RedisDb
             }
         }
 
-        return implode('_', $keyValues);
+        return implode("_", $keyValues);
     }
 
     /**
@@ -614,12 +622,12 @@ class RedisDb
     public static function isCommon($model)
     {
         $source = $model->getSource();
-        $dbs = self::getConfig()->get('common')->get('dbs');
+        $dbs = self::getConfig()->get("common")->get("dbs");
 
         if (!$dbs)
             return false;
 
-        $commonDbs = explode(',', $dbs);
+        $commonDbs = explode(",", $dbs);
         if (is_array($commonDbs)) {
 
             foreach ($commonDbs as $name) {
@@ -643,12 +651,12 @@ class RedisDb
     public static function isAdmin($model)
     {
         $source = $model->getSource();
-        $dbs = self::getConfig()->get('admin')->get('dbs');
+        $dbs = self::getConfig()->get("admin")->get("dbs");
 
         if (!$dbs)
             return false;
 
-        $adminDbs = explode(',', $dbs);
+        $adminDbs = explode(",", $dbs);
         if (is_array($adminDbs)) {
 
             foreach ($adminDbs as $name) {
@@ -716,7 +724,7 @@ class RedisDb
 
         if (self::getPrefix()) {
 
-            $key .= '@'. self::getPrefix();
+            $key .= "@". self::getPrefix();
 
         }
 
@@ -740,12 +748,12 @@ class RedisDb
     {
         self::$hashPrefix = null;
 
-        $columns = self::getConfig()->get('prefix')->get('columns');
+        $columns = self::getConfig()->get("prefix")->get("columns");
 
         if (!$columns)
-            throw new Exception('not found prefix columns');
+            throw new Exception("not found prefix columns");
 
-        $columns = explode(',', $columns);
+        $columns = explode(",", $columns);
 
         foreach ($columns as $column) {
 
@@ -779,7 +787,7 @@ class RedisDb
      */
     public static function getCacheKey($model, $key)
     {
-        return self::getHashKey($model) .'@'. $key;
+        return self::getHashKey($model) ."@". $key;
     }
 
     /**
@@ -796,7 +804,7 @@ class RedisDb
         $redis->hSet($hashKey, $key, $value);
 
         $expire = (!$expire)
-            ? self::getConfig()->get('default')->get('expire')
+            ? self::getConfig()->get("default")->get("expire")
             : $expire;
 
         if ($expire > 0 && !$redis->isTimeout($hashKey)) {
@@ -814,7 +822,7 @@ class RedisDb
     public static function getRedis($model)
     {
         $configs = self::getConfig()
-            ->get('server')
+            ->get("server")
             ->get($model->getReadConnectionService())
             ->toArray();
 
@@ -849,22 +857,22 @@ class RedisDb
     public static function _createKey($parameters, $model)
     {
 
-        if (!is_array($parameters) || !isset($parameters['query']))
-            throw new Exception('Not Found query in parameters');
+        if (!is_array($parameters) || !isset($parameters["query"]))
+            throw new Exception("Not Found query in parameters");
 
-        $query = $parameters['query'];
+        $query = $parameters["query"];
 
         $indexQuery = array();
         $where = array();
         self::$keys = array();
-        self::$bind  = isset($parameters['bind']) ? $parameters['bind'] : array();
+        self::$bind  = isset($parameters["bind"]) ? $parameters["bind"] : array();
 
         // 設定確認・個別確認
-        $autoIndex = self::getConfig()->get('default')->get('autoIndex');
-        if (isset($parameters['autoIndex'])) {
+        $autoIndex = self::getConfig()->get("default")->get("autoIndex");
+        if (isset($parameters["autoIndex"])) {
 
-            $autoIndex = $parameters['autoIndex'];
-            unset($parameters['autoIndex']);
+            $autoIndex = $parameters["autoIndex"];
+            unset($parameters["autoIndex"]);
 
         }
 
@@ -907,23 +915,23 @@ class RedisDb
         // クエリを発行
         foreach ($query as $column => $value) {
 
-            $where[] = implode(' ', self::buildQuery($column, $value));
+            $where[] = implode(" ", self::buildQuery($column, $value));
 
         }
 
         if (count($where) > 0) {
 
-            $parameters[0] = implode(' AND ', $where);
+            $parameters[0] = implode(" AND ", $where);
 
-            $parameters['bind'] = self::$bind;
+            $parameters["bind"] = self::$bind;
 
             ksort(self::$keys);
 
-            $parameters['keys'] = self::$keys;
+            $parameters["keys"] = self::$keys;
 
         }
 
-        unset($parameters['query']);
+        unset($parameters["query"]);
 
         return $parameters;
     }
@@ -936,29 +944,29 @@ class RedisDb
     public static function buildQuery($column, $value)
     {
 
-        if (count($aliased = explode('.', $column)) > 1) {
+        if (count($aliased = explode(".", $column)) > 1) {
 
             $named_place = $aliased[1];
-            $column = sprintf('[%s].[%s]', $aliased[0], $aliased[1]);
+            $column = sprintf("[%s].[%s]", $aliased[0], $aliased[1]);
 
         } else if (is_int($column)) {
 
-            $column = '';
-            $value['operator'] = Criteria::ADD_OR;
+            $column = "";
+            $value["operator"] = Criteria::ADD_OR;
 
         } else {
 
             $named_place = $column;
-            $column = sprintf('[%s]', $column);
+            $column = sprintf("[%s]", $column);
 
         }
 
         if (is_array($value)) {
 
-            if (isset($value['operator'])) {
+            if (isset($value["operator"])) {
 
-                $operator  = $value['operator'];
-                $bindValue = $value['value'];
+                $operator  = $value["operator"];
+                $bindValue = $value["value"];
 
                 switch ($operator) {
                     case $operator === Criteria::IS_NULL:
@@ -966,7 +974,7 @@ class RedisDb
 
                         $keys[$named_place] = str_replace(" ", "_", $operator);
 
-                        $query = '';
+                        $query = "";
 
                         break;
 
@@ -978,7 +986,7 @@ class RedisDb
                         $placeholders = array();
                         for ($i = 0; $i < $len; $i++) {
 
-                            $placeholders[] = sprintf(':%s:', $named_place.$i);
+                            $placeholders[] = sprintf(":%s:", $named_place.$i);
 
                             self::$bind[$named_place.$i] = $bindValue[$i];
 
@@ -986,20 +994,20 @@ class RedisDb
 
                         self::$keys[$named_place] =
                             str_replace(" ", "_", $operator)
-                                . implode('_', $bindValue);
+                                . implode("_", $bindValue);
 
-                        $query = sprintf('(%s)', implode(',', $placeholders));
+                        $query = sprintf("(%s)", implode(",", $placeholders));
 
                         break;
 
                     case $operator === Criteria::BETWEEN:
 
-                        self::$bind[$named_place.'0'] = $bindValue[0];
-                        self::$bind[$named_place.'1'] = $bindValue[1];
+                        self::$bind[$named_place."0"] = $bindValue[0];
+                        self::$bind[$named_place."1"] = $bindValue[1];
 
-                        self::$keys[$named_place] = $operator . implode('_', $bindValue);
+                        self::$keys[$named_place] = $operator . implode("_", $bindValue);
 
-                        $query = sprintf(':%s: AND :%s:', $bindValue[0], $bindValue[1]);
+                        $query = sprintf(":%s: AND :%s:", $bindValue[0], $bindValue[1]);
 
                         break;
 
@@ -1007,16 +1015,16 @@ class RedisDb
 
                         self::$keys[] = $operator;
 
-                        $operator = '';
+                        $operator = "";
 
                         $queryStrings = array();
                         foreach ($value as $col => $val) {
 
-                            $queryStrings[] = implode(' ', self::buildQuery($col, $val));
+                            $queryStrings[] = implode(" ", self::buildQuery($col, $val));
 
                         }
 
-                        $query = '(' . implode(' OR ', $queryStrings) . ')';
+                        $query = "(" . implode(" OR ", $queryStrings) . ")";
 
                         break;
 
@@ -1026,7 +1034,7 @@ class RedisDb
 
                         self::$keys[$named_place] = $operator.$bindValue;
 
-                        $query = sprintf(':%s:', $named_place);
+                        $query = sprintf(":%s:", $named_place);
 
                         break;
                 }
@@ -1040,15 +1048,15 @@ class RedisDb
 
                 for ($i = 0; $i < $len; $i++) {
 
-                    $placeholders[] = sprintf(':%s:', $named_place.$i);
+                    $placeholders[] = sprintf(":%s:", $named_place.$i);
 
                     self::$bind[$named_place.$i] = $value[$i];
 
                 }
 
-                self::$keys[$named_place] = str_replace(" ", "_", $operator) . implode('_', $value);
+                self::$keys[$named_place] = str_replace(" ", "_", $operator) . implode("_", $value);
 
-                $query = sprintf('(%s)', implode(',', $placeholders));
+                $query = sprintf("(%s)", implode(",", $placeholders));
             }
 
         } else {
@@ -1057,22 +1065,22 @@ class RedisDb
 
                 $operator = Criteria::ISNULL;
 
-                self::$keys[$named_place] = 'IS_NULL';
+                self::$keys[$named_place] = "IS_NULL";
 
-                $query = '';
+                $query = "";
 
             } else if (is_array($value)) {
 
-                $operator = '';
+                $operator = "";
 
                 $queryStrings = array();
                 foreach ($value as $col => $val) {
 
-                    $queryStrings[] = implode(' ', self::buildQuery($col, $val));
+                    $queryStrings[] = implode(" ", self::buildQuery($col, $val));
 
                 }
 
-                $query = '(' . implode(' OR ', $queryStrings) . ')';
+                $query = "(" . implode(" OR ", $queryStrings) . ")";
 
             } else {
 
@@ -1080,18 +1088,18 @@ class RedisDb
 
                 self::$bind[$named_place] = $value;
 
-                self::$keys[$named_place] = '='.$value;
+                self::$keys[$named_place] = "=".$value;
 
-                $query = sprintf(':%s:', $named_place);
+                $query = sprintf(":%s:", $named_place);
 
             }
 
         }
 
         return array(
-            'column' => $column,
-            'operator' => $operator,
-            'query' => $query
+            "column" => $column,
+            "operator" => $operator,
+            "query" => $query
         );
     }
 
@@ -1101,7 +1109,7 @@ class RedisDb
      */
     public static function outputErrorMessage($model)
     {
-        $messages = '';
+        $messages = "";
         foreach ($model->getMessages() as $message) {
             $messages .= $message;
         }

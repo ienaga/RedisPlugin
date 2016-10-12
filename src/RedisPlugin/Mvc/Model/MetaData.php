@@ -4,17 +4,21 @@
 namespace RedisPlugin;
 
 
+use RedisPlugin\RedisConnection;
+
+
 class MetaData extends \Phalcon\Mvc\Model\MetaData
 {
     /**
      * @var string
      */
-    const CACHE_KEY = '__MetaData';
+    const CACHE_KEY = "__MetaData";
 
     /**
      * @var string
      */
-    const INDEXES_KEY = 'meta-indexes-%s';
+    const INDEXES_KEY = "meta-indexes-%s";
+
 
     /**
      * @var array
@@ -24,7 +28,7 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
     /**
      * @var array
      */
-    protected $_cache = array();
+    private $_cache = array();
 
 
     /**
@@ -32,31 +36,35 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
      */
     public function __construct()
     {
-        $options = \Phalcon\DI::getDefault()
-            ->get('config')
-            ->get('redis')
-            ->get('metadata')
+        $options = $this->getDI()
+            ->get("config")
+            ->get("redis")
+            ->get("metadata")
             ->toArray();
 
-        if (!isset($options['host']))
-            $options['host'] = '127.0.0.1';
+        if (!isset($options["host"])) {
+            $options["host"] = "127.0.0.1";
+        }
 
-        if (!isset($options['port']))
-            $options['port'] = 6379;
+        if (!isset($options["port"])) {
+            $options["port"] = 6379;
+        }
 
-        if (!isset($options['lifetime']))
-            $options['lifetime'] = \Phalcon\DI::getDefault()
-                ->get('config')
-                ->get('redis')
-                ->get('default')
-                ->get('expire');
+        if (!isset($options["lifetime"])) {
+            $options["lifetime"] = $this->getDI()
+                ->get("config")
+                ->get("redis")
+                ->get("default")
+                ->get("expire");
+        }
 
-
-        if (!isset($options['select']))
-            $options['select'] = 0;
+        if (!isset($options["select"])) {
+            $options["select"] = 0;
+        }
 
         $this->setOptions($options);
 
+        // reset
         $this->_metaData = array();
     }
 
@@ -77,11 +85,19 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
     }
 
     /**
-     * @return RedisManager
+     * @return \Redis
      */
     public function getRedis()
     {
-        return RedisManager::getInstance()->connect($this->getOptions());
+        return $this->getRedisConnection()->getRedis();
+    }
+
+    /**
+     * @return \RedisPlugin\RedisConnection
+     */
+    public function getRedisConnection()
+    {
+        return RedisConnection::getInstance()->connect($this->getOptions());
     }
 
     /**
@@ -102,11 +118,20 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
     public function setRedisValue($key, $value)
     {
         $this->getRedis()->hSet(self::CACHE_KEY, $key, $value);
-        if (!$this->getRedis()->isTimeout(self::CACHE_KEY)) {
+        if (!$this->getRedisConnection()->isTimeout(self::CACHE_KEY)) {
             $options = $this->getOptions();
-            $this->getRedis()->setTimeout(self::CACHE_KEY, $options['lifetime']);
+            $this->getRedis()->setTimeout(self::CACHE_KEY, $options["lifetime"]);
         }
         $this->setCache($key, $value);
+    }
+
+    /**
+     * @param  string $key
+     * @return bool
+     */
+    public function hasCache($key)
+    {
+        return isset($this->_cache[$key]);
     }
 
     /**
@@ -115,7 +140,7 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
      */
     public function getCache($key)
     {
-        $cache = (!isset($this->_cache[$key]))
+        $cache = (!$this->hasCache($key))
             ? $this->getRedisValue($key)
             : $this->_cache[$key];
 
@@ -124,7 +149,7 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
 
     /**
      * @param string $key
-     * @param mixed $value
+     * @param mixed  $value
      */
     public function setCache($key, $value)
     {
@@ -153,26 +178,30 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
     /**
      * @param string $key
      */
-    public function writeIndexes($key)
+    public function writeIndexes($key = null)
     {
-        if (!$key)
+        if (!$key) {
             return;
+        }
 
-        $keys = explode('-', $key);
-        if (3 > count($keys))
+        $keys = explode("-", $key);
+        if (3 > count($keys)) {
             return;
+        }
 
         $source = array_pop($keys);
 
-        $class = '';
+        // class name
+        $class = "";
         foreach (explode("_", $source) as $value) {
             $class .= ucfirst($value);
         }
 
         /** @var \Phalcon\Mvc\Model $model */
-        $model = new $class;
-        $indexes = $model->getReadConnection()->describeIndexes($source);
+        $model    = new $class;
+        $indexes  = $model->getReadConnection()->describeIndexes($source);
 
+        // cache
         $cacheKey = $this->getIndexesKey($source);
         $this->setRedisValue($cacheKey, $indexes);
     }
