@@ -16,8 +16,7 @@
     },
     "autoload": {
         "psr-0": {
-            "RedisPlugin\\": ""
+            "RedisPlugin\\": "src/"
         }
     },
-    "target-dir": "RedisPlugin"
 }
