@@ -4,9 +4,6 @@
 namespace RedisPlugin;
 
 
-use RedisPlugin\RedisConnection;
-
-
 class MetaData extends \Phalcon\Mvc\Model\MetaData
 {
     /**
@@ -89,15 +86,15 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
      */
     public function getRedis()
     {
-        return $this->getRedisConnection()->getRedis();
+        return $this->getConnection()->getRedis();
     }
 
     /**
-     * @return \RedisPlugin\RedisConnection
+     * @return \RedisPlugin\Connection
      */
-    public function getRedisConnection()
+    public function getConnection()
     {
-        return RedisConnection::getInstance()->connect($this->getOptions());
+        return Connection::getInstance()->connect($this->getOptions());
     }
 
     /**
@@ -118,7 +115,7 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
     public function setRedisValue($key, $value)
     {
         $this->getRedis()->hSet(self::CACHE_KEY, $key, $value);
-        if (!$this->getRedisConnection()->isTimeout(self::CACHE_KEY)) {
+        if (!$this->getConnection()->isTimeout(self::CACHE_KEY)) {
             $options = $this->getOptions();
             $this->getRedis()->setTimeout(self::CACHE_KEY, $options["lifetime"]);
         }

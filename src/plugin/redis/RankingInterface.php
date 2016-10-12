@@ -4,10 +4,10 @@
 namespace RedisPlugin;
 
 
-interface RedisRankingInterface
+interface RankingInterface
 {
     /**
-     * @return RedisRanking
+     * @return Ranking
      */
     static function getInstance();
 

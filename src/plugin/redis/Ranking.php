@@ -4,19 +4,16 @@
 namespace RedisPlugin;
 
 
-use \RedisPlugin\RedisConnection;
-
-
-class RedisRanking extends RedisConnection implements RedisRankingInterface
+class Ranking extends Connection implements RankingInterface
 {
 
     /**
-     * @var \RedisPlugin\RedisRanking
+     * @var \RedisPlugin\Ranking
      */
     private static $instance = null;
 
     /**
-     * @return RedisRanking
+     * @return Ranking
      */
     static function getInstance()
     {

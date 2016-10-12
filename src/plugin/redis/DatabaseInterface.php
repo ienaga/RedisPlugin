@@ -4,7 +4,7 @@
 namespace RedisPlugin;
 
 
-interface RedisDbInterface
+interface DatabaseInterface
 {
 
 }

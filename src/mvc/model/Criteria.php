@@ -4,12 +4,9 @@
 namespace RedisPlugin;
 
 
-use RedisPlugin\CriteriaInterface;
-use RedisPlugin\RedisDb;
-
-
 class Criteria implements CriteriaInterface
 {
+
     /** operator list */
     const EQUAL         = "=";
     const NOT_EQUAL     = "<>";
@@ -288,7 +285,7 @@ class Criteria implements CriteriaInterface
      */
     public function findFirst()
     {
-        return RedisDb::findFirst($this->buildCondition(), $this->getModel(), $this->getExpire());
+        return Database::findFirst($this->buildCondition(), $this->getModel(), $this->getExpire());
     }
 
     /**
@@ -296,7 +293,7 @@ class Criteria implements CriteriaInterface
      */
     public function find()
     {
-        return RedisDb::find($this->buildCondition(), $this->getModel(), $this->getExpire());
+        return Database::find($this->buildCondition(), $this->getModel(), $this->getExpire());
     }
 
     /**

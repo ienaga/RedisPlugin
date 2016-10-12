@@ -5,10 +5,9 @@ namespace RedisPlugin;
 
 
 use \Exception;
-use RedisPlugin\RedisDbInterface;
 
 
-class RedisDb implements RedisDbInterface
+class Database implements DatabaseInterface
 {
     /**
      * @var \Phalcon\Mvc\Model
@@ -100,7 +99,7 @@ class RedisDb implements RedisDbInterface
 
         if (!$model->save($data, $whiteList)) {
 
-            RedisDb::outputErrorMessage($model);
+            Database::outputErrorMessage($model);
 
         }
 
@@ -126,7 +125,7 @@ class RedisDb implements RedisDbInterface
 
         if (!$model->delete($data, $whiteList)) {
 
-            RedisDb::outputErrorMessage($model);
+            Database::outputErrorMessage($model);
 
         }
 
@@ -688,7 +687,7 @@ class RedisDb implements RedisDbInterface
 
         }
 
-        RedisDb::setCon($model, $prefix);
+        Database::setCon($model, $prefix);
 
         // reset
         self::$hashPrefix = $_prefix;

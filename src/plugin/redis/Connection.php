@@ -5,10 +5,9 @@ namespace RedisPlugin;
 
 
 use \Redis;
-use \RedisPlugin\RedisConnectionInterface;
 
 
-class RedisConnection implements RedisConnectionInterface
+class Connection implements ConnectionInterface
 {
 
     /**
@@ -28,7 +27,7 @@ class RedisConnection implements RedisConnectionInterface
 
 
     /**
-     * @var \RedisPlugin\RedisConnection
+     * @var \RedisPlugin\Connection
      */
     private static $instance = null;
 
@@ -44,7 +43,7 @@ class RedisConnection implements RedisConnectionInterface
 
 
     /**
-     * RedisConnection constructor.
+     * Connection constructor.
      */
     private function __construct()
     {
@@ -52,7 +51,7 @@ class RedisConnection implements RedisConnectionInterface
     }
 
     /**
-     * @return RedisConnection
+     * @return Connection
      */
     static function getInstance()
     {

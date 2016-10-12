@@ -4,7 +4,7 @@
 namespace RedisPlugin;
 
 
-interface RedisConnectionInterface
+interface ConnectionInterface
 {
     /**
      * @var string
@@ -22,7 +22,7 @@ interface RedisConnectionInterface
     const SELECT = 0;
 
     /**
-     * @return RedisConnection
+     * @return Connection
      */
     static function getInstance();
 
