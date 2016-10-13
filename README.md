@@ -22,10 +22,11 @@ http://qiita.com/ienaga/items/6bbf1c5e95a133d347ac
 
 PHP 5.x/7.x
 
-Phalcon 1.x/2.x  
+Phalcon 1.x/2.x/3.x 
 
 
 ## phpredis
+
 ```linux
 sudo yum install php-pecl-redis
 ```
@@ -34,61 +35,50 @@ sudo yum install php-pecl-redis
 ## YAML
 
 ```linux
-sudo yum install libyaml libyaml-devel
-
-sudo pecl install YAML
-sudo vim /etc/php.d/yaml.ini
-extension=yaml.so
+sudo yum install libyaml libyaml-devel php-pecl-yaml
 ```
 
 ## app/config/config.php
 
 ```php
+defined('BASE_PATH') || define('BASE_PATH', getenv('BASE_PATH') ?: realpath(dirname(__FILE__) . '/../..'));
+defined('APP_PATH') || define('APP_PATH', BASE_PATH . '/app');
 
-$dir = __DIR__ .'/../../app/';
-$env = getenv('PLATFORM');
-$ignore_file = array('routing');
+$config = new \Phalcon\Config();
+$env    = strtolower(getenv("ENVIRONMENT"));
+$ignore = array("routing");
 
+if ($dir = opendir(APP_PATH ."/config")) {
 
-$configYml = array();
-if ($configDir = opendir($dir.'config')) {
+    while (($file = readdir($dir)) !== false) {
 
-    while (($file = readdir($configDir)) !== false) {
-
-        $exts = explode('.', $file);
-
-        if ($exts[1] !== 'yml')
+        $ext = explode(".", $file);
+        if ($ext[1] !== "yml" || in_array($ext[0], $ignore)) {
             continue;
-
-        $file_name = $exts[0];
-        if ($ignore_file && in_array($file_name, $ignore_file))
-            continue;
-
-        $yml = yaml_parse_file($dir . "config/{$file_name}.yml");
-        $configYml = array_merge($configYml, $yml[$env]);
-
-        if (isset($yml['all'])) {
-            $configYml = array_merge($configYml, $yml['all']);
         }
 
+        $yml =  new \Phalcon\Config\Adapter\Yaml(APP_PATH ."/config/". $file, [
+            '!app_path' => function($value) {
+                return APP_PATH . $value;
+            },
+            '!base_path' => function($value) {
+                return BASE_PATH . $value;
+            }
+        ]);
+
+        if ($yml->get($env)) {
+            $config->merge($yml->get($env));
+        }
+
+        if ($yml->get("all")) {
+            $config->merge($yml->get("all"));
+        }
     }
 
-    closedir($configDir);
+    closedir($dir);
 }
 
-$application = array(
-    'application' => array(
-        'controllersDir' => $dir . 'controllers/',
-        'modelsDir'      => $dir . 'models/',
-        'viewsDir'       => $dir . 'views/',
-        'pluginsDir'     => $dir . 'plugins/',
-        'libraryDir'     => $dir . 'library/',
-        'cacheDir'       => $dir . 'cache/',
-    )
-);
-
-return new \Phalcon\Config(array_merge($application, $configYml));
-
+return $config;
 ```
 
 ## app/config/database.yml
@@ -107,7 +97,6 @@ dev:
       dbname:   XXXXX
       charset:  utf8
       transaction: true
-      transaction_name: XXXXX # master
     dbSlave:
       adapter:  Mysql
       host:     127.0.0.1
@@ -144,7 +133,6 @@ dev:
       dbname:   XXXXX
       charset:  utf8
       transaction: true
-      transaction_name: XXXXX # member1
     dbMember1Slave:
       adapter:  Mysql
       host:     127.0.0.1
@@ -163,7 +151,6 @@ dev:
       dbname:   XXXXX
       charset:  utf8
       transaction: true
-      transaction_name: XXXXX # member2
     dbMember2Slave:
       adapter:  Mysql
       host:     127.0.0.1
@@ -195,7 +182,10 @@ dev:
     common:
       dbs: table, table, table... # e.g.  master_, access_log
 
-
+    shard:
+      enabled: true # Shardingを使用しない時はfalse
+     
+    # Shardingのマスタ設定
     admin:
       # ユーザマスタ
       # e.g.
@@ -215,10 +205,6 @@ dev:
 
       # ユーザマスタの登録「table_」と共有部分だけの記載はtable_*と同義
       dbs: table, table, table... # e.g. admin_, user_ranking
-
-
-    shard:
-      enabled: true # Shardingを使用しないばあいはfalse
 
       # Shardingをコントロールするテーブルとカラム
       #
@@ -285,44 +271,19 @@ dev:
 
 ```php
 /**
- * Database connection
+ * Database connection is created based in the parameters defined in the configuration file
  */
-
-use Phalcon\Db\Adapter\Pdo\Mysql as DbAdapter;
-use Phalcon\Mvc\Model\Transaction\Manager;
-
-foreach ($config->get('database') as $db => $arguments)
-{
-
-    $di->setShared($db, function () use ($arguments)
-    {
-
-        return new DbAdapter($arguments->toArray());
-
-    });
-
-    if (isset($arguments['transaction']) && $arguments['transaction']) {
-
-        $di->setShared($arguments['transaction_name'], function() use ($db)
-        {
-            $manager = new Manager();
-
-            if ($db !== null)
-                $manager->setDbService($db);
-
-            return $manager;
-        });
-
-    }
-}
+$di->setShared('db', function () {
+    return new \RedisPlugin\Service($this);
+});
 
 
 /**
- * modelsMetadata
+ * If the configuration specify the use of metadata adapter use it or use memory otherwise
  */
-$di->set('modelsMetadata', function () { return new \RedisPlugin\MetaData(); });
-
-
+$di->setShared('modelsMetadata', function () {
+    return new \RedisPlugin\MetaData();
+});
 ```
 
 ## find | findFirst 簡易版

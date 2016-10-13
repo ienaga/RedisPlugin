@@ -4,7 +4,6 @@
 namespace RedisPlugin;
 
 
-use \Exception;
 use Phalcon\Db\Adapter\Pdo\Mysql as DbAdapter;
 use Phalcon\Mvc\Model\Transaction\Manager;
 
@@ -24,7 +23,6 @@ class Service implements ServiceInterface
     public function __construct(\Phalcon\Di\FactoryDefault $di)
     {
         $this->setDI($di);
-        $this->registration();
     }
 
     /**

@@ -504,7 +504,7 @@ class Database implements DatabaseInterface
      * @param  array              $parameters
      * @param  \Phalcon\Mvc\Model $model
      * @param  int                $expire
-     * @return \Phalcon\Mvc\Model
+     * @return \Phalcon\Mvc\Model|bool
      */
     public static function findFirst($parameters, $model, $expire = 0)
     {
