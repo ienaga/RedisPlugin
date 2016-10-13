@@ -235,11 +235,12 @@ class Database implements DatabaseInterface
     {
         if (!isset(self::$connections[$configName])) {
 
-            $service = \Phalcon\DI::getDefault()
+            $config = \Phalcon\DI::getDefault()
                 ->get("config")
                 ->get("database")
-                ->get($configName)
-                ->get("transaction_name");
+                ->get($configName);
+
+            $service = $config["host"] .":". $config["port"];
 
             /** @var \Phalcon\Mvc\Model\Transaction\Manager $manager */
             $manager = \Phalcon\DI::getDefault()->getShared($service);
@@ -296,12 +297,17 @@ class Database implements DatabaseInterface
     {
         $rollback = false;
 
-        $config = \Phalcon\DI::getDefault()->get("config")->get("database");
+
 
         foreach (self::$connections as $configName => $connection) {
 
+            $config = \Phalcon\DI::getDefault()
+                ->get("config")
+                ->get("database")
+                ->get($configName);
+
             // Activeなトランザクションがある場合だけrollbackする
-            $service = $config->get($configName)->get("transaction_name");
+            $service = $config["host"] .":". $config["port"];
 
             /** @var \Phalcon\Mvc\Model\Transaction\Manager $manager */
             $manager = \Phalcon\DI::getDefault()->getShared($service);
@@ -346,7 +352,9 @@ class Database implements DatabaseInterface
      */
     public static function getMemberConfigName($id)
     {
-        $config = self::getConfig()->get("shard")->get("control");
+        $config = self::getConfig()
+            ->get("shard")
+            ->get("control");
 
         if (!self::$_configModel) {
 
