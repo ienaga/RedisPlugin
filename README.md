@@ -5,7 +5,7 @@ RedisPlugin for Phalcon (The correspondence of MySQL sharding.)
 
 # Composer
 
-```javascript
+```json
 {
     "require": {
        "ienaga/phalcon-redis-plugin": "*"
@@ -25,17 +25,10 @@ PHP 5.x/7.x
 Phalcon 1.x/2.x/3.x 
 
 
-## phpredis
+## phpredis and YAML
 
 ```linux
-sudo yum install php-pecl-redis
-```
-
-
-## YAML
-
-```linux
-sudo yum install libyaml libyaml-devel php-pecl-yaml
+sudo yum install libyaml libyaml-devel php-pecl-yaml php-pecl-redis
 ```
 
 ## app/config/config.php
@@ -163,6 +156,7 @@ dev:
 ```
 
 ## app/config/redis.yml
+
 ```yaml
 prd:
 stg:
@@ -224,13 +218,6 @@ dev:
         model:  XXXXX # AdminConfigDb
         column: XXXXX # name
 
-
-    metadata:
-      host: XXXXX
-      port: 6379
-      select: 0
-
-
     server:
       dbMaster:
         host: XXXXX
@@ -273,26 +260,27 @@ dev:
 /**
  * Database connection is created based in the parameters defined in the configuration file
  */
-$di->setShared('db', function () {
-    return new \RedisPlugin\Service($this);
-});
-
+$db = new \RedisPlugin\Service($di);
+$db->registration();
 
 /**
  * If the configuration specify the use of metadata adapter use it or use memory otherwise
  */
 $di->setShared('modelsMetadata', function () {
-    return new \RedisPlugin\MetaData();
+    return new \RedisPlugin\MetaData([
+        "host"   => "127.0.0.1",
+        "port"   => 6379,
+        "select" => 0,
+        "expire" => 86400
+    ]);
 });
 ```
 
-## find | findFirst 簡易版
+## find | findFirst simple ver
 
 ```php
 
-use \RedisPlugin\RedisDb;
-
-class Robot extends \Phalcon\Mvc\Model
+class Robot extends \RedisPlugin\Model
 {
 
     /**
@@ -302,6 +290,8 @@ class Robot extends \Phalcon\Mvc\Model
      */
     public static function findFirst($id, $type)
     {
+        
+    
         return RedisDb::findFirst(array(
             'query' => array(
                 'id' => $id,

@@ -6,6 +6,27 @@ namespace RedisPlugin;
 
 class MetaData extends \Phalcon\Mvc\Model\MetaData
 {
+
+    /**
+     * @var string
+     */
+    const HOST = "127.0.0.1";
+
+    /**
+     * @var int
+     */
+    const PORT = 6379;
+
+    /**
+     * @var int
+     */
+    const SELECT = 0;
+
+    /**
+     * @var int
+     */
+    const EXPIRE = 86400;
+
     /**
      * @var string
      */
@@ -16,6 +37,15 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
      */
     const INDEXES_KEY = "meta-indexes-%s";
 
+    /**
+     * @var array
+     */
+    private $_options = array(
+        "host"   => self::HOST,
+        "port"   => self::PORT,
+        "select" => self::SELECT,
+        "expire" => self::EXPIRE,
+    );
 
     /**
      * @var array
@@ -29,34 +59,30 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
 
 
     /**
-     * __construct
+     * MetaData constructor.
+     * @param array $options
      */
-    public function __construct()
+    public function __construct($options = array())
     {
-        $options = $this->getDI()
-            ->get("config")
-            ->get("redis")
-            ->get("metadata")
-            ->toArray();
+        // default array
+        if (!$options) {
+            $options = $this->_options;
+        }
 
         if (!isset($options["host"])) {
-            $options["host"] = "127.0.0.1";
+            $options["host"] = self::HOST;
         }
 
         if (!isset($options["port"])) {
-            $options["port"] = 6379;
+            $options["port"] = self::PORT;
         }
 
-        if (!isset($options["lifetime"])) {
-            $options["lifetime"] = $this->getDI()
-                ->get("config")
-                ->get("redis")
-                ->get("default")
-                ->get("expire");
+        if (!isset($options["expire"])) {
+            $options["expire"] = self::EXPIRE;
         }
 
         if (!isset($options["select"])) {
-            $options["select"] = 0;
+            $options["select"] = self::SELECT;
         }
 
         $this->setOptions($options);
@@ -117,7 +143,7 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
         $this->getRedis()->hSet(self::CACHE_KEY, $key, $value);
         if (!$this->getConnection()->isTimeout(self::CACHE_KEY)) {
             $options = $this->getOptions();
-            $this->getRedis()->setTimeout(self::CACHE_KEY, $options["lifetime"]);
+            $this->getRedis()->setTimeout(self::CACHE_KEY, $options["expire"]);
         }
         $this->setCache($key, $value);
     }
