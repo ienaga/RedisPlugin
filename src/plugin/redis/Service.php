@@ -12,33 +12,19 @@ class Service implements ServiceInterface
 {
 
     /**
-     * @var \Phalcon\Di\FactoryDefault
-     */
-    protected $di = null;
-
-    /**
-     * Service constructor.
-     * @param \Phalcon\Di\FactoryDefault $di
-     */
-    public function __construct(\Phalcon\Di\FactoryDefault $di)
-    {
-        $this->setDI($di);
-    }
-
-    /**
-     * @return \Phalcon\Di\FactoryDefault
+     * @return \Phalcon\DiInterface
      */
     public function getDI()
     {
-        return $this->options;
+        return \Phalcon\DI::getDefault();
     }
 
     /**
-     * @param \Phalcon\Di\FactoryDefault $options
+     * @return mixed
      */
-    public function setDI(\Phalcon\Di\FactoryDefault $options)
+    public function getConfig()
     {
-        $this->options = $options;
+        return $this->getDI()->get("config")->get("database");
     }
 
     /**
@@ -46,24 +32,77 @@ class Service implements ServiceInterface
      */
     public function registration()
     {
-        $di     = $this->getDI();
-        $config = $di->get("config");
-
-        foreach ($config->get("database") as $db => $arguments)
+        $databases = $this->getConfig();
+        foreach ($databases as $db => $arguments)
         {
-
             // set
-            $di->setShared($db, function () use ($arguments)
-            {
+            $this->getDI()->setShared($db, function () use ($arguments) {
                 return new DbAdapter($arguments->toArray());
             });
 
             // transaction
             if (isset($arguments['transaction']) && $arguments['transaction']) {
 
-                $service = $arguments["host"] .":". $arguments["port"];
-                $di->setShared($service, function() use ($db)
+                $service = $arguments["dbname"]
+                    .":". $arguments["host"]
+                    .":". $arguments["port"];
+
+                $this->getDI()->setShared($service, function() use ($db)
                 {
+                    $manager = new Manager();
+                    if ($db !== null) {
+                        $manager->setDbService($db);
+                    }
+                    return $manager;
+                });
+
+            }
+        }
+    }
+
+    /**
+     * 再登録(上書き)
+     * @param array $overwrite
+     */
+    public function overwrite($overwrite = array())
+    {
+        $databases = $this->getConfig();
+        foreach ($databases as $db => $arguments) {
+
+            if (!isset($overwrite[$db])) {
+                continue;
+            }
+
+            // 上書き
+            $descriptor = array_merge(
+                $arguments->toArray(), // 元データ
+                $overwrite[$db]
+            );
+
+            // remove and set
+            $this->getDI()->remove($db);
+            $this->getDI()->setShared($db, function () use ($descriptor) {
+                return new DbAdapter($descriptor);
+            });
+
+            // new config
+            $config = $this->getDI()->get("config");
+            $config["database"][$db] = $descriptor;
+
+            // remove and set
+            $this->getDI()->remove("config");
+            $this->getDI()->set("config", function () use ($config) {
+                return $config;
+            }, true);
+
+            // transaction
+            if (isset($descriptor['transaction']) && $descriptor['transaction']) {
+
+                $service = $descriptor["dbname"]
+                    .":". $descriptor["host"]
+                    .":". $descriptor["port"];
+
+                $this->getDI()->setShared($service, function () use ($db) {
                     $manager = new Manager();
                     if ($db !== null) {
                         $manager->setDbService($db);

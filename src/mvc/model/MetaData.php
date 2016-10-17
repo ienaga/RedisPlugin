@@ -195,33 +195,18 @@ class MetaData extends \Phalcon\Mvc\Model\MetaData
     public function write($key, $data)
     {
         $this->setRedisValue($key, $data);
-        $this->writeIndexes($key);
+        $this->writeIndexes();
     }
 
     /**
-     * @param string $key
+     * writeIndexes
      */
-    public function writeIndexes($key = null)
+    public function writeIndexes()
     {
-        if (!$key) {
-            return;
-        }
+        $model    = Database::getModel();
+        $source   = $model->getSource();
 
-        $keys = explode("-", $key);
-        if (3 > count($keys)) {
-            return;
-        }
-
-        $source = array_pop($keys);
-
-        // class name
-        $class = "";
-        foreach (explode("_", $source) as $value) {
-            $class .= ucfirst($value);
-        }
-
-        /** @var \Phalcon\Mvc\Model $model */
-        $model    = new $class;
+        // INDEX
         $indexes  = $model->getReadConnection()->describeIndexes($source);
 
         // cache

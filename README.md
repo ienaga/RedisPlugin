@@ -33,45 +33,15 @@ sudo yum install libyaml libyaml-devel php-pecl-yaml php-pecl-redis
 
 ## app/config/config.php
 
+### @see [PhalconConfig](https://github.com/ienaga/PhalconConfig)
+
 ```php
-defined('BASE_PATH') || define('BASE_PATH', getenv('BASE_PATH') ?: realpath(dirname(__FILE__) . '/../..'));
-defined('APP_PATH') || define('APP_PATH', BASE_PATH . '/app');
-
-$config = new \Phalcon\Config();
-$env    = strtolower(getenv("ENVIRONMENT"));
-$ignore = array("routing");
-
-if ($dir = opendir(APP_PATH ."/config")) {
-
-    while (($file = readdir($dir)) !== false) {
-
-        $ext = explode(".", $file);
-        if ($ext[1] !== "yml" || in_array($ext[0], $ignore)) {
-            continue;
-        }
-
-        $yml =  new \Phalcon\Config\Adapter\Yaml(APP_PATH ."/config/". $file, [
-            '!app_path' => function($value) {
-                return APP_PATH . $value;
-            },
-            '!base_path' => function($value) {
-                return BASE_PATH . $value;
-            }
-        ]);
-
-        if ($yml->get($env)) {
-            $config->merge($yml->get($env));
-        }
-
-        if ($yml->get("all")) {
-            $config->merge($yml->get("all"));
-        }
-    }
-
-    closedir($dir);
-}
-
-return $config;
+$configLoader = new \PhalconConfig\Loader();
+return $configLoader
+    ->setIgnore(["routing"]) // ignore yml names
+    ->setEnvironment("stg")
+    ->setBasePath(BATH_PATH)
+    ->load();
 ```
 
 ## app/config/database.yml
@@ -163,11 +133,11 @@ stg:
 dev:
   redis:
     enabled: true # false => cache off
-    default:
-      name: db
-      expire: 3600
-      autoIndex: true
-    prefix: # 対象のカラムがModelに存在したら使用。左から順に優先。存在が確認できた時点でbreak
+    autoIndex: true # false => autoIndex off
+  
+  
+    # 対象のカラムがModelに存在したら使用。左から順に優先。存在が確認できた時点でbreak
+    prefix: 
       columns: column, column, column # e.g. user_id, id, social_id
 
 
@@ -175,6 +145,7 @@ dev:
     # common
     common:
       dbs: table, table, table... # e.g.  master_, access_log
+
 
     shard:
       enabled: true # Shardingを使用しない時はfalse
@@ -218,6 +189,7 @@ dev:
         model:  XXXXX # AdminConfigDb
         column: XXXXX # name
 
+
     server:
       dbMaster:
         host: XXXXX
@@ -260,8 +232,8 @@ dev:
 /**
  * Database connection is created based in the parameters defined in the configuration file
  */
-$db = new \RedisPlugin\Service($di);
-$db->registration();
+$dbService = new \RedisPlugin\Service();
+$dbService->registration();
 
 /**
  * If the configuration specify the use of metadata adapter use it or use memory otherwise
@@ -276,191 +248,18 @@ $di->setShared('modelsMetadata', function () {
 });
 ```
 
-## find | findFirst simple ver
-
-```php
-
-class Robot extends \RedisPlugin\Model
-{
-
-    /**
-     * @param  int    $id
-     * @param  string $type
-     * @return Robot
-     */
-    public static function findFirst($id, $type)
-    {
-        
-    
-        return RedisDb::findFirst(array(
-            'query' => array(
-                'id' => $id,
-                'type' => $type
-            )
-        ), new self);
-    }
-
-    /**
-     * @param  int    $id
-     * @param  string $type
-     * @return Robot[]
-     */
-    public static function find($id, $type)
-    {
-        return RedisDb::find(array(
-            'query' => array(
-                'id' => $id,
-                'type' => $type
-            )
-        ), new self);
-    }
-
-    // cache => falseで個別にキャッシュをコントロール
-    public static function no_cache($id, $type)
-    {
-        return RedisDb::find(array(
-            'query' => array(
-                'id' => $id,
-                'type' => $type
-            ),
-            'cache' => false
-        ), new self);
-    }
-
-    // autoIndex => falseで個別にautoIndexをコントロール
-    public static function no_autoIndex($id, $type)
-    {
-        return RedisDb::find(array(
-            'query' => array(
-                'id' => $id,
-                'type' => $type
-            ),
-            'autoIndex' => false
-        ), new self);
-    }
-
-
-    public static function order($id, $type)
-    {
-        return RedisDb::find(array(
-            'query' => array(
-                'id' => $id,
-                'type' => $type
-            ),
-            'order' => 'id DESC'
-        ), new self);
-    }
-
-    public static function group($id, $type)
-    {
-        return RedisDb::find(array(
-            'query' => array(
-                'id' => $id,
-                'type' => $type
-            ),
-            'group' => 'id'
-        ), new self);
-    }
-
-    public static function limit($id, $type)
-    {
-        return RedisDb::find(array(
-            'query' => array(
-                'id' => $id,
-                'type' => $type
-            ),
-            'limit' => 10 // array('number' => 10, 'offset' => 5)
-        ), new self);
-    }
-}
-
-```
-
-
-## find | findFirst 比較演算子
-
-```php
-
-use \RedisPlugin\RedisDb;
-use \RedisPlugin\Criteria;
-
-class Robot extends \Phalcon\Mvc\Model
-{
-    // LIST
-    // Criteria::EQUAL = '=';
-    // Criteria::NOT_EQUAL = '<>';
-    // Criteria::GREATER_THAN = '>';
-    // Criteria::LESS_THAN = '<';
-    // Criteria::GREATER_EQUAL = '>=';
-    // Criteria::LESS_EQUAL = '<=';
-    // Criteria::IS_NULL = 'IS NULL';
-    // Criteria::IS_NOT_NULL = 'IS NOT NULL';
-    // Criteria::LIKE = 'LIKE';
-    // Criteria::I_LIKE = 'ILIKE';
-    // Criteria::IN = 'IN';
-    // Criteria::NOT_IN = 'NOT IN';
-    // Criteria::BETWEEN = 'BETWEEN';
-
-
-    public static function in($id, $type)
-    {
-        return RedisDb::findFirst(array(
-            'query' => array(
-                'id' => array(
-                    'operator' => Criteria::IN,
-                    'value' => array(1,6,10)
-                ),
-                'type' => $type
-            )
-        ), new self);
-    }
-
-
-    public static function not_in($id, $type)
-    {
-        return RedisDb::find(array(
-            'query' => array(
-                'id' => array(
-                    'operator' => Criteria::NOT_IN,
-                    'value' => array(1,6,10)
-                ),
-                'type' => $type
-            )
-        ), new self);
-    }
-
-
-    public static function between($start, $end)
-    {
-        return RedisDb::findFirst(array(
-            'query' => array(
-                'id' => array(
-                    'operator' => Criteria::BETWEEN,
-                    'value' => array($start, $end)
-                ),
-                'type' => $type
-            )
-        ), new self);
-    }
-}
-
-```
-
 
 ## Criteria
 
 ```php
 
-use \RedisPlugin\RedisDb;
-use \RedisPlugin\Criteria;
 
-class Robot extends \Phalcon\Mvc\Model
+class Robot extends \RedisPlugin\Model
 {
 
     public static function findFirst($id, $type)
     {
-        $criteria = new Criteria(new self);
-        return $criteria
+        return self::criteria()
             ->add('id', $id)
             ->add('type', $type, Criteria::NOT_EQUAL)
             ->group('type')
@@ -469,8 +268,7 @@ class Robot extends \Phalcon\Mvc\Model
 
     public static function find($id, $start, $end)
     {
-        $criteria = new Criteria(new self);
-         return $criteria
+         return self::criteria()
             ->add('id', array($id), Criteria::IN)
             ->add('type', array($start, $end), Criteria::BETWEEN)
             ->limit(10, 5) // limit, offset
@@ -481,8 +279,7 @@ class Robot extends \Phalcon\Mvc\Model
     // ->cache($boolean)でキャッシュをコントロール
     public static function no_cache($id, $start, $end)
     {
-        $criteria = new Criteria(new self);
-         return $criteria
+         return self::criteria()
             ->add('id', array($id), Criteria::IN)
             ->add('type', array($start, $end), Criteria::BETWEEN)
             ->limit(10, 30)
@@ -494,8 +291,7 @@ class Robot extends \Phalcon\Mvc\Model
     // ->autoIndex($boolean)でautoIndexをコントロール
     public static function no_autoIndex($id, $start, $end)
     {
-        $criteria = new Criteria(new self);
-         return $criteria
+         return self::criteria()
             ->add('id', array($id), Criteria::IN)
             ->add('type', array($start, $end), Criteria::BETWEEN)
             ->limit(10, 30)
@@ -512,9 +308,7 @@ class Robot extends \Phalcon\Mvc\Model
 
 ```php
 
-use \RedisPlugin\RedisDb;
-
-class Robot extends \Phalcon\Mvc\Model
+class Robot extends \RedisPlugin\Model
 {
     /**
      * @param  int    $id
@@ -526,7 +320,7 @@ class Robot extends \Phalcon\Mvc\Model
         $robot= new Robot;
         $robot->setId($id);
         $robot->setType($type);
-        return RedisDb::save($robot);
+        $robot->save();
     }
 }
 

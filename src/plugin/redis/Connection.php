@@ -9,23 +9,6 @@ use \Redis;
 
 class Connection implements ConnectionInterface
 {
-
-    /**
-     * @var string
-     */
-    const HOST = "127.0.0.1";
-
-    /**
-     * @var int
-     */
-    const PORT = 6379;
-
-    /**
-     * @var int
-     */
-    const SELECT = 0;
-
-
     /**
      * @var \RedisPlugin\Connection
      */

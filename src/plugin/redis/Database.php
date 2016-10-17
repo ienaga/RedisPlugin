@@ -9,6 +9,17 @@ use \Exception;
 
 class Database implements DatabaseInterface
 {
+
+    /**
+     * @var string
+     */
+    const DEFAULT_NAME = "db";
+
+    /**
+     * @var int
+     */
+    const DEFAULT_EXPIRE = 3600;
+
     /**
      * @var \Phalcon\Mvc\Model
      */
@@ -28,14 +39,30 @@ class Database implements DatabaseInterface
      * @var array
      */
     protected static $models = array();
+
+    /**
+     * @var array
+     */
     protected static $bind = array();
+
+    /**
+     * @var array
+     */
     protected static $keys = array();
 
     /**
      * @var array
      */
     protected static $cache = array();
+
+    /**
+     * @var array
+     */
     protected static $admin_cache = array();
+
+    /**
+     * @var array
+     */
     protected static $config_cache = array();
 
     /**
@@ -86,8 +113,8 @@ class Database implements DatabaseInterface
      * @param  \Phalcon\Mvc\Model $model
      * @param  array $data
      * @param  array $whiteList
-     * @return \Phalcon\Mvc\Model
-     * 
+     * @return bool
+     *
      */
     public static function save($model, $data = null, $whiteList = null)
     {
@@ -101,11 +128,13 @@ class Database implements DatabaseInterface
 
             Database::outputErrorMessage($model);
 
+            return false;
+
         }
 
-        self::addModels($model);
+        self::addModel($model);
 
-        return $model;
+        return true;
     }
 
     /**
@@ -129,7 +158,7 @@ class Database implements DatabaseInterface
 
         }
 
-        self::addModels($model);
+        self::addModel($model);
 
         return $model;
     }
@@ -138,32 +167,45 @@ class Database implements DatabaseInterface
      * @param  string $configName
      * @return \Phalcon\Mvc\Model\TransactionInterface
      */
-    public static function getTransactionForConfigName($configName)
+    public static function getTransactionForConfigName($configName = "db")
     {
         return self::addMasterConnection($configName . "Master");
     }
 
     /**
      * @param  \Phalcon\Mvc\Model $model
-     * @param  mixed $memberId
-     * @return mixed
+     * @param  int|null $memberId
      */
-    public static function setCon($model, $memberId = null)
+    public static function setConnection($model, $memberId = null)
     {
-
         $configName  = self::getConnectionName($memberId);
         $configName .= (self::isCommon($model)) ? "Common" : "";
         $configName .= (self::isTransaction()) ? "Master" : "Slave";
 
         $model->setReadConnectionService($configName);
+        self::setModel($model);
+    }
 
-        return $model;
+    /**
+     * @return \Phalcon\Mvc\Model
+     */
+    public static function getModel()
+    {
+        return self::$model;
     }
 
     /**
      * @param \Phalcon\Mvc\Model $model
      */
-    public static function addModels($model)
+    public static function setModel(\Phalcon\Mvc\Model $model)
+    {
+        self::$model = $model;
+    }
+
+    /**
+     * @param \Phalcon\Mvc\Model $model
+     */
+    public static function addModel(\Phalcon\Mvc\Model $model)
     {
         self::$models[] = $model;
     }
@@ -189,7 +231,7 @@ class Database implements DatabaseInterface
      * @param  string $configName
      * @return \Phalcon\Mvc\Model
      */
-    public static function setConForConfigName($model, $configName)
+    public static function setConnectionForConfigName($model, $configName)
     {
         $configName .=  (self::isTransaction()) ? "Master" : "Slave";
 
@@ -199,7 +241,7 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @param  int $memberId
+     * @param  int|null $memberId
      * @return string
      */
     public static function getConnectionName($memberId = null)
@@ -224,7 +266,7 @@ class Database implements DatabaseInterface
             }
         }
 
-        return self::getConfig()->get("default")->get("name");
+        return self::DEFAULT_NAME;
     }
 
     /**
@@ -233,22 +275,33 @@ class Database implements DatabaseInterface
      */
     public static function addMasterConnection($configName)
     {
-        if (!isset(self::$connections[$configName])) {
+        // ServiceName
+        $service = self::getServiceName($configName);
 
-            $config = \Phalcon\DI::getDefault()
-                ->get("config")
-                ->get("database")
-                ->get($configName);
-
-            $service = $config["host"] .":". $config["port"];
+        if (!isset(self::$connections[$service])) {
 
             /** @var \Phalcon\Mvc\Model\Transaction\Manager $manager */
             $manager = \Phalcon\DI::getDefault()->getShared($service);
 
-            self::$connections[$configName] = $manager->get();
+            self::$connections[$service] = $manager->get();
         }
 
-        return self::$connections[$configName];
+        return self::$connections[$service];
+    }
+
+    /**
+     * @param  string $configName
+     * @return string
+     */
+    public static function getServiceName($configName)
+    {
+        // config
+        $c = \Phalcon\DI::getDefault()
+            ->get("config")
+            ->get("database")
+            ->get($configName);
+
+        return $c["dbname"] . ":" . $c["host"] . ":" . $c["port"];
     }
 
     /**
@@ -297,17 +350,10 @@ class Database implements DatabaseInterface
     {
         $rollback = false;
 
-
-
         foreach (self::$connections as $configName => $connection) {
 
-            $config = \Phalcon\DI::getDefault()
-                ->get("config")
-                ->get("database")
-                ->get($configName);
-
             // Activeなトランザクションがある場合だけrollbackする
-            $service = $config["host"] .":". $config["port"];
+            $service = self::getServiceName($configName);
 
             /** @var \Phalcon\Mvc\Model\Transaction\Manager $manager */
             $manager = \Phalcon\DI::getDefault()->getShared($service);
@@ -335,8 +381,9 @@ class Database implements DatabaseInterface
         self::$isTransaction = false;
 
         // 有効なトランザクションが無くrollbackしなかったときはエラーログいらない
-        if ($rollback === false)
+        if ($rollback === false) {
             return;
+        }
 
         error_log(
             "[rollback] MESSAGE:". $e->getMessage()
@@ -348,7 +395,7 @@ class Database implements DatabaseInterface
 
     /**
      * @param  mixed $id
-     * @return \Phalcon\Mvc\Model
+     * @return string
      */
     public static function getMemberConfigName($id)
     {
@@ -385,11 +432,11 @@ class Database implements DatabaseInterface
 
 
         $dbConfig = self::$config_cache[$id];
-
-        if ($dbConfig)
+        if ($dbConfig) {
             return $dbConfig->{$config->get("column")};
+        }
 
-        return self::getConfig()->get("default")->get("name");
+        return self::DEFAULT_NAME;
     }
 
     /**
@@ -423,9 +470,9 @@ class Database implements DatabaseInterface
         }
 
         $adminMember = self::findFirst(self::$_adminQuery, self::$_adminModel);
-
-        if (!$adminMember)
+        if (!$adminMember) {
             throw new Exception("Not Created Admin Member");
+        }
 
         return $adminMember;
     }
@@ -436,7 +483,7 @@ class Database implements DatabaseInterface
      */
     public static function getIndexes($model)
     {
-        $source = $model->getSource();
+        $source  = $model->getSource();
         $indexes = $model->getModelsMetaData()->readIndexes($source);
 
         if (self::isCommon($model) || self::isAdmin($model)) {
@@ -473,28 +520,22 @@ class Database implements DatabaseInterface
         // なければDBから
         if ($result === false) {
 
-            $cache = true;
+            // cache on or off
+            $cache = self::getConfig()->get("enabled");
             if (isset($parameters["cache"])) {
-
                 $cache = $parameters["cache"];
                 unset($parameters["cache"]);
-
             }
 
             $result = $model::find($parameters);
-
             if (!$result) {
-
                 $result = array();
-
             }
 
-            if ($cache && self::getConfig()->get("enabled")) {
-
+            // cache on
+            if ($cache) {
                 self::setHash($model, $key, $result, $expire);
-
             }
-
         }
 
         return $result;
@@ -628,21 +669,26 @@ class Database implements DatabaseInterface
      */
     public static function isCommon($model)
     {
-        $source = $model->getSource();
-        $dbs = self::getConfig()->get("common")->get("dbs");
+        $dbs = self::getConfig()
+            ->get("common")
+            ->get("dbs")
+            ->toArray();
 
-        if (!$dbs)
+        if (!$dbs) {
             return false;
+        }
 
-        $commonDbs = explode(",", $dbs);
-        if (is_array($commonDbs)) {
+        if (is_array($dbs)) {
 
-            foreach ($commonDbs as $name) {
+            $source = $model->getSource();
+
+            foreach ($dbs as $name) {
 
                 $name = trim($name);
 
-                if (substr($source, 0, strlen($name)) !== $name)
+                if (substr($source, 0, strlen($name)) !== $name) {
                     continue;
+                }
 
                 return true;
             }
@@ -657,21 +703,28 @@ class Database implements DatabaseInterface
      */
     public static function isAdmin($model)
     {
-        $source = $model->getSource();
-        $dbs = self::getConfig()->get("admin")->get("dbs");
+        $config  = self::getConfig();
+        $enabled = $config->get("shard")->get("enabled");
 
-        if (!$dbs)
+        if (!$enabled) {
             return false;
+        }
 
-        $adminDbs = explode(",", $dbs);
-        if (is_array($adminDbs)) {
+        $source = $model->getSource();
+        $dbs    = $config->get("admin")->get("dbs")->toArray();
 
-            foreach ($adminDbs as $name) {
+        if (!$dbs) {
+            return false;
+        }
+
+        if (is_array($dbs)) {
+
+            foreach ($dbs as $name) {
 
                 $name = trim($name);
-
-                if (substr($source, 0, strlen($name)) !== $name)
+                if (substr($source, 0, strlen($name)) !== $name) {
                     continue;
+                }
 
                 return true;
             }
@@ -695,7 +748,7 @@ class Database implements DatabaseInterface
 
         }
 
-        Database::setCon($model, $prefix);
+        Database::setConnection($model, $prefix);
 
         // reset
         self::$hashPrefix = $_prefix;
@@ -727,11 +780,12 @@ class Database implements DatabaseInterface
      */
     public static function getHashKey($model)
     {
+
         $key = $model->getSource();
 
         if (self::getPrefix()) {
 
-            $key .= "@". self::getPrefix();
+            $key .= ":". self::getPrefix();
 
         }
 
@@ -756,11 +810,9 @@ class Database implements DatabaseInterface
         self::$hashPrefix = null;
 
         $columns = self::getConfig()->get("prefix")->get("columns");
-
-        if (!$columns)
+        if (!$columns) {
             throw new Exception("not found prefix columns");
-
-        $columns = explode(",", $columns);
+        }
 
         foreach ($columns as $column) {
 
@@ -768,15 +820,17 @@ class Database implements DatabaseInterface
 
             if ($keys) {
 
-                if (!isset($keys[$property]))
+                if (!isset($keys[$property])) {
                     continue;
+                }
 
                 self::$hashPrefix = $keys[$property];
 
             } else {
 
-                if (!property_exists($model, $property))
+                if (!property_exists($model, $property)) {
                     continue;
+                }
 
                 self::$hashPrefix = $model->{$property};
 
@@ -794,46 +848,55 @@ class Database implements DatabaseInterface
      */
     public static function getCacheKey($model, $key)
     {
-        return self::getHashKey($model) ."@". $key;
+        return self::getHashKey($model) .":". $key;
     }
 
     /**
      * @param \Phalcon\Mvc\Model $model
      * @param string $key
-     * @param mixed $value
-     * @param int $expire
+     * @param mixed  $value
+     * @param int    $expire
      */
     public static function setHash($model, $key, $value, $expire = 0)
     {
-        $hashKey = self::getHashKey($model);
+        // cache key
+        $hashKey  = "";
+        $hashKey .= self::getServiceName($model->getReadConnectionService()). ":";
+        $hashKey .= self::getHashKey($model);
 
         $redis = self::getRedis($model);
         $redis->hSet($hashKey, $key, $value);
 
-        $expire = (!$expire)
-            ? self::getConfig()->get("default")->get("expire")
-            : $expire;
-
-        if ($expire > 0 && !$redis->isTimeout($hashKey)) {
-
+        // EXPIRE
+        $expire = (!$expire) ? self::DEFAULT_EXPIRE : $expire;
+        if ($expire > 0 && !self::getConnection($model)->isTimeout($hashKey)) {
             $redis->setTimeout($hashKey, $expire);
-
         }
     }
 
     /**
-     * redisを取得
+     *
      * @param  \Phalcon\Mvc\Model $model
-     * @return RedisManager
+     * @return Connection
      */
-    public static function getRedis($model)
+    public static function getConnection($model)
     {
         $configs = self::getConfig()
             ->get("server")
             ->get($model->getReadConnectionService())
             ->toArray();
 
-        return RedisManager::getInstance()->connect($configs);
+        return Connection::getInstance()->connect($configs);
+    }
+
+    /**
+     * redisを取得
+     * @param  \Phalcon\Mvc\Model $model
+     * @return |Redis
+     */
+    public static function getRedis($model)
+    {
+        return self::getConnection($model)->getRedis();
     }
 
     /**
@@ -863,9 +926,9 @@ class Database implements DatabaseInterface
      */
     public static function _createKey($parameters, $model)
     {
-
-        if (!is_array($parameters) || !isset($parameters["query"]))
+        if (!is_array($parameters) || !isset($parameters["query"])) {
             throw new Exception("Not Found query in parameters");
+        }
 
         $query = $parameters["query"];
 
@@ -875,7 +938,7 @@ class Database implements DatabaseInterface
         self::$bind  = isset($parameters["bind"]) ? $parameters["bind"] : array();
 
         // 設定確認・個別確認
-        $autoIndex = self::getConfig()->get("default")->get("autoIndex");
+        $autoIndex = self::getConfig()->get("autoIndex");
         if (isset($parameters["autoIndex"])) {
 
             $autoIndex = $parameters["autoIndex"];
@@ -1114,7 +1177,7 @@ class Database implements DatabaseInterface
      * @param  \Phalcon\Mvc\Model $model
      * @throws \Exception
      */
-    public static function outputErrorMessage($model)
+    public static function outputErrorMessage(\Phalcon\Mvc\Model $model)
     {
         $messages = "";
         foreach ($model->getMessages() as $message) {
