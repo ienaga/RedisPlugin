@@ -55,7 +55,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface
 
         }
 
-        Database::addModels($this);
+        Database::addModel($this);
 
         return true;
     }

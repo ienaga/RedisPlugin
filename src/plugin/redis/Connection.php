@@ -22,7 +22,7 @@ class Connection implements ConnectionInterface
     /**
      * @var Redis[]
      */
-    private $_connections = array();
+    protected $connections = array();
 
 
     /**
@@ -76,10 +76,10 @@ class Connection implements ConnectionInterface
 
         // cache set
         if (!$this->hasConnections($key)) {
-            $this->_connections[$key] = $this->createClient($host, $port, $select);
+            $this->connections[$key] = $this->createClient($host, $port, $select);
         }
 
-        self::$redis = $this->_connections[$key];
+        self::$redis = $this->connections[$key];
 
         return $this;
     }
@@ -90,7 +90,7 @@ class Connection implements ConnectionInterface
      */
     public function hasConnections($key)
     {
-        return isset($this->_connections[$key]);
+        return isset($this->connections[$key]);
     }
 
     /**
@@ -128,11 +128,11 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * @throws \Exception
+     * @throws RedisPluginException
      */
     final function __clone()
     {
-        throw new \Exception("Clone is not allowed against" . get_class($this));
+        throw new RedisPluginException("Clone is not allowed against" . get_class($this));
     }
 
     /**
@@ -140,10 +140,11 @@ class Connection implements ConnectionInterface
      */
     public function __destruct()
     {
-        foreach ($this->_connections as $redis) {
+        foreach ($this->connections as $redis) {
             $redis->close();
         }
-        $this->_connections = array();
-        self::$redis = null;
+        // reset
+        $this->connections = array();
+        self::$redis        = null;
     }
 }

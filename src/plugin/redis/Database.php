@@ -99,68 +99,14 @@ class Database implements DatabaseInterface
     }
     
     /**
-     * @param  null $memberId
+     * @param  null $prefix
      * @return \Phalcon\Mvc\Model\TransactionInterface
      */
-    public static function getTransaction($memberId = null)
+    public static function getTransaction($prefix = null)
     {
         return self::addMasterConnection(
-            self::getConnectionName($memberId) . "Master"
+            self::getConnectionName($prefix) . "Master"
         );
-    }
-
-    /**
-     * @param  \Phalcon\Mvc\Model $model
-     * @param  array $data
-     * @param  array $whiteList
-     * @return bool
-     *
-     */
-    public static function save($model, $data = null, $whiteList = null)
-    {
-        self::setPrefix($model);
-
-        self::connect($model, self::getPrefix());
-
-        $model->setTransaction(self::getTransaction(self::getPrefix()));
-
-        if (!$model->save($data, $whiteList)) {
-
-            Database::outputErrorMessage($model);
-
-            return false;
-
-        }
-
-        self::addModel($model);
-
-        return true;
-    }
-
-    /**
-     * @param  \Phalcon\Mvc\Model $model
-     * @param  array $data
-     * @param  array $whiteList
-     * @return \Phalcon\Mvc\Model
-     * @throws Exception
-     */
-    public static function delete($model, $data = null, $whiteList = null)
-    {
-        self::setPrefix($model);
-
-        self::connect($model, self::getPrefix());
-
-        $model->setTransaction(self::getTransaction(self::getPrefix()));
-
-        if (!$model->delete($data, $whiteList)) {
-
-            Database::outputErrorMessage($model);
-
-        }
-
-        self::addModel($model);
-
-        return $model;
     }
     
     /**
@@ -174,11 +120,11 @@ class Database implements DatabaseInterface
 
     /**
      * @param  \Phalcon\Mvc\Model $model
-     * @param  int|null $memberId
+     * @param  int|null $prefix
      */
-    public static function setConnection($model, $memberId = null)
+    public static function setConnection($model, $prefix = null)
     {
-        $configName  = self::getConnectionName($memberId);
+        $configName  = self::getConnectionName($prefix);
         $configName .= (self::isCommon($model)) ? "Common" : "";
         $configName .= (self::isTransaction()) ? "Master" : "Slave";
 
@@ -241,24 +187,24 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @param  int|null $memberId
+     * @param  int|null $prefix
      * @return string
      */
-    public static function getConnectionName($memberId = null)
+    public static function getConnectionName($prefix = null)
     {
 
         $mode = self::getConfig()->get("shard")->get("enabled");
 
-        if ($mode && (int) $memberId > 0) {
+        if ($mode && (int) $prefix > 0) {
 
-            if (!isset(self::$admin_cache[$memberId])) {
+            if (!isset(self::$admin_cache[$prefix])) {
 
-                self::$admin_cache[$memberId] = self::getAdminMember($memberId);
+                self::$admin_cache[$prefix] = self::getAdminMember($prefix);
 
             }
 
-            $adminMember = self::$admin_cache[$memberId];
-            if (self::$admin_cache[$memberId]) {
+            $adminMember = self::$admin_cache[$prefix];
+            if (self::$admin_cache[$prefix]) {
 
                 $column = self::getConfig()->get("admin")->get("column");
                 return self::getMemberConfigName($adminMember->{$column});
@@ -364,7 +310,7 @@ class Database implements DatabaseInterface
 
                     $connection->rollback();
 
-                } catch (\Exception $e) {
+                } catch (RedisPluginException $e) {
 
                     array_shift(self::$connections);
                     self::rollback($e);
@@ -440,11 +386,11 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @param  int $memberId
+     * @param  int $primaryId$primaryId
      * @return \Phalcon\Mvc\Model
-     * @throws Exception
+     * @throws RedisPluginException
      */
-    public static function getAdminMember($memberId)
+    public static function getAdminMember($primaryId)
     {
         $config = self::getConfig()->get("admin");
 
@@ -465,13 +411,13 @@ class Database implements DatabaseInterface
 
             }
 
-            self::$_adminQuery = array("query" => array($primary => $memberId));
+            self::$_adminQuery = array("query" => array($primary => $primaryId));
 
         }
 
         $adminMember = self::findFirst(self::$_adminQuery, self::$_adminModel);
         if (!$adminMember) {
-            throw new Exception("Not Created Admin Member");
+            throw new RedisPluginException("Not Created Admin Member");
         }
 
         return $adminMember;
@@ -761,17 +707,55 @@ class Database implements DatabaseInterface
      */
     public static function findRedis($model, $key)
     {
-        $cacheKey = self::getCacheKey($model, $key);
+        // local cache
+        $cache = self::getLocalCache($model, $key);
 
-        if (!isset(self::$cache[$cacheKey])) {
-
-            self::$cache[$cacheKey] = self::getRedis($model)
-                ->hGet(self::getHashKey($model), $key);
-
+        // redis
+        if (!$cache) {
+            $cacheKey = self::createCacheKey($model);
+            $cache    = self::getRedis($model)->hGet($cacheKey, $key);
+            self::setLocalCache($model, $key, $cache);
         }
 
+        return $cache;
+    }
 
-        return self::$cache[$cacheKey];
+    /**
+     * @param  \Phalcon\Mvc\Model $model
+     * @param  string $key
+     * @return mixed
+     */
+    public static function getLocalCache($model, $key)
+    {
+        // cache key
+        $cacheKey = self::createCacheKey($model);
+
+        // init
+        if (!isset(self::$cache[$cacheKey])) {
+            self::$cache[$cacheKey] = [];
+        }
+
+        return isset(self::$cache[$cacheKey][$key])
+            ? self::$cache[$cacheKey][$key]
+            : null;
+    }
+
+    /**
+     * @param \Phalcon\Mvc\Model $model
+     * @param string $key
+     * @param mixed  $value
+     */
+    public static function setLocalCache($model, $key, $value)
+    {
+        // cache key
+        $cacheKey = self::createCacheKey($model);
+
+        // init
+        if (!isset(self::$cache[$cacheKey])) {
+            self::$cache[$cacheKey] = [];
+        }
+
+        self::$cache[$cacheKey][$key] = $value;
     }
 
     /**
@@ -780,13 +764,11 @@ class Database implements DatabaseInterface
      */
     public static function getHashKey($model)
     {
-
-        $key = $model->getSource();
+        $key  = ":";
+        $key .= $model->getSource();
 
         if (self::getPrefix()) {
-
             $key .= ":". self::getPrefix();
-
         }
 
         return $key;
@@ -803,15 +785,20 @@ class Database implements DatabaseInterface
     /**
      * @param  \Phalcon\Mvc\Model $model
      * @param  null $keys
-     * @throws \Exception
+     * @throws RedisPluginException
      */
     public static function setPrefix($model, $keys = null)
     {
         self::$hashPrefix = null;
 
+        $mode = self::getConfig()->get("shard")->get("enabled");
+        if (!$mode) {
+            return;
+        }
+
         $columns = self::getConfig()->get("prefix")->get("columns");
         if (!$columns) {
-            throw new Exception("not found prefix columns");
+            throw new RedisPluginException("not found prefix columns");
         }
 
         foreach ($columns as $column) {
@@ -860,18 +847,32 @@ class Database implements DatabaseInterface
     public static function setHash($model, $key, $value, $expire = 0)
     {
         // cache key
-        $hashKey  = "";
-        $hashKey .= self::getServiceName($model->getReadConnectionService()). ":";
-        $hashKey .= self::getHashKey($model);
+        $cacheKey = self::createCacheKey($model);
 
+        // set redis
         $redis = self::getRedis($model);
-        $redis->hSet($hashKey, $key, $value);
+        $redis->hSet($cacheKey, $key, $value);
+
+        // local cache
+        self::getLocalCache($model, $key, $value);
 
         // EXPIRE
         $expire = (!$expire) ? self::DEFAULT_EXPIRE : $expire;
-        if ($expire > 0 && !self::getConnection($model)->isTimeout($hashKey)) {
-            $redis->setTimeout($hashKey, $expire);
+        if ($expire > 0 && !self::getConnection($model)->isTimeout($cacheKey)) {
+            $redis->setTimeout($cacheKey, $expire);
         }
+    }
+
+    /**
+     * @param  \Phalcon\Mvc\Model $model
+     * @return string
+     */
+    public static function createCacheKey($model)
+    {
+        $key  = "";
+        $key .= self::getServiceName($model->getReadConnectionService());
+        $key .= self::getHashKey($model);
+        return $key;
     }
 
     /**
@@ -922,19 +923,18 @@ class Database implements DatabaseInterface
      * @param  array $parameters
      * @param  \Phalcon\Mvc\Model $model
      * @return array
-     * @throws Exception
+     * @throws RedisPluginException
      */
     public static function _createKey($parameters, $model)
     {
         if (!is_array($parameters) || !isset($parameters["query"])) {
-            throw new Exception("Not Found query in parameters");
+            throw new RedisPluginException("Not Found query in parameters");
         }
 
-        $query = $parameters["query"];
-
-        $indexQuery = array();
-        $where = array();
-        self::$keys = array();
+        // init
+        $indexQuery  = array();
+        $where       = array();
+        self::$keys  = array();
         self::$bind  = isset($parameters["bind"]) ? $parameters["bind"] : array();
 
         // 設定確認・個別確認
@@ -946,6 +946,7 @@ class Database implements DatabaseInterface
 
         }
 
+        $query = $parameters["query"];
         if ($autoIndex) {
 
             $indexes = self::getIndexes($model);
@@ -1175,7 +1176,7 @@ class Database implements DatabaseInterface
 
     /**
      * @param  \Phalcon\Mvc\Model $model
-     * @throws \Exception
+     * @throws RedisPluginException
      */
     public static function outputErrorMessage(\Phalcon\Mvc\Model $model)
     {
@@ -1183,8 +1184,7 @@ class Database implements DatabaseInterface
         foreach ($model->getMessages() as $message) {
             $messages .= $message;
         }
-
-        throw new Exception($messages);
+        throw new RedisPluginException($messages);
     }
 
 }
