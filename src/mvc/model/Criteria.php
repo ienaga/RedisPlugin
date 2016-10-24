@@ -1,8 +1,6 @@
 <?php
 
-
-namespace RedisPlugin;
-
+namespace RedisPlugin\Mvc\Model;
 
 class Criteria implements CriteriaInterface
 {
@@ -21,7 +19,7 @@ class Criteria implements CriteriaInterface
     const IN            = "IN";
     const NOT_IN        = "NOT IN";
     const BETWEEN       = "BETWEEN";
-    const ADD_OR        = "OR";
+    const OR            = "OR";
     const ASC           = "ASC";
     const DESC          = "DESC";
 
@@ -32,17 +30,7 @@ class Criteria implements CriteriaInterface
     protected $conditions = array("query" => array());
 
     /**
-     * @var array
-     */
-    protected $order = array();
-
-    /**
-     * @var array
-     */
-    protected $group = array();
-
-    /**
-     * @var null
+     * @var \Phalcon\Mvc\Model
      */
     protected $model = null;
 
@@ -51,10 +39,20 @@ class Criteria implements CriteriaInterface
      */
     protected $expire = 0;
 
+    /**
+     * @var array
+     */
+    protected $orders = array();
+
+    /**
+     * @var array
+     */
+    protected $groups = array();
+
 
     /**
      * @param \Phalcon\Mvc\Model $model
-     * @param int $expire
+     * @param int                $expire
      */
     public function __construct($model = null, $expire = 0)
     {
@@ -64,11 +62,88 @@ class Criteria implements CriteriaInterface
     }
 
     /**
-     * @return static
+     * @return array
      */
-    public static function create()
+    public function getConditions()
     {
-        return new static();
+        return $this->conditions;
+    }
+
+    /**
+     * @param  array $conditions
+     * @return $this
+     */
+    public function setConditions($conditions = array())
+    {
+        $this->conditions = $conditions;
+
+        return $this;
+    }
+
+    /**
+     * @return \Phalcon\Mvc\Model
+     */
+    public function getModel()
+    {
+        return $this->model;
+    }
+
+    /**
+     * @param  \Phalcon\Mvc\Model $model
+     * @return $this
+     */
+    public function setModel(\Phalcon\Mvc\Model $model)
+    {
+        $this->model = $model;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getExpire()
+    {
+        return $this->expire;
+    }
+
+    /**
+     * @param  int $expire
+     * @return $this
+     */
+    public function setExpire($expire = 0)
+    {
+        $this->expire = $expire;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getOrders()
+    {
+        return $this->orders;
+    }
+
+    /**
+     * @return array
+     */
+    public function getGroups()
+    {
+        return $this->groups;
+    }
+
+    /**
+     * @param  mixed  $value
+     * @param  string $operator
+     * @return array
+     */
+    public function queryToArray($value, $operator = self::EQUAL)
+    {
+        return array(
+            "value"    => $value,
+            "operator" => $operator
+        );
     }
 
     /**
@@ -79,8 +154,7 @@ class Criteria implements CriteriaInterface
      */
     public function add($column, $value, $operator = self::EQUAL)
     {
-        $this->conditions["query"][$column] =
-            $this->buildArray($value, $operator);
+        $this->conditions["query"][$column] = $this->queryToArray($value, $operator);
 
         return $this;
     }
@@ -125,24 +199,11 @@ class Criteria implements CriteriaInterface
     public function addOr($column, $value, $operator = self::EQUAL)
     {
         $this->conditions["query"][] = array(
-            "operator" => self::ADD_OR,
-            $column    => $this->buildArray($value, $operator)
+            "operator" => self::OR,
+            $column    => $this->queryToArray($value, $operator)
         );
 
         return $this;
-    }
-
-    /**
-     * @param  mixed  $value
-     * @param  string $operator
-     * @return array
-     */
-    protected function buildArray($value, $operator = self::EQUAL)
-    {
-        return array(
-            "operator" => $operator,
-            "value"    => $value
-        );
     }
 
     /**
@@ -165,20 +226,20 @@ class Criteria implements CriteriaInterface
      * @param  string $sort
      * @return $this
      */
-    public function order($value, $sort = self::ASC)
+    public function addOrder($value, $sort = self::ASC)
     {
-        $this->order[] = $value ." ". $sort;
+        $this->orders[] = $value ." ". $sort;
 
         return $this;
     }
 
     /**
-     * @param  array|string $value
+     * @param  string $value
      * @return $this
      */
-    public function group($value)
+    public function addGroup($value)
     {
-        $this->group[] = $value;
+        $this->groups[] = $value;
 
         return $this;
     }
@@ -208,107 +269,57 @@ class Criteria implements CriteriaInterface
     /**
      * @return array
      */
-    public function getConditions()
-    {
-        return $this->conditions;
-    }
-
-    /**
-     * @param  array $condition
-     * @return $this
-     */
-    public function setConditions($condition = array())
-    {
-        $this->conditions = $condition;
-
-        return $this;
-    }
-
-    /**
-     * @return array
-     */
     public function buildCondition()
     {
         // order by
-        if (count($this->order)) {
-            $this->conditions["order"] = join(", ", $this->order);
+        if (count($this->getOrders())) {
+            $this->conditions["order"] = join(", ", $this->getOrders());
         }
 
         // group by
-        if (count($this->group)) {
-            $this->conditions["group"] = join(", ", $this->group);
+        if (count($this->getGroups())) {
+            $this->conditions["group"] = join(", ", $this->getGroups());
         }
+
+        // expire
+        $this->conditions["expire"] = $this->getExpire();
 
         return $this->conditions;
     }
 
     /**
-     * @return \Phalcon\Mvc\Model
-     */
-    public function getModel()
-    {
-        return $this->model;
-    }
-
-    /**
-     * @param  \Phalcon\Mvc\Model $model
-     * @return $this
-     */
-    public function setModel(\Phalcon\Mvc\Model $model)
-    {
-        $this->model = $model;
-
-        return $this;
-    }
-
-    /**
-     * @return int
-     */
-    public function getExpire()
-    {
-        return $this->expire;
-    }
-
-    /**
-     * @param  int $expire
-     * @return $this
-     */
-    public function setExpire($expire = 0)
-    {
-        $this->expire = $expire;
-
-        return $this;
-    }
-
-    /**
-     * @return \Phalcon\Mvc\Model
+     * @return \Phalcon\Mvc\Model | bool
      */
     public function findFirst()
     {
-        return Database::findFirst($this->buildCondition(), $this->getModel(), $this->getExpire());
+        $model = $this->getModel();
+        return $model::findFirst($this->buildCondition());
     }
 
     /**
-     * @return \Phalcon\Mvc\Model[]
+     * @return \Phalcon\Mvc\Model[] | array
      */
     public function find()
     {
+        $model = $this->getModel();
         return Database::find($this->buildCondition(), $this->getModel(), $this->getExpire());
     }
 
     /**
-     * TODO
-     */
-    public function delete()
-    {
-
-    }
-
-    /**
-     * TODO
+     * @return bool
      */
     public function update()
     {
+        $model = $this->getModel();
+        return Database::update($this->buildCondition(), $this->getModel(), $this->getExpire());
+    }
 
+    /**
+     * @return bool
+     */
+    public function delete()
+    {
+        $model = $this->getModel();
+        return Database::delete($this->buildCondition(), $this->getModel(), $this->getExpire());
     }
 }

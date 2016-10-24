@@ -1,57 +1,26 @@
 <?php
 
-
-namespace RedisPlugin;
-
+namespace RedisPlugin\Mvc\Model;
 
 interface CriteriaInterface
 {
-
     /**
-     * @return \Phalcon\Mvc\Model
+     * @return \Phalcon\Mvc\Model | bool
      */
     public function findFirst();
 
     /**
-     * @return \Phalcon\Mvc\Model[]
+     * @return \Phalcon\Mvc\Model[] | array
      */
     public function find();
 
     /**
-     * @return void
-     */
-    public function delete();
-
-    /**
-     * @return void
+     * @return bool
      */
     public function update();
 
     /**
-     * @return array
+     * @return bool
      */
-    public function buildCondition();
-
-    /**
-     * @return null|\Phalcon\Mvc\Model
-     */
-    public function getModel();
-
-    /**
-     * @param  \Phalcon\Mvc\Model $model
-     * @return $this
-     */
-    public function setModel(\Phalcon\Mvc\Model $model);
-
-    /**
-     * @return int
-     */
-    public function getExpire();
-
-    /**
-     * @param  int $expire
-     * @return int
-     */
-    public function setExpire($expire = 0);
-
+    public function delete();
 }

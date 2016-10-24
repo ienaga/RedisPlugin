@@ -1,11 +1,8 @@
 <?php
 
-
 namespace RedisPlugin;
 
-
 use \Redis;
-
 
 class Connection implements ConnectionInterface
 {
@@ -54,6 +51,7 @@ class Connection implements ConnectionInterface
     /**
      * @param  array $config
      * @return $this
+     * @throws RedisPluginException
      */
     public function connect($config = array())
     {
@@ -63,13 +61,18 @@ class Connection implements ConnectionInterface
                 ->get("redis")
                 ->get("server")
                 ->toArray();
+
+            if (!count($configs)) {
+                throw new RedisPluginException("Initial setting can not be found.");
+            }
+
             $config = array_shift($configs);
         }
 
-        // params
-        $host   = $config["host"];
-        $port   = $config["port"];
-        $select = $config["select"];
+        // set params
+        $host   = (isset($config["host"]))   ? $config["host"]   : self::HOST;
+        $port   = (isset($config["port"]))   ? $config["port"]   : self::PORT;
+        $select = (isset($config["select"])) ? $config["select"] : self::SELECT;
 
         // cache key
         $key = $host .":". $port .":". $select;
@@ -101,10 +104,15 @@ class Connection implements ConnectionInterface
      */
     public function createClient($host = self::HOST, $port = self::PORT, $select = self::SELECT)
     {
-        $redis = new Redis();
-        $redis->pconnect($host, $port, 0, "x");
-        $redis->select($select);
-        $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
+        try {
+            $redis = new Redis();
+            $redis->pconnect($host, $port, 0, "x");
+            $redis->select($select);
+            $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
+        } catch (RedisPluginException $e) {
+            die($e->getMessage());
+        }
+
         return $redis;
     }
 

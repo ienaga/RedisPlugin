@@ -11,6 +11,10 @@
             "email": "ienaga@tvon.jp"
         }
     ],
+    "require-dev": {
+        "phalcon/zephir": "~0.9",
+        "phpunit/phpunit": "4.8.*"
+    },
     "autoload": {
         "psr-4": {
             "RedisPlugin\\": "src/"

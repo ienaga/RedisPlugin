@@ -1,10 +1,7 @@
 <?php
 
-namespace RedisPlugin;
+namespace RedisPlugin\Exception;
 
 use \Exception;
 
-class RedisPluginException extends Exception
-{
-
-}
+class RedisPluginException extends Exception {}

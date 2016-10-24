@@ -1,8 +1,6 @@
 <?php
 
-
 namespace RedisPlugin;
-
 
 interface ConnectionInterface
 {
@@ -47,13 +45,7 @@ interface ConnectionInterface
     public function createClient($host = self::HOST, $port = self::PORT, $select = self::SELECT);
 
     /**
-     * @return \Phalcon\DiInterface
-     */
-    public function getDI();
-
-    /**
      * @return \Redis
      */
     public function getRedis();
-
 }

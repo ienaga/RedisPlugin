@@ -1,12 +1,9 @@
 <?php
 
-
 namespace RedisPlugin;
 
-
-use Phalcon\Db\Adapter\Pdo\Mysql as DbAdapter;
+use Phalcon\Db\Adapter\Pdo\Mysql;
 use Phalcon\Mvc\Model\Transaction\Manager;
-
 
 class Service implements ServiceInterface
 {
@@ -37,7 +34,7 @@ class Service implements ServiceInterface
         {
             // set
             $this->getDI()->setShared($db, function () use ($arguments) {
-                return new DbAdapter($arguments->toArray());
+                return new Mysql($arguments->toArray());
             });
 
             // transaction
@@ -82,7 +79,7 @@ class Service implements ServiceInterface
             // remove and set
             $this->getDI()->remove($db);
             $this->getDI()->setShared($db, function () use ($descriptor) {
-                return new DbAdapter($descriptor);
+                return new Mysql($descriptor);
             });
 
             // new config

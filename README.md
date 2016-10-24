@@ -252,8 +252,6 @@ $di->setShared('modelsMetadata', function () {
 ## Criteria
 
 ```php
-
-
 class Robot extends \RedisPlugin\Model
 {
 
@@ -300,14 +298,12 @@ class Robot extends \RedisPlugin\Model
             ->find();
     }
 }
-
 ```
 
 
 ## save
 
 ```php
-
 class Robot extends \RedisPlugin\Model
 {
     /**
@@ -323,7 +319,6 @@ class Robot extends \RedisPlugin\Model
         $robot->save();
     }
 }
-
 ```
 
 
@@ -332,7 +327,6 @@ class Robot extends \RedisPlugin\Model
 ※autoIndexをtrueにする事で、PRIMARYもしくはINDEXに一番マッチするクエリに並び替えて発行。
 
 ```php
-
 use \RedisPlugin\RedisDb;
 use \RedisPlugin\Criteria;
 
@@ -364,7 +358,5 @@ class Robot extends \Phalcon\Mvc\Model
          */
     }
 }
-
-
 ```
 

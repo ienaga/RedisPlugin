@@ -1,8 +1,6 @@
 <?php
 
-
 namespace RedisPlugin;
-
 
 interface RankingInterface
 {
@@ -13,16 +11,16 @@ interface RankingInterface
 
     /**
      * @param  string $key
-     * @param  mixed  $memberId
+     * @param  mixed  $member
      * @param  string $option
-     * @return int
+     * @return int|null
      */
-    public function getRank($key, $memberId, $option = "+inf");
+    public function getRank($key, $member, $option = "+inf");
 
     /**
      * @param  string $key
-     * @param  mixed  $memberId
+     * @param  mixed  $member
      * @return bool
      */
-    public function isRank($key, $memberId);
+    public function isRank($key, $member);
 }
