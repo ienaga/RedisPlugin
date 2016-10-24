@@ -42,9 +42,9 @@ class Database implements DatabaseInterface
     /**
      * @return \Phalcon\Mvc\Model\TransactionInterface
      */
-    public static function getTransaction()
+    public static function getTransaction(\Phalcon\Mvc\Model $model)
     {
-        $service = self::getServiceName();
+        $service = self::getServiceName($model);
         if (!isset(self::$transactions[$service])) {
             /** @var \Phalcon\Mvc\Model\Transaction\Manager $manager */
             $manager = \Phalcon\DI::getDefault()->getShared($service);
@@ -54,14 +54,16 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @param  \Phalcon\Mvc\Model $model
+     * @param  string     $name
      * @return Connection
      */
-    private static function getConnection(\Phalcon\Mvc\Model $model)
+    private static function getConnection($name)
     {
         $config = \Phalcon\DI::getDefault()
+            ->get("config")
+            ->get("redis")
             ->get("server")
-            ->get($model->getReadConnectionService())
+            ->get($name)
             ->toArray();
 
         return Connection::getInstance()->connect($config);
@@ -69,12 +71,12 @@ class Database implements DatabaseInterface
 
 
     /**
-     * @param  \Phalcon\Mvc\Model $model
+     * @param  string $name
      * @return \Redis
      */
-    private static function getRedis(\Phalcon\Mvc\Model $model)
+    private static function getRedis($name)
     {
-        return self::getConnection($model)->getRedis();
+        return self::getConnection($name)->getRedis();
     }
 
 
@@ -132,6 +134,9 @@ class Database implements DatabaseInterface
             ->get("prefix")
             ->get("columns");
 
+        $databases = \Phalcon\DI::getDefault()
+            ->get("config")
+            ->get("database");
 
         foreach ($models as $model) {
 
@@ -142,9 +147,17 @@ class Database implements DatabaseInterface
                 }
 
                 $prefix = $model->{$property};
-                $key    = self::getCacheKey($model, $prefix);
-                self::getRedis($model)->delete($key);
+
+                foreach ($databases as $db => $arguments) {
+
+                    $key = self::getCacheKey($model, $arguments, $prefix);
+                    self::getRedis($db)->delete($key);
+
+                }
             }
+
+            // local cache clear
+            $model::localCacheClear();
 
         }
 
@@ -154,12 +167,13 @@ class Database implements DatabaseInterface
 
     /**
      * @param  \Phalcon\Mvc\Model $model
-     * @param  mixed $prefix
+     * @param  array              $arguments
+     * @param  mixed              $prefix
      * @return string
      */
-    private static function getCacheKey(\Phalcon\Mvc\Model $model, $prefix)
+    private static function getCacheKey(\Phalcon\Mvc\Model $model, $arguments, $prefix)
     {
-        $key  = self::getServiceName($model);
+        $key  = $arguments["dbname"] .":". $arguments["host"] .":". $arguments["port"];
         $key .= ":". $model->getSource();
         $key .= ":". $prefix;
         return $key;

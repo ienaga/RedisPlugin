@@ -2,6 +2,8 @@
 
 namespace RedisPlugin\Mvc\Model;
 
+use RedisPlugin\Mvc\Model;
+
 class Criteria implements CriteriaInterface
 {
 
@@ -35,6 +37,11 @@ class Criteria implements CriteriaInterface
     protected $model = null;
 
     /**
+     * @var null
+     */
+    protected $class_name = null;
+
+    /**
      * @var int
      */
     protected $expire = 0;
@@ -54,7 +61,7 @@ class Criteria implements CriteriaInterface
      * @param \Phalcon\Mvc\Model $model
      * @param int                $expire
      */
-    public function __construct($model = null, $expire = 0)
+    public function __construct(\Phalcon\Mvc\Model $model = null, $expire = 0)
     {
         $this
             ->setModel($model)
@@ -94,6 +101,8 @@ class Criteria implements CriteriaInterface
      */
     public function setModel(\Phalcon\Mvc\Model $model)
     {
+        $model->initialize();
+
         $this->model = $model;
         return $this;
     }
@@ -245,7 +254,7 @@ class Criteria implements CriteriaInterface
     }
 
     /**
-     * @param  bool $bool
+     * @param  bool  $bool
      * @return $this
      */
     public function cache($bool = false)
@@ -256,13 +265,28 @@ class Criteria implements CriteriaInterface
     }
 
     /**
-     * @param  bool $bool
+     * @param  bool  $bool
      * @return $this
      */
     public function autoIndex($bool = false)
     {
         $this->conditions["autoIndex"] = $bool;
 
+        return $this;
+    }
+
+    /**
+     * @param  string $column
+     * @param  mixed  $value
+     * @return $this
+     */
+    public function set($column, $value)
+    {
+        if (!isset($this->conditions["update"])) {
+            $this->conditions["update"] = array();
+        }
+
+        $this->conditions["update"][$column] = $value;
         return $this;
     }
 
@@ -297,12 +321,12 @@ class Criteria implements CriteriaInterface
     }
 
     /**
-     * @return \Phalcon\Mvc\Model[] | array
+     * @return \Phalcon\Mvc\Model\ResultsetInterface
      */
     public function find()
     {
         $model = $this->getModel();
-        return Database::find($this->buildCondition(), $this->getModel(), $this->getExpire());
+        return $model::find($this->buildCondition());
     }
 
     /**
@@ -311,7 +335,7 @@ class Criteria implements CriteriaInterface
     public function update()
     {
         $model = $this->getModel();
-        return Database::update($this->buildCondition(), $this->getModel(), $this->getExpire());
+        return $model::queryUpdate($this->buildCondition(), $model);
     }
 
     /**
@@ -320,6 +344,6 @@ class Criteria implements CriteriaInterface
     public function delete()
     {
         $model = $this->getModel();
-        return Database::delete($this->buildCondition(), $this->getModel(), $this->getExpire());
+        return $model::queryDelete($this->buildCondition(), $model);
     }
 }

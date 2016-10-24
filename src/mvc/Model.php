@@ -42,27 +42,37 @@ class Model extends \Phalcon\Mvc\Model
     /**
      * @var null
      */
-    private static $prefix = null;
+    private static $_prefix = null;
 
     /**
      * @var array
      */
-    private static $keys = array();
+    private static $_keys = array();
 
     /**
      * @var array
      */
-    private static $bind = array();
+    private static $_bind = array();
 
     /**
      * @var array
      */
-    private static $cache = array();
+    private static $_cache = array();
+
+    /**
+     * @var \Phalcon\Mvc\Model
+     */
+    private static $_current_model = null;
 
     /**
      * @var array
      */
-    private static $stack = array();
+    private static $_admin_class_cache = array();
+
+    /**
+     * @var array
+     */
+    private static $_config_class_cache = array();
 
     /**
      * @var array
@@ -75,7 +85,6 @@ class Model extends \Phalcon\Mvc\Model
     private static $_config_query = array();
 
 
-
     /**
      * initialize
      */
@@ -85,7 +94,7 @@ class Model extends \Phalcon\Mvc\Model
         $this->setReadConnectionService($this->getServiceNames());
 
         // stack model
-        self::$stack[] = $this;
+        self::setCurrentModel($this);
     }
 
     /**
@@ -93,7 +102,15 @@ class Model extends \Phalcon\Mvc\Model
      */
     public static function getCurrentModel()
     {
-        return end(self::$stack);
+        return self::$_current_model;
+    }
+
+    /**
+     * @param \Phalcon\Mvc\Model $model
+     */
+    public static function setCurrentModel(\Phalcon\Mvc\Model $model)
+    {
+        self::$_current_model = $model;
     }
 
     /**
@@ -110,7 +127,9 @@ class Model extends \Phalcon\Mvc\Model
      */
     private static function getConnection()
     {
-        $config = self::getConfig()
+        $config = \Phalcon\DI::getDefault()
+            ->get("config")
+            ->get("redis")
             ->get("server")
             ->get(self::getCurrentModel()->getReadConnectionService())
             ->toArray();
@@ -136,12 +155,12 @@ class Model extends \Phalcon\Mvc\Model
         $key = self::getCacheKey();
 
         // init
-        if (!isset(self::$cache[$key])) {
-            self::$cache[$key] = [];
+        if (!isset(self::$_cache[$key])) {
+            self::$_cache[$key] = [];
         }
 
-        return isset(self::$cache[$key][$field])
-            ? self::$cache[$key][$field]
+        return isset(self::$_cache[$key][$field])
+            ? self::$_cache[$key][$field]
             : null;
     }
 
@@ -155,11 +174,11 @@ class Model extends \Phalcon\Mvc\Model
         $key = self::getCacheKey();
 
         // init
-        if (!isset(self::$cache[$key])) {
-            self::$cache[$key] = [];
+        if (!isset(self::$_cache[$key])) {
+            self::$_cache[$key] = [];
         }
 
-        self::$cache[$key][$field] = $value;
+        self::$_cache[$key][$field] = $value;
     }
 
     /**
@@ -224,8 +243,8 @@ class Model extends \Phalcon\Mvc\Model
         self::setPrefix($params["bind"]);
 
         // field key
-        $field = self::buildFieldKey($parameters);
-        unset($parameters["keys"]);
+        $field = self::buildFieldKey($params);
+        unset($params["keys"]);
 
         // redis
         $result = self::findRedis($field);
@@ -233,10 +252,20 @@ class Model extends \Phalcon\Mvc\Model
         // database
         if (!$result) {
             // cache on or off
-            $cache = self::getConfig()->get("enabled");
-            if (isset($parameters["cache"])) {
-                $cache = $parameters["cache"];
-                unset($parameters["cache"]);
+            $_cache = \Phalcon\DI::getDefault()
+                ->get("config")
+                ->get("redis")
+                ->get("enabled");
+
+            if (isset($params["cache"])) {
+                $_cache = $params["cache"];
+                unset($params["cache"]);
+            }
+
+            $expire = self::DEFAULT_EXPIRE;
+            if (isset($params["expire"])) {
+                $expire = $params["expire"];
+                unset($params["expire"]);
             }
 
             $result = parent::find($params);
@@ -245,13 +274,10 @@ class Model extends \Phalcon\Mvc\Model
             }
 
             // cache on
-            if ($cache) {
-                self::setHash($field, $result, $params["expire"]);
+            if ($_cache) {
+                self::setHash($field, $result, $expire);
             }
         }
-
-        // delete
-        array_pop(self::$stack);
 
         return $result;
     }
@@ -263,15 +289,15 @@ class Model extends \Phalcon\Mvc\Model
     private static function findRedis($field)
     {
         // local cache
-        $cache = self::getLocalCache($field);
+        $_cache = self::getLocalCache($field);
 
         // redis
-        if (!$cache) {
-            $cache = self::getRedis()->hGet(self::getCacheKey(), $field);
-            self::setLocalCache($field, $cache);
+        if (!$_cache) {
+            $_cache = self::getRedis()->hGet(self::getCacheKey(), $field);
+            self::setLocalCache($field, $_cache);
         }
 
-        return $cache;
+        return $_cache;
     }
 
     /**
@@ -379,15 +405,15 @@ class Model extends \Phalcon\Mvc\Model
     }
 
     /**
-     * @param  array  $keys
+     * @param  array  $_keys
      * @return string
      */
-    private static function buildBaseKey($keys = array())
+    private static function buildBaseKey($_keys = array())
     {
         $array = array();
 
-        if (count($keys) > 0) {
-            foreach ($keys as $key => $value) {
+        if (count($_keys) > 0) {
+            foreach ($_keys as $key => $value) {
 
                 if (is_array($key)) {
 
@@ -416,11 +442,15 @@ class Model extends \Phalcon\Mvc\Model
         // init
         $indexQuery  = array();
         $where       = array();
-        self::$keys  = array();
-        self::$bind  = isset($parameters["bind"]) ? $parameters["bind"] : array();
+        self::$_keys  = array();
+        self::$_bind  = isset($parameters["bind"]) ? $parameters["bind"] : array();
 
         // 設定確認・個別確認
-        $autoIndex = self::getConfig()->get("autoIndex");
+        $autoIndex = \Phalcon\DI::getDefault()
+            ->get("config")
+            ->get("redis")
+            ->get("autoIndex");
+
         if (isset($parameters["autoIndex"])) {
             $autoIndex = $parameters["autoIndex"];
             unset($parameters["autoIndex"]);
@@ -474,11 +504,11 @@ class Model extends \Phalcon\Mvc\Model
 
             $parameters[0] = implode(" AND ", $where);
 
-            $parameters["bind"] = self::$bind;
+            $parameters["bind"] = self::$_bind;
 
-            ksort(self::$keys);
+            ksort(self::$_keys);
 
-            $parameters["keys"] = self::$keys;
+            $parameters["keys"] = self::$_keys;
 
         }
 
@@ -516,13 +546,13 @@ class Model extends \Phalcon\Mvc\Model
             if (isset($value["operator"])) {
 
                 $operator  = $value["operator"];
-                $bindValue = $value["value"];
+                $_bindValue = $value["value"];
 
                 switch ($operator) {
                     case $operator === Criteria::IS_NULL:
                     case $operator === Criteria::IS_NOT_NULL:
 
-                        $keys[$named_place] = str_replace(" ", "_", $operator);
+                        $_keys[$named_place] = str_replace(" ", "_", $operator);
 
                         $query = "";
 
@@ -531,20 +561,20 @@ class Model extends \Phalcon\Mvc\Model
                     case $operator === Criteria::IN:
                     case $operator === Criteria::NOT_IN:
 
-                        $len = count($bindValue);
+                        $len = count($_bindValue);
 
                         $placeholders = array();
                         for ($i = 0; $i < $len; $i++) {
 
                             $placeholders[] = sprintf(":%s:", $named_place.$i);
 
-                            self::$bind[$named_place.$i] = $bindValue[$i];
+                            self::$_bind[$named_place.$i] = $_bindValue[$i];
 
                         }
 
-                        self::$keys[$named_place] =
+                        self::$_keys[$named_place] =
                             str_replace(" ", "_", $operator)
-                            . implode("_", $bindValue);
+                            . implode("_", $_bindValue);
 
                         $query = sprintf("(%s)", implode(",", $placeholders));
 
@@ -552,18 +582,18 @@ class Model extends \Phalcon\Mvc\Model
 
                     case $operator === Criteria::BETWEEN:
 
-                        self::$bind[$named_place."0"] = $bindValue[0];
-                        self::$bind[$named_place."1"] = $bindValue[1];
+                        self::$_bind[$named_place."0"] = $_bindValue[0];
+                        self::$_bind[$named_place."1"] = $_bindValue[1];
 
-                        self::$keys[$named_place] = $operator . implode("_", $bindValue);
+                        self::$_keys[$named_place] = $operator . implode("_", $_bindValue);
 
-                        $query = sprintf(":%s: AND :%s:", $bindValue[0], $bindValue[1]);
+                        $query = sprintf(":%s: AND :%s:", $_bindValue[0], $_bindValue[1]);
 
                         break;
 
                     case $operator === Criteria::OR:
 
-                        self::$keys[] = $operator;
+                        self::$_keys[] = $operator;
 
                         $operator = "";
 
@@ -580,9 +610,9 @@ class Model extends \Phalcon\Mvc\Model
 
                     default:
 
-                        self::$bind[$named_place] = $bindValue;
+                        self::$_bind[$named_place] = $_bindValue;
 
-                        self::$keys[$named_place] = $operator.$bindValue;
+                        self::$_keys[$named_place] = $operator.$_bindValue;
 
                         $query = sprintf(":%s:", $named_place);
 
@@ -600,11 +630,11 @@ class Model extends \Phalcon\Mvc\Model
 
                     $placeholders[] = sprintf(":%s:", $named_place.$i);
 
-                    self::$bind[$named_place.$i] = $value[$i];
+                    self::$_bind[$named_place.$i] = $value[$i];
 
                 }
 
-                self::$keys[$named_place] = str_replace(" ", "_", $operator) . implode("_", $value);
+                self::$_keys[$named_place] = str_replace(" ", "_", $operator) . implode("_", $value);
 
                 $query = sprintf("(%s)", implode(",", $placeholders));
             }
@@ -615,7 +645,7 @@ class Model extends \Phalcon\Mvc\Model
 
                 $operator = Criteria::ISNULL;
 
-                self::$keys[$named_place] = "IS_NULL";
+                self::$_keys[$named_place] = "IS_NULL";
 
                 $query = "";
 
@@ -636,9 +666,9 @@ class Model extends \Phalcon\Mvc\Model
 
                 $operator = Criteria::EQUAL;
 
-                self::$bind[$named_place] = $value;
+                self::$_bind[$named_place] = $value;
 
-                self::$keys[$named_place] = "=".$value;
+                self::$_keys[$named_place] = "=".$value;
 
                 $query = sprintf(":%s:", $named_place);
 
@@ -647,9 +677,9 @@ class Model extends \Phalcon\Mvc\Model
         }
 
         return array(
-            "column" => $column,
+            "column"   => $column,
             "operator" => $operator,
-            "query" => $query
+            "query"    => $query
         );
     }
 
@@ -669,24 +699,29 @@ class Model extends \Phalcon\Mvc\Model
      */
     private static function getPrefix()
     {
-        return self::$prefix;
+        return self::$_prefix;
     }
 
     /**
-     * @param  null|array $keys
+     * @param  null|array $_keys
      * @throws RedisPluginException
      */
-    private static function setPrefix($keys = null)
+    private static function setPrefix($_keys = null)
     {
-        self::$prefix = null;
+        self::$_prefix = null;
 
-        $columns = self::getConfig()->get("prefix")->get("columns");
+        $columns = \Phalcon\DI::getDefault()
+            ->get("config")
+            ->get("redis")
+            ->get("prefix")
+            ->get("columns");
+
         if (!$columns) {
             throw new RedisPluginException("not found prefix columns");
         }
 
         $model = null;
-        if (!$keys) {
+        if (!$_keys) {
             /** @var \Phalcon\Mvc\Model $model */
             $model = new static();
         }
@@ -695,13 +730,13 @@ class Model extends \Phalcon\Mvc\Model
 
             $property = trim($column);
 
-            if ($keys) {
+            if ($_keys) {
 
-                if (!isset($keys[$property])) {
+                if (!isset($_keys[$property])) {
                     continue;
                 }
 
-                self::$prefix = $keys[$property];
+                self::$_prefix = $_keys[$property];
 
             } else {
 
@@ -709,7 +744,7 @@ class Model extends \Phalcon\Mvc\Model
                     continue;
                 }
 
-                self::$prefix = $model->{$property};
+                self::$_prefix = $model->{$property};
 
             }
 
@@ -722,23 +757,28 @@ class Model extends \Phalcon\Mvc\Model
      */
     public function getShardServiceName()
     {
-        $mode   = self::getConfig()->get("shard")->get("enabled");
+        $mode = \Phalcon\DI::getDefault()
+            ->get("config")
+            ->get("redis")
+            ->get("shard")
+            ->get("enabled");
+
         $prefix = self::getPrefix();
 
         if ($mode && $prefix) {
 
-            if (!isset(self::$admin_cache[$prefix])) {
+            $adminClass = self::getAdminClass($prefix);
+            if ($adminClass) {
 
-                self::$admin_cache[$prefix] = self::getAdminMember($prefix);
+                $column = \Phalcon\DI::getDefault()
+                    ->get("config")
+                    ->get("redis")
+                    ->get("admin")
+                    ->get("column");
 
-            }
-
-            $adminMember = self::$admin_cache[$prefix];
-            if ($adminMember) {
-
-                $column = self::getConfig()->get("admin")->get("column");
-                return self::getMemberConfigName($adminMember->{$column});
-
+                if (!property_exists($adminClass, $column)) {
+                    return self::getMemberConfigName($adminClass->{$column});
+                }
             }
         }
 
@@ -752,9 +792,17 @@ class Model extends \Phalcon\Mvc\Model
     public function getMemberConfigName($primary_key)
     {
         // local cache
-        $_prefix = self::getPrefix();
+        if (isset(self::$_config_class_cache[$primary_key])) {
+            return self::$_config_class_cache[$primary_key];
+        }
 
-        $config = self::getConfig()
+        // local cache
+        $_prefix        = self::getPrefix();
+        $_current_model = self::getCurrentModel();
+
+        $config = $this->getDI()
+            ->get("config")
+            ->get("redis")
             ->get("shard")
             ->get("control");
 
@@ -776,27 +824,42 @@ class Model extends \Phalcon\Mvc\Model
 
         }
 
-        $dbConfig = $class::findFirst(self::$_config_query);
+        // config
+        $configClass = $class::findFirst(self::$_config_query);
+
+        // local cache
+        self::$_config_class_cache[$primary_key] = ($configClass)
+            ? $configClass->{$config->get("column")}
+            : self::DEFAULT_NAME;
 
         // reset
         self::setPrefix($_prefix);
+        self::setCurrentModel($_current_model);
 
-        return ($dbConfig)
-            ? $dbConfig->{$config->get("column")}
-            : self::DEFAULT_NAME;
+        return self::$_config_class_cache[$primary_key];
     }
 
     /**
-     * @param  mixed $prefix
+     * @param  mixed $_prefix
      * @return \Phalcon\Mvc\Model
      * @throws RedisPluginException
      */
-    public function getAdminMember($prefix)
+    public function getAdminClass($_prefix)
     {
         // local cache
-        $_prefix = self::getPrefix();
+        if (isset(self::$_admin_class_cache[$_prefix])) {
+            return self::$_admin_class_cache[$_prefix];
+        }
 
-        $class = self::getConfig()->get("admin")->get("model");
+        // local cache
+        $_prefix = self::getPrefix();
+        $_current_model = self::getCurrentModel();
+
+        $class = $this->getDI()
+            ->get("config")
+            ->get("redis")
+            ->get("admin")
+            ->get("model");
 
         if (!isset(self::$_admin_query["query"])) {
 
@@ -809,29 +872,111 @@ class Model extends \Phalcon\Mvc\Model
 
             }
 
-            self::$_admin_query = array("query" => array($primary => $prefix));
+            self::$_admin_query = array("query" => array($primary => $_prefix));
 
         }
 
-        $adminMember = $class::findFirst(self::$_admin_query);
-        if (!$adminMember) {
+        $adminClass = $class::findFirst(self::$_admin_query);
+        if (!$adminClass) {
             throw new RedisPluginException("Not Created Admin Member");
         }
 
+        self::$_admin_class_cache[$_prefix] = $adminClass;
+
         // reset
         self::setPrefix($_prefix);
+        self::setCurrentModel($_current_model);
 
-        return $adminMember;
+        return $adminClass;
     }
 
-    public static function queryDelete($parameters = null)
+    /**
+     * @param  null               $parameters
+     * @param  \Phalcon\Mvc\Model $model
+     * @return \Phalcon\Mvc\Model\QueryInterface
+     * @throws RedisPluginException
+     */
+    public static function queryUpdate($parameters = null, \Phalcon\Mvc\Model $model)
     {
+        if (!is_array($parameters) || !isset($parameters["query"])) {
+            throw new RedisPluginException("parameters array only.");
+        }
 
+        // initialize
+        $model->initialize();
+
+        // build parameters
+        $params = self::buildParameters($parameters);
+
+        // replace
+        $where = $params[0];
+        $where = str_replace("[", "", $where);
+        $where = str_replace("]", "", $where);
+
+        // bind
+        $bind  = $params["bind"];
+        foreach ($bind as $column => $value) {
+            $where = str_replace(":".$column.":", $value, $where);
+        }
+
+        // update
+        $update = $params["update"];
+        $sets   = [];
+        foreach ($update as $column => $value) {
+            $sets[] = $column ." = ".$value;
+        }
+        $set = implode(",", $sets);
+
+        // execute
+        $service = $model->getReadConnectionService();
+        $adapter = \Phalcon\DI::getDefault()->getShared($service);
+        $result  = $adapter->execute(
+            "UPDATE "  . $model->getSource()
+            ." SET "   . $set
+            ." WHERE " . $where
+        );
+
+        return $result;
     }
 
-    public static function queryUpdate($parameters = null)
+    /**
+     * @param null $parameters
+     * @param \Phalcon\Mvc\Model $model
+     * @return mixed
+     * @throws RedisPluginException
+     */
+    public static function queryDelete($parameters = null, \Phalcon\Mvc\Model $model)
     {
+        if (!is_array($parameters) || !isset($parameters["query"])) {
+            throw new RedisPluginException("parameters array only.");
+        }
 
+        // initialize
+        $model->initialize();
+
+        // build parameters
+        $params = self::buildParameters($parameters);
+
+        // replace
+        $where = $params[0];
+        $where = str_replace("[", "", $where);
+        $where = str_replace("]", "", $where);
+
+        // bind
+        $bind  = $params["bind"];
+        foreach ($bind as $column => $value) {
+            $where = str_replace(":".$column.":", $value, $where);
+        }
+
+        // execute
+        $service = $model->getReadConnectionService();
+        $adapter = \Phalcon\DI::getDefault()->getShared($service);
+        $result  = $adapter->execute(
+            "DELETE FROM " . $model->getSource()
+            ." WHERE "     . $where
+        );
+
+        return $result;
     }
 
     /**
@@ -847,7 +992,7 @@ class Model extends \Phalcon\Mvc\Model
                 $configName = $this->getAdminServiceName();
                 break;
             default:
-                $configName = "db";
+                $configName = $this->getShardServiceName();
                 break;
         }
 
@@ -857,21 +1002,14 @@ class Model extends \Phalcon\Mvc\Model
     }
 
     /**
-     * @return mixed
-     */
-    public function getConfig()
-    {
-        return $this->getDI()
-            ->get("config")
-            ->get("redis");
-    }
-
-    /**
      * @return bool
      */
     public function isCommon()
     {
-        $config = self::getConfig()->get("common");
+        $config = $this->getDI()
+            ->get("config")
+            ->get("redis")
+            ->get("common");
 
         $enabled = $config->get("enabled");
         if (!$enabled) {
@@ -891,7 +1029,9 @@ class Model extends \Phalcon\Mvc\Model
      */
     public function isAdmin()
     {
-        $config  = self::getConfig();
+        $config = $this->getDI()
+            ->get("config")
+            ->get("redis");
 
         $enabled = $config->get("shard")->get("enabled");
         if (!$enabled) {
@@ -930,7 +1070,9 @@ class Model extends \Phalcon\Mvc\Model
      */
     public function getCommonServiceName()
     {
-        return $this->getConfig()
+        return $this->getDI()
+            ->get("config")
+            ->get("redis")
             ->get("common")
             ->get("service")
             ->get("name");
@@ -941,12 +1083,13 @@ class Model extends \Phalcon\Mvc\Model
      */
     public function getAdminServiceName()
     {
-        return self::getConfig()
+        return $this->getDI()
+            ->get("config")
+            ->get("redis")
             ->get("admin")
             ->get("service")
             ->get("name");
     }
-
 
     /**
      * @param  null $data
@@ -956,8 +1099,7 @@ class Model extends \Phalcon\Mvc\Model
     public function save($data = null, $whiteList = null)
     {
         // pre
-        $this->initialize();
-        $this->setTransaction(Database::getTransaction());
+        $this->_pre();
 
         // execute
         if (!parent::save($data, $whiteList)) {
@@ -965,7 +1107,8 @@ class Model extends \Phalcon\Mvc\Model
             return false;
         }
 
-        Database::addModel($this);
+        // post
+        $this->_post();
 
         return true;
     }
@@ -991,22 +1134,54 @@ class Model extends \Phalcon\Mvc\Model
     }
 
     /**
-     * @param  null $data
-     * @param  null $whiteList
      * @return bool
      */
-    public function delete($data = null, $whiteList = null)
+    public function delete()
     {
-        Database::preExecute($this);
+        // pre
+        $this->_pre();
 
-        if (!parent::delete($data, $whiteList)) {
+        if (!parent::delete()) {
             Database::outputErrorMessage($this);
             return false;
         }
 
-        Database::postExecute($this);
+        // post
+        $this->_post();
 
         return true;
+    }
+
+    /**
+     * pre
+     */
+    private function _pre()
+    {
+        $this->initialize();
+        $this->setTransaction(Database::getTransaction($this));
+    }
+
+    /**
+     *  post
+     */
+    private function _post()
+    {
+        Database::addModel($this);
+    }
+
+    /**
+     * local cache clear
+     */
+    public static function localCacheClear()
+    {
+        self::$_prefix              = null;
+        self::$_keys               = array();
+        self::$_bind               = array();
+        self::$_cache              = array();
+        self::$_current_model      = null;
+        self::$_admin_class_cache  = array();
+        self::$_config_class_cache = array();
+        self::$_admin_query        = array();
     }
 
     /**

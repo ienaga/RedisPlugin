@@ -2,6 +2,9 @@
 
 namespace RedisPlugin\Mvc\Model\Metadata;
 
+use RedisPlugin\Connection;
+use RedisPlugin\Mvc\Model;
+
 class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
 {
 
@@ -45,11 +48,6 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
      */
     private $_cache = array();
 
-    /**
-     * @var \Phalcon\Mvc\ModelInterface
-     */
-    private $_model = null;
-
 
     /**
      * MetaData constructor.
@@ -78,22 +76,6 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
         }
 
         $this->setOptions($options);
-    }
-
-    /**
-     * @return \Phalcon\Mvc\ModelInterface
-     */
-    public function getModel()
-    {
-        return $this->_model;
-    }
-
-    /**
-     * @param \Phalcon\Mvc\ModelInterface $model
-     */
-    public function setModel(\Phalcon\Mvc\ModelInterface $model)
-    {
-        $this->_model = $model;
     }
 
     /**
@@ -193,16 +175,6 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
     }
 
     /**
-     * @param  \Phalcon\Mvc\ModelInterface $model
-     * @return array
-     */
-    public function getAttributes(\Phalcon\Mvc\ModelInterface $model)
-    {
-        $this->setModel($model);
-        return parent::getAttributes($model);
-    }
-
-    /**
      * @param  string $key
      * @return array|null
      */
@@ -242,7 +214,7 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
     public function writeIndexes()
     {
         // source
-        $model  = $this->getModel();
+        $model  = Model::getCurrentModel();
         $source = $model->getSource();
 
         // indexes
