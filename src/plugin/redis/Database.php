@@ -74,7 +74,7 @@ class Database implements DatabaseInterface
      * @param  string $name
      * @return \Redis
      */
-    private static function getRedis($name)
+    public static function getRedis($name)
     {
         return self::getConnection($name)->getRedis();
     }
@@ -171,11 +171,14 @@ class Database implements DatabaseInterface
      * @param  mixed              $prefix
      * @return string
      */
-    private static function getCacheKey(\Phalcon\Mvc\Model $model, $arguments, $prefix)
+    public static function getCacheKey(\Phalcon\Mvc\Model $model, $arguments, $prefix = null)
     {
         $key  = $arguments["dbname"] .":". $arguments["host"] .":". $arguments["port"];
         $key .= ":". $model->getSource();
-        $key .= ":". $prefix;
+        if ($prefix) {
+            $key .= ":". $prefix;
+        }
+
         return $key;
     }
 

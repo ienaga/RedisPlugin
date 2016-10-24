@@ -2,6 +2,7 @@
 
 namespace RedisPlugin\Mvc;
 
+use Phalcon\Cache\Frontend\Data;
 use RedisPlugin\Connection;
 use RedisPlugin\Database;
 use RedisPlugin\Mvc\Model\Criteria;
@@ -313,6 +314,11 @@ class Model extends \Phalcon\Mvc\Model
         // set redis
         $redis = self::getRedis();
         $redis->hSet($key, $field, $value);
+
+        $filePath = '/tmp/' . 'thomas.log';
+        $logString =  str_repeat('#', 80) . "\n";
+        $logString .= var_export($key, true) . "\n";
+        @file_put_contents($filePath, $logString, FILE_APPEND);
 
         // local cache
         self::setLocalCache($field, $value);
@@ -720,12 +726,7 @@ class Model extends \Phalcon\Mvc\Model
             throw new RedisPluginException("not found prefix columns");
         }
 
-        $model = null;
-        if (!$_keys) {
-            /** @var \Phalcon\Mvc\Model $model */
-            $model = new static();
-        }
-
+        $model = self::getCurrentModel();
         foreach ($columns as $column) {
 
             $property = trim($column);
@@ -910,8 +911,8 @@ class Model extends \Phalcon\Mvc\Model
 
         // replace
         $where = $params[0];
-        $where = str_replace("[", "", $where);
-        $where = str_replace("]", "", $where);
+        $where = str_replace("[", "`", $where);
+        $where = str_replace("]", "`", $where);
 
         // bind
         $bind  = $params["bind"];
@@ -923,7 +924,13 @@ class Model extends \Phalcon\Mvc\Model
         $update = $params["update"];
         $sets   = [];
         foreach ($update as $column => $value) {
-            $sets[] = $column ." = ".$value;
+            if (is_string($value)) {
+                $value = "\"".$value."\"";
+            } else if ($value === null) {
+                $value = "NULL";
+            }
+
+            $sets[] = $column ." = ". $value;
         }
         $set = implode(",", $sets);
 
@@ -935,6 +942,9 @@ class Model extends \Phalcon\Mvc\Model
             ." SET "   . $set
             ." WHERE " . $where
         );
+
+        // cache delete
+        self::cacheAllDelete($model);
 
         return $result;
     }
@@ -976,7 +986,31 @@ class Model extends \Phalcon\Mvc\Model
             ." WHERE "     . $where
         );
 
+        // cache delete
+        self::cacheAllDelete($model);
+
         return $result;
+    }
+
+    /**
+     * @param \Phalcon\Mvc\Model $model
+     */
+    private static function cacheAllDelete(\Phalcon\Mvc\Model $model)
+    {
+        // cache all delete
+        $databases = \Phalcon\DI::getDefault()
+            ->get("config")
+            ->get("database");
+
+        foreach ($databases as $db => $arguments) {
+
+            $key  = Database::getCacheKey($model, $arguments, null);
+            $keys = Database::getRedis($db)->keys($key.":*");
+            foreach ($keys as $cKey) {
+                Database::getRedis($db)->delete($cKey);
+            }
+
+        }
     }
 
     /**
