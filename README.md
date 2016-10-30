@@ -13,10 +13,6 @@ RedisPlugin for Phalcon (The correspondence of MySQL sharding.)
 }
 ```
 
-# commentary
-
-http://qiita.com/ienaga/items/6bbf1c5e95a133d347ac
-
 
 ## Version
 
@@ -39,8 +35,8 @@ sudo yum install libyaml libyaml-devel php-pecl-yaml php-pecl-redis
 $configLoader = new \PhalconConfig\Loader();
 return $configLoader
     ->setIgnore(["routing"]) // ignore yml names
-    ->setEnvironment("stg")
-    ->setBasePath(BATH_PATH)
+    ->setEnvironment("stg") // default dev
+    ->setBasePath(realpath(dirname(__FILE__) . "/../.."))
     ->load();
 ```
 
@@ -132,26 +128,39 @@ prd:
 stg:
 dev:
   redis:
-    enabled: true # false => cache off
-    autoIndex: true # false => autoIndex off
-  
-  
-    # 対象のカラムがModelに存在したら使用。左から順に優先。存在が確認できた時点でbreak
-    prefix: 
-      columns: column, column, column # e.g. user_id, id, social_id
+    enabled:   true # false => cache off
+    autoIndex: true # false => auto index off
 
+    # 対象のカラムがModelに存在したら使用。上から順に優先。存在が確認できた時点でbreak
+    prefix:
+      columns:  # e.g. user_id, id, social_id
+        - user_id
+        - social_id
+        - id
 
     # 共通のマスタがあれば登録「table_」と共有部分だけの記載はtable_*と同義
     # common
     common:
-      dbs: table, table, table... # e.g.  master_, access_log
+      enabled: false
+      service:
+        name: dbCommon
 
+      dbs: # e.g.  master_, access_log
+        - mt_
 
+    # Sharding設定
     shard:
-      enabled: true # Shardingを使用しない時はfalse
-     
+      enabled: false # Shardingを使用しない時はfalse
+
     # Shardingのマスタ設定
     admin:
+      service:
+        name: dbAdmin
+        
+    # Shardingのマスタ設定
+    admin:
+      service:
+        name: dbAdmin
       # ユーザマスタ
       # e.g.
       #    CREATE TABLE IF NOT EXISTS `admin_user` (
@@ -165,12 +174,13 @@ dev:
       #      PRIMARY KEY (`id`),
       #      UNIQUE KEY `social_id` (`social_id`)
       #    ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
-      model:  XXXXX # AdminUser
-      column: XXXXX # admin_config_db_id
+      model:  # e.g. AdminUser
+      column: # e.g. admin_config_db_id
 
       # ユーザマスタの登録「table_」と共有部分だけの記載はtable_*と同義
       dbs: table, table, table... # e.g. admin_, user_ranking
-
+        - admin_
+        
       # Shardingをコントロールするテーブルとカラム
       #
       # e.g.
@@ -186,10 +196,16 @@ dev:
       #    (2, 'dbMember2', 50, 0);
       # shard config master
       control:
-        model:  XXXXX # AdminConfigDb
-        column: XXXXX # name
+        model:  # e.g. AdminConfigDb
+        column: # e.g. name
 
-
+    # schemaをキャッシュ
+    metadata:
+      host:   XXXXX
+      port:   6379
+      select: 0
+      
+    # servers
     server:
       dbMaster:
         host: XXXXX
@@ -239,12 +255,9 @@ $dbService->registration();
  * If the configuration specify the use of metadata adapter use it or use memory otherwise
  */
 $di->setShared('modelsMetadata', function () {
-    return new \RedisPlugin\MetaData([
-        "host"   => "127.0.0.1",
-        "port"   => 6379,
-        "select" => 0,
-        "expire" => 86400
-    ]);
+    return new \RedisPlugin\Mvc\Model\Metadata\Redis(
+        $this->getConfig()->get("redis")->get("metadata")->toArray()
+    );
 });
 ```
 
@@ -252,7 +265,7 @@ $di->setShared('modelsMetadata', function () {
 ## Criteria
 
 ```php
-class Robot extends \RedisPlugin\Model
+class Robot extends \RedisPlugin\Mvc\Model
 {
 
     public static function findFirst($id, $type)
@@ -304,7 +317,7 @@ class Robot extends \RedisPlugin\Model
 ## save
 
 ```php
-class Robot extends \RedisPlugin\Model
+class Robot extends \RedisPlugin\Mvc\Model
 {
     /**
      * @param  int    $id
@@ -313,7 +326,7 @@ class Robot extends \RedisPlugin\Model
      */
     public static function insert($id, $type)
     {
-        $robot= new Robot;
+        $robot = new Robot;
         $robot->setId($id);
         $robot->setType($type);
         $robot->save();
@@ -321,23 +334,46 @@ class Robot extends \RedisPlugin\Model
 }
 ```
 
+## update
+
+```php
+Robot::criteria()
+    ->add("user_status", 1)
+    ->set("power", 100)
+    ->set("status", 2)
+    ->update();
+```
+
+```mysql
+UPDATE `robot` SET `status` = 2 WHERE `user_status` = 1 AND `power` = 100;
+```
+
+
+## delete
+
+```php
+Robot::criteria()
+    ->add("user_status", 1)
+    ->add("power", 100, Robot::GREATER_EQUAL)
+    ->delete();
+```
+
+```mysql
+DELETE FROM `robot` WHERE `user_status` = 1 AND `power` >= 100;
+```
 
 ## autoIndex
 
 ※autoIndexをtrueにする事で、PRIMARYもしくはINDEXに一番マッチするクエリに並び替えて発行。
 
 ```php
-use \RedisPlugin\RedisDb;
-use \RedisPlugin\Criteria;
-
 class Robot extends \Phalcon\Mvc\Model
 {
     // e.g. PRIMARY = type, INDEX = id, status
 
     public static function find($id, $status, $name)
     {
-        $criteria = new Criteria(new self);
-        return $criteria
+        return self::criteria()
             ->limit(10)
             ->add('name', $name)
             ->group('type')

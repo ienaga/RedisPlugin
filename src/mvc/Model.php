@@ -2,7 +2,6 @@
 
 namespace RedisPlugin\Mvc;
 
-use Phalcon\Cache\Frontend\Data;
 use RedisPlugin\Connection;
 use RedisPlugin\Database;
 use RedisPlugin\Mvc\Model\Criteria;
@@ -314,11 +313,6 @@ class Model extends \Phalcon\Mvc\Model
         // set redis
         $redis = self::getRedis();
         $redis->hSet($key, $field, $value);
-
-        $filePath = '/tmp/' . 'thomas.log';
-        $logString =  str_repeat('#', 80) . "\n";
-        $logString .= var_export($key, true) . "\n";
-        @file_put_contents($filePath, $logString, FILE_APPEND);
 
         // local cache
         self::setLocalCache($field, $value);
