@@ -12,6 +12,11 @@ class Model extends \Phalcon\Mvc\Model
 {
 
     /**
+     *  @var string
+     */
+    const DEFAULT_PREFIX = "all";
+
+    /**
      * @var string
      */
     const DEFAULT_NAME = "db";
@@ -240,11 +245,16 @@ class Model extends \Phalcon\Mvc\Model
         $params = self::buildParameters($parameters);
 
         // prefix
-        self::setPrefix($params["bind"]);
+        self::$_prefix = self::DEFAULT_PREFIX;
+        if (isset($params["bind"])) {
+            self::setPrefix($params["bind"]);
+        }
 
         // field key
         $field = self::buildFieldKey($params);
-        unset($params["keys"]);
+        if (isset($params["keys"])) {
+            unset($params["keys"]);
+        }
 
         // redis
         $result = self::findRedis($field);
@@ -331,7 +341,10 @@ class Model extends \Phalcon\Mvc\Model
     private static function buildFieldKey($parameters)
     {
         // base
-        $key = self::buildBaseKey($parameters["keys"]);
+        $key = self::DEFAULT_PREFIX;
+        if (isset($parameters["keys"])) {
+            $key = self::buildBaseKey($parameters["keys"]);
+        }
 
         $addKeys = array();
 
@@ -745,6 +758,10 @@ class Model extends \Phalcon\Mvc\Model
 
             break;
         }
+
+        if (!self::$_prefix) {
+            self::$_prefix = self::DEFAULT_PREFIX;
+        }
     }
 
     /**
@@ -828,7 +845,7 @@ class Model extends \Phalcon\Mvc\Model
             : self::DEFAULT_NAME;
 
         // reset
-        self::setPrefix($_prefix);
+        self::$_prefix = $_prefix;
         self::setCurrentModel($_current_model);
 
         return self::$_config_class_cache[$primary_key];
@@ -879,7 +896,7 @@ class Model extends \Phalcon\Mvc\Model
         self::$_admin_class_cache[$_prefix] = $adminClass;
 
         // reset
-        self::setPrefix($_prefix);
+        self::$_prefix = $_prefix;
         self::setCurrentModel($_current_model);
 
         return $adminClass;

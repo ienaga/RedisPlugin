@@ -156,6 +156,10 @@ class Database implements DatabaseInterface
                 }
             }
 
+            // DEFAULT PREFIX
+            $key = self::getCacheKey($model, $arguments, \RedisPlugin\Mvc\Model::DEFAULT_PREFIX);
+            self::getRedis($db)->delete($key);
+
             // local cache clear
             $model::localCacheClear();
 
