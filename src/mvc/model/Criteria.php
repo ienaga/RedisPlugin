@@ -321,12 +321,30 @@ class Criteria implements CriteriaInterface
     }
 
     /**
-     * @return \Phalcon\Mvc\Model\ResultsetInterface
+     * @return array|\Phalcon\Mvc\Model\ResultsetInterface
      */
     public function find()
     {
         $model = $this->getModel();
         return $model::find($this->buildCondition());
+    }
+
+    /**
+     * @return mixed
+     */
+    public function sum()
+    {
+        $model = $this->getModel();
+        return $model::sum($this->buildCondition());
+    }
+
+    /**
+     * @return mixed
+     */
+    public function count()
+    {
+        $model = $this->getModel();
+        return $model::count($this->buildCondition());
     }
 
     /**
@@ -346,4 +364,5 @@ class Criteria implements CriteriaInterface
         $model = $this->getModel();
         return $model::queryDelete($this->buildCondition(), $model);
     }
+
 }

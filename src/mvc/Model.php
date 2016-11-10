@@ -47,7 +47,7 @@ class Model extends \Phalcon\Mvc\Model
     /**
      * @var null
      */
-    private static $_prefix = null;
+    private static $_prefix = self::DEFAULT_PREFIX;
 
     /**
      * @var array
@@ -216,6 +216,96 @@ class Model extends \Phalcon\Mvc\Model
     }
 
     /**
+     * @param  array $primary_keys
+     * @param  array $merge_data
+     * @return \Phalcon\Mvc\Model
+     */
+    public static function findPrimaryKey($primary_keys = array(), $merge_data = array())
+    {
+        $model      = self::getCurrentModel();
+        $attributes = $model->getModelsMetaData()->getPrimaryKeyAttributes($model);
+
+        // set primary keys
+        $parameters = array();
+        foreach ($attributes as $idx => $attribute) {
+            if (!isset($primary_keys[$attribute])) {
+                continue;
+            }
+
+            $parameters[$attribute] = array(
+                "value"    => $primary_keys[$attribute],
+                "operator" => "="
+            );
+        }
+
+        // merge
+        foreach ($merge_data as $attribute => $value) {
+            $parameters[$attribute] = array(
+                "value"    => $value,
+                "operator" => "="
+            );
+        }
+
+        return self::findFirst(array("query" => $parameters));
+    }
+
+    /**
+     * @param  null|string|array $parameters
+     * @return mixed
+     */
+    public static function sum($parameters = null)
+    {
+        // parent
+        if (!is_array($parameters) || !isset($parameters["query"])) {
+            return parent::sum($parameters);
+        }
+
+        // params
+        $params = self::buildParameters($parameters);
+
+        // bind to prefix
+        self::bindToPrefix($params);
+
+        // field key
+        $field  = self::getFieldKey($params, __FUNCTION__);
+
+        // redis
+        $result = self::findRedis($field);
+
+        return ($result)
+            ? $result
+            : self::findDatabase($field, $params, __FUNCTION__);
+    }
+
+    /**
+     * @param  null|string|array $parameters
+     * @return mixed
+     */
+    public static function count($parameters = null)
+    {
+        // parent
+        if (!is_array($parameters) || !isset($parameters["query"])) {
+            return parent::count($parameters);
+        }
+
+        // params
+        $params = self::buildParameters($parameters);
+
+        // bind to prefix
+        self::bindToPrefix($params);
+
+        // field key
+        $field  = self::getFieldKey($params, __FUNCTION__);
+
+        // redis
+        $result = self::findRedis($field);
+
+        return ($result)
+            ? $result
+            : self::findDatabase($field, $params, __FUNCTION__);
+    }
+
+    /**
      * @param  null|string|array $parameters
      * @return \Phalcon\Mvc\Model
      */
@@ -244,49 +334,65 @@ class Model extends \Phalcon\Mvc\Model
         // params
         $params = self::buildParameters($parameters);
 
-        // prefix
-        self::$_prefix = self::DEFAULT_PREFIX;
-        if (isset($params["bind"])) {
-            self::setPrefix($params["bind"]);
-        }
+        // bind to prefix
+        self::bindToPrefix($params);
 
         // field key
-        $field = self::buildFieldKey($params);
-        if (isset($params["keys"])) {
-            unset($params["keys"]);
-        }
+        $field  = self::getFieldKey($params, __FUNCTION__);
 
         // redis
         $result = self::findRedis($field);
 
-        // database
+        return ($result)
+            ? $result
+            : self::findDatabase($field, $params, __FUNCTION__);
+    }
+
+    /**
+     * @param  string $field
+     * @param  array  $params
+     * @param  string $mode
+     * @return mixed
+     */
+    private static function findDatabase($field, $params, $mode = "find")
+    {
+        // cache on or off
+        $_cache = \Phalcon\DI::getDefault()
+            ->get("config")
+            ->get("redis")
+            ->get("enabled");
+
+        if (isset($params["cache"])) {
+            $_cache = $params["cache"];
+            unset($params["cache"]);
+        }
+
+        $expire = self::DEFAULT_EXPIRE;
+        if (isset($params["expire"])) {
+            $expire = $params["expire"];
+            unset($params["expire"]);
+        }
+
+        // execute mode
+        switch ($mode) {
+            case "find":
+                $result = parent::find($params);
+                break;
+            case "sum":
+                $result = parent::sum($params);
+                break;
+            case "count":
+                $result = parent::count($params);
+                break;
+        }
+
         if (!$result) {
-            // cache on or off
-            $_cache = \Phalcon\DI::getDefault()
-                ->get("config")
-                ->get("redis")
-                ->get("enabled");
+            $result = array();
+        }
 
-            if (isset($params["cache"])) {
-                $_cache = $params["cache"];
-                unset($params["cache"]);
-            }
-
-            $expire = self::DEFAULT_EXPIRE;
-            if (isset($params["expire"])) {
-                $expire = $params["expire"];
-                unset($params["expire"]);
-            }
-
-            $result = parent::find($params);
-            if (!$result) {
-                $result = array();
-            }
-
-            // cache on
-            if ($_cache) {
-                self::setHash($field, $result, $expire);
-            }
+        // cache on
+        if ($_cache) {
+            self::setHash($field, $result, $expire);
         }
 
         return $result;
@@ -332,6 +438,22 @@ class Model extends \Phalcon\Mvc\Model
         if ($expire > 0 && !self::getConnection()->isTimeout($key)) {
             $redis->setTimeout($key, $expire);
         }
+    }
+
+    /**
+     * @param  array  $params
+     * @param  string $mode
+     * @return string
+     */
+    private static function getFieldKey($params, $mode = "find")
+    {
+        // field key
+        $field  = $mode. "@";
+        $field .= self::buildFieldKey($params);
+        if (isset($params["keys"])) {
+            unset($params["keys"]);
+        }
+        return $field;
     }
 
     /**
@@ -761,6 +883,17 @@ class Model extends \Phalcon\Mvc\Model
 
         if (!self::$_prefix) {
             self::$_prefix = self::DEFAULT_PREFIX;
+        }
+    }
+
+    /**
+     * @param $params
+     */
+    private static function bindToPrefix($params)
+    {
+        self::$_prefix = self::DEFAULT_PREFIX;
+        if (isset($params["bind"])) {
+            self::setPrefix($params["bind"]);
         }
     }
 
