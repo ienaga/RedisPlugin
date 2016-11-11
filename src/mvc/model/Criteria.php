@@ -330,12 +330,13 @@ class Criteria implements CriteriaInterface
     }
 
     /**
+     * @param  string $column
      * @return mixed
      */
-    public function sum()
+    public function sum($column)
     {
         $model = $this->getModel();
-        return $model::sum($this->buildCondition());
+        return $model::sum(array_merge($this->buildCondition(), array("column" => $column)));
     }
 
     /**

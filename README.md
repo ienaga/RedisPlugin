@@ -362,6 +362,25 @@ Robot::criteria()
 DELETE FROM `robot` WHERE `user_status` = 1 AND `power` >= 100;
 ```
 
+## count
+
+```php
+Robot::criteria()
+    ->add("user_status", 1)
+    ->add("power", 100)
+    ->add("status", 2)
+    ->count();
+```
+
+## sum
+
+```php
+Robot::criteria()
+    ->add("user_status", 1)
+    ->sum("price");
+```
+
+
 ## autoIndex
 
 ※autoIndexをtrueにする事で、PRIMARYもしくはINDEXに一番マッチするクエリに並び替えて発行。

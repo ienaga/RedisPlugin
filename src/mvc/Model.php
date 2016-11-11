@@ -374,20 +374,20 @@ class Model extends \Phalcon\Mvc\Model
         }
 
         // execute mode
+        $result = array();
         switch ($mode) {
             case "find":
                 $result = parent::find($params);
+                if (!$result) {
+                    $result = array();
+                }
                 break;
             case "sum":
-                $result = parent::sum($params);
+                $result = (int) parent::sum($params);
                 break;
             case "count":
-                $result = parent::count($params);
+                $result = (int) parent::count($params);
                 break;
-        }
-
-        if (!$result) {
-            $result = array();
         }
 
         // cache on
