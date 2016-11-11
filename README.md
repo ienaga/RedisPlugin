@@ -317,29 +317,23 @@ class Robot extends \RedisPlugin\Mvc\Model
 ## save
 
 ```php
-class Robot extends \RedisPlugin\Mvc\Model
-{
-    /**
-     * @param  int    $id
-     * @param  string $type
-     * @return Robot
-     */
-    public static function insert($id, $type)
-    {
-        $robot = new Robot;
-        $robot->setId($id);
-        $robot->setType($type);
-        $robot->save();
-    }
-}
+class Robot extends \RedisPlugin\Mvc\Model {}
+
+$robot = new Robot;
+$robot->setId($id);
+$robot->setType($type);
+$robot->save();
+
 ```
 
 ## update
 
 ```php
+class Robot extends \RedisPlugin\Mvc\Model {}
+
 Robot::criteria()
     ->add("user_status", 1)
-    ->set("power", 100)
+    ->add("power", 100)
     ->set("status", 2)
     ->update();
 ```
@@ -352,6 +346,8 @@ UPDATE `robot` SET `status` = 2 WHERE `user_status` = 1 AND `power` = 100;
 ## delete
 
 ```php
+class Robot extends \RedisPlugin\Mvc\Model {}
+
 Robot::criteria()
     ->add("user_status", 1)
     ->add("power", 100, Robot::GREATER_EQUAL)
@@ -365,6 +361,8 @@ DELETE FROM `robot` WHERE `user_status` = 1 AND `power` >= 100;
 ## count
 
 ```php
+class Robot extends \RedisPlugin\Mvc\Model {}
+
 Robot::criteria()
     ->add("user_status", 1)
     ->add("power", 100)
@@ -375,6 +373,8 @@ Robot::criteria()
 ## sum
 
 ```php
+class Robot extends \RedisPlugin\Mvc\Model {}
+
 Robot::criteria()
     ->add("user_status", 1)
     ->sum("price");
@@ -400,18 +400,17 @@ class Robot extends \Phalcon\Mvc\Model
             ->order('id DESC')
             ->add('status', $status)
             ->find();
-
-        /**
-         * この場合、INDEXにマッチしたカラムの数が多いのでINDEXにあわせて発行する
-         * SELECT * FROM `table`
-         * WHERE `id` = :id:
-         * AND `status_number` = :status:
-         * AND `type` = :type:
-         * GROUP BY `type`
-         * ORDER BY `id` DESC
-         * LIMIT 10
-         */
     }
 }
+```
+
+```mysql
+SELECT * FROM `table` 
+WHERE `id` = :id: 
+AND `status_number` = :status: 
+AND `type` = :type:
+GROUP BY `type`
+ORDER BY `id` DESC
+LIMIT 10
 ```
 
