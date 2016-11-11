@@ -374,13 +374,10 @@ class Model extends \Phalcon\Mvc\Model
         }
 
         // execute mode
-        $result = array();
+        $result = null;
         switch ($mode) {
             case "find":
                 $result = parent::find($params);
-                if (!$result) {
-                    $result = array();
-                }
                 break;
             case "sum":
                 $result = (int) parent::sum($params);

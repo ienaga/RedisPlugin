@@ -321,7 +321,7 @@ class Criteria implements CriteriaInterface
     }
 
     /**
-     * @return array|\Phalcon\Mvc\Model\ResultsetInterface
+     * @return \Phalcon\Mvc\Model\ResultsetInterface
      */
     public function find()
     {
