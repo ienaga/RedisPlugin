@@ -175,6 +175,7 @@ class Criteria implements CriteriaInterface
      */
     public function in($column, $values = array())
     {
+        sort($values);
         return $this->add($column, $values, self::IN);
     }
 
@@ -185,6 +186,7 @@ class Criteria implements CriteriaInterface
      */
     public function notIn($column, $values = array())
     {
+        sort($values);
         return $this->add($column, $values, self::NOT_IN);
     }
 
