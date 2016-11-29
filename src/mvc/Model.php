@@ -907,6 +907,12 @@ class Model extends \Phalcon\Mvc\Model
 
         $prefix = self::getPrefix();
 
+        // save update
+        if (!$prefix) {
+            self::setPrefix();
+            $prefix = self::getPrefix();
+        }
+
         if ($mode && $prefix) {
 
             $adminClass = self::getAdminClass($prefix);
@@ -918,7 +924,7 @@ class Model extends \Phalcon\Mvc\Model
                     ->get("admin")
                     ->get("column");
 
-                if (!property_exists($adminClass, $column)) {
+                if (property_exists($adminClass, $column)) {
                     return self::getMemberConfigName($adminClass->{$column});
                 }
             }
