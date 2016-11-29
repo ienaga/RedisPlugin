@@ -89,6 +89,11 @@ class Model extends \Phalcon\Mvc\Model
      */
     private static $_config_query = array();
 
+    /**
+     * @var null|string
+     */
+    private static $name = null;
+
 
     /**
      * initialize
@@ -907,12 +912,6 @@ class Model extends \Phalcon\Mvc\Model
 
         $prefix = self::getPrefix();
 
-        // save update
-        if (!$prefix) {
-            self::setPrefix();
-            $prefix = self::getPrefix();
-        }
-
         if ($mode && $prefix) {
 
             $adminClass = self::getAdminClass($prefix);
@@ -925,7 +924,7 @@ class Model extends \Phalcon\Mvc\Model
                     ->get("column");
 
                 if (property_exists($adminClass, $column)) {
-                    return self::getMemberConfigName($adminClass->{$column});
+                    return self::getAdminConfigName($adminClass->{$column});
                 }
             }
         }
@@ -937,7 +936,7 @@ class Model extends \Phalcon\Mvc\Model
      * @param  mixed $primary_key
      * @return string
      */
-    public function getMemberConfigName($primary_key)
+    public function getAdminConfigName($primary_key)
     {
         // local cache
         if (isset(self::$_config_class_cache[$primary_key])) {
@@ -951,7 +950,7 @@ class Model extends \Phalcon\Mvc\Model
         $config = $this->getDI()
             ->get("config")
             ->get("redis")
-            ->get("shard")
+            ->get("admin")
             ->get("control");
 
         $class = $config->get("model");
@@ -1161,6 +1160,15 @@ class Model extends \Phalcon\Mvc\Model
     }
 
     /**
+     * first insert only
+     * @param $name
+     */
+    public static function setServiceName($name)
+    {
+        self::$name = $name;
+    }
+
+    /**
      * @return string
      */
     public function getServiceNames()
@@ -1173,7 +1181,9 @@ class Model extends \Phalcon\Mvc\Model
                 $configName = $this->getAdminServiceName();
                 break;
             default:
-                $configName = $this->getShardServiceName();
+                $configName = (self::$name === null)
+                    ? $this->getShardServiceName()
+                    : self::$name;
                 break;
         }
 
@@ -1348,6 +1358,33 @@ class Model extends \Phalcon\Mvc\Model
     private function _post()
     {
         Database::addModel($this);
+
+        // case: admin_user first insert
+        $enabled = $this->getDI()
+            ->get("config")
+            ->get("redis")
+            ->get("shard")
+            ->get("enabled");
+
+        if ($enabled) {
+            $className = $this->getDI()
+                ->get("config")
+                ->get("redis")
+                ->get("admin")
+                ->get("model");
+
+            if (get_class($this) === $className ||
+                "\\". get_class($this) === $className
+            ) {
+                $column = $this->getDI()
+                    ->get("config")
+                    ->get("redis")
+                    ->get("admin")
+                    ->get("column");
+
+                $this::setServiceName(self::getAdminConfigName($this->{$column}));
+            }
+        }
     }
 
     /**
