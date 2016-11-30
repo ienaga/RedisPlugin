@@ -911,6 +911,10 @@ class Model extends \Phalcon\Mvc\Model
             ->get("enabled");
 
         $prefix = self::getPrefix();
+        if ($prefix === self::DEFAULT_PREFIX) {
+            self::setPrefix();
+            $prefix = self::getPrefix();
+        }
 
         if ($mode && $prefix) {
 
