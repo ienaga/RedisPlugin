@@ -100,11 +100,13 @@ class Model extends \Phalcon\Mvc\Model
      */
     public function initialize()
     {
-        // mysql connection
-        $this->setReadConnectionService($this->getServiceNames());
+        self::$_prefix = self::DEFAULT_PREFIX;
 
-        // stack model
+        // execute model
         self::setCurrentModel($this);
+
+        // mysql connection
+        $this->setReadConnectionService(self::getServiceNames());
     }
 
     /**
@@ -909,13 +911,14 @@ class Model extends \Phalcon\Mvc\Model
         self::$_prefix = self::DEFAULT_PREFIX;
         if (isset($params["bind"])) {
             self::setPrefix($params["bind"]);
+            self::getCurrentModel()->setReadConnectionService(self::getServiceNames());
         }
     }
 
     /**
      * @return string
      */
-    public function getShardServiceName()
+    public static function getShardServiceName()
     {
         $mode = \Phalcon\DI::getDefault()
             ->get("config")
@@ -953,7 +956,7 @@ class Model extends \Phalcon\Mvc\Model
      * @param  mixed $primary_key
      * @return string
      */
-    public function getAdminConfigName($primary_key)
+    public static function getAdminConfigName($primary_key)
     {
         // local cache
         if (isset(self::$_config_class_cache[$primary_key])) {
@@ -964,7 +967,7 @@ class Model extends \Phalcon\Mvc\Model
         $_prefix        = self::getPrefix();
         $_current_model = self::getCurrentModel();
 
-        $config = $this->getDI()
+        $config = \Phalcon\DI::getDefault()
             ->get("config")
             ->get("redis")
             ->get("admin")
@@ -1008,7 +1011,7 @@ class Model extends \Phalcon\Mvc\Model
      * @return \Phalcon\Mvc\Model
      * @throws RedisPluginException
      */
-    public function getAdminClass($_prefix)
+    public static function getAdminClass($_prefix)
     {
         // local cache
         if (isset(self::$_admin_class_cache[$_prefix])) {
@@ -1019,7 +1022,7 @@ class Model extends \Phalcon\Mvc\Model
         $_prefix = self::getPrefix();
         $_current_model = self::getCurrentModel();
 
-        $class = $this->getDI()
+        $class = \Phalcon\DI::getDefault()
             ->get("config")
             ->get("redis")
             ->get("admin")
@@ -1188,18 +1191,18 @@ class Model extends \Phalcon\Mvc\Model
     /**
      * @return string
      */
-    public function getServiceNames()
+    public static function getServiceNames()
     {
         switch (true) {
-            case $this->isCommon():
-                $configName = $this->getCommonServiceName();
+            case self::isCommon():
+                $configName = self::getCommonServiceName();
                 break;
-            case $this->isAdmin():
-                $configName = $this->getAdminServiceName();
+            case self::isAdmin():
+                $configName = self::getAdminServiceName();
                 break;
             default:
                 $configName = (self::$name === null)
-                    ? $this->getShardServiceName()
+                    ? self::getShardServiceName()
                     : self::$name;
                 break;
         }
@@ -1212,9 +1215,9 @@ class Model extends \Phalcon\Mvc\Model
     /**
      * @return bool
      */
-    public function isCommon()
+    public static function isCommon()
     {
-        $config = $this->getDI()
+        $config = \Phalcon\DI::getDefault()
             ->get("config")
             ->get("redis")
             ->get("common");
@@ -1229,15 +1232,15 @@ class Model extends \Phalcon\Mvc\Model
             return false;
         }
 
-        return $this->isMatch($dbs);
+        return self::isMatch($dbs);
     }
 
     /**
      * @return bool
      */
-    public function isAdmin()
+    public static function isAdmin()
     {
-        $config = $this->getDI()
+        $config = \Phalcon\DI::getDefault()
             ->get("config")
             ->get("redis");
 
@@ -1251,16 +1254,16 @@ class Model extends \Phalcon\Mvc\Model
             return false;
         }
 
-        return $this->isMatch($dbs);
+        return self::isMatch($dbs);
     }
 
     /**
      * @param  array $databases
      * @return bool
      */
-    public function isMatch($databases = array())
+    public static function isMatch($databases = array())
     {
-        $source = $this->getSource();
+        $source = self::getCurrentModel()->getSource();
         foreach ($databases as $name) {
             $name = trim($name);
             if (substr($source, 0, strlen($name)) !== $name) {
@@ -1276,9 +1279,9 @@ class Model extends \Phalcon\Mvc\Model
     /**
      * @return string
      */
-    public function getCommonServiceName()
+    public static function getCommonServiceName()
     {
-        return $this->getDI()
+        return \Phalcon\DI::getDefault()
             ->get("config")
             ->get("redis")
             ->get("common")
@@ -1289,9 +1292,9 @@ class Model extends \Phalcon\Mvc\Model
     /**
      * @return string
      */
-    public function getAdminServiceName()
+    public static function getAdminServiceName()
     {
-        return $this->getDI()
+        return \Phalcon\DI::getDefault()
             ->get("config")
             ->get("redis")
             ->get("admin")
