@@ -232,7 +232,7 @@ class Model extends \Phalcon\Mvc\Model
 
         // set primary keys
         $parameters = array();
-        foreach ($attributes as $idx => $attribute) {
+        foreach ($attributes as $attribute) {
             if (!isset($primary_keys[$attribute])) {
                 continue;
             }
@@ -858,29 +858,42 @@ class Model extends \Phalcon\Mvc\Model
         }
 
         $model = self::getCurrentModel();
-        foreach ($columns as $column) {
+        foreach ($columns as $values) {
 
-            $property = trim($column);
-
-            if ($_keys) {
-
-                if (!isset($_keys[$property])) {
-                    continue;
-                }
-
-                self::$_prefix = $_keys[$property];
-
-            } else {
-
-                if (!property_exists($model, $property)) {
-                    continue;
-                }
-
-                self::$_prefix = $model->{$property};
-
+            if (is_string($values)) {
+                $values = [$values];
             }
 
-            break;
+            $matches = [];
+            foreach ($values as $column) {
+                $property = trim($column);
+
+                if ($_keys) {
+
+                    if (!isset($_keys[$property])) {
+                        continue;
+                    }
+
+                    $matches[] = $_keys[$property];
+
+                } else {
+
+                    if (!property_exists($model, $property)) {
+                        continue;
+                    }
+
+                    $matches[] = $model->{$property};
+
+                }
+            }
+
+            // match case
+            if (count($matches) === count($values)) {
+
+                self::$_prefix = implode(":", $matches);
+
+                break;
+            }
         }
 
         if (!self::$_prefix) {

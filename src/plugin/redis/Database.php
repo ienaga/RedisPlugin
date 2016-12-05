@@ -140,14 +140,30 @@ class Database implements DatabaseInterface
 
         foreach ($models as $model) {
 
-            foreach ($columns as $property) {
+            foreach ($columns as $values) {
 
-                if (!property_exists($model, $property)) {
+                if (is_string($values)) {
+                    $values = [$values];
+                }
+
+                $matches = [];
+                foreach ($values as $column) {
+                    $property = trim($column);
+
+                    if (!property_exists($model, $property)) {
+                        continue;
+                    }
+
+                    $matches[] = $model->{$property};
+                }
+
+                // match case
+                if (count($matches) !== count($values)) {
                     continue;
                 }
 
-                $prefix = $model->{$property};
-
+                // cache clear
+                $prefix = implode(":", $matches);
                 foreach ($databases as $db => $arguments) {
 
                     $key = self::getCacheKey($model, $arguments, $prefix);
@@ -157,8 +173,10 @@ class Database implements DatabaseInterface
             }
 
             // DEFAULT PREFIX
-            $key = self::getCacheKey($model, $arguments, \RedisPlugin\Mvc\Model::DEFAULT_PREFIX);
-            self::getRedis($db)->delete($key);
+            foreach ($databases as $db => $arguments) {
+                $key = self::getCacheKey($model, $arguments, \RedisPlugin\Mvc\Model::DEFAULT_PREFIX);
+                self::getRedis($db)->delete($key);
+            }
 
             // local cache clear
             $model::localCacheClear();
