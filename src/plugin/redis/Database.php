@@ -193,14 +193,11 @@ class Database implements DatabaseInterface
      * @param  mixed              $prefix
      * @return string
      */
-    public static function getCacheKey(\Phalcon\Mvc\Model $model, $arguments, $prefix = null)
+    public static function getCacheKey(\Phalcon\Mvc\Model $model, $arguments, $prefix = \RedisPlugin\Mvc\Model::DEFAULT_PREFIX)
     {
         $key  = $arguments["dbname"] .":". $arguments["host"] .":". $arguments["port"];
         $key .= ":". $model->getSource();
-        if ($prefix) {
-            $key .= ":". $prefix;
-        }
-
+        $key .= ":". $prefix;
         return $key;
     }
 
