@@ -929,7 +929,7 @@ class Model extends \Phalcon\Mvc\Model
             $prefix = self::getPrefix();
         }
 
-        if ($mode && $prefix) {
+        if ($mode && $prefix && $prefix !== self::DEFAULT_PREFIX) {
 
             $adminClass = self::getAdminClass($prefix);
             if ($adminClass) {
@@ -1042,7 +1042,7 @@ class Model extends \Phalcon\Mvc\Model
 
         $adminClass = $class::findFirst(self::$_admin_query);
         if (!$adminClass) {
-            throw new RedisPluginException("Not Created Admin Member");
+            throw new RedisPluginException("Not Created Admin Member: Prefix: ". $_prefix);
         }
 
         self::$_admin_class_cache[$_prefix] = $adminClass;
