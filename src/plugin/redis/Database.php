@@ -69,7 +69,6 @@ class Database implements DatabaseInterface
         return Connection::getInstance()->connect($config);
     }
 
-
     /**
      * @param  string $name
      * @return \Redis
@@ -78,7 +77,6 @@ class Database implements DatabaseInterface
     {
         return self::getConnection($name)->getRedis();
     }
-
 
     /**
      * beginTransaction
@@ -259,7 +257,6 @@ class Database implements DatabaseInterface
             .$e->getTraceAsString()
         );
     }
-
 
     /**
      * @param  \Phalcon\Mvc\Model $model

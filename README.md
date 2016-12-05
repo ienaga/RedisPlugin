@@ -47,7 +47,7 @@ prd:
 stg:
 dev:
   database:
-    dbMaster:
+    dbAdminMaster:
       adapter:  Mysql
       host:     127.0.0.1
       port:     3301
@@ -56,7 +56,7 @@ dev:
       dbname:   XXXXX
       charset:  utf8
       transaction: true
-    dbSlave:
+    dbAdminSlave:
       adapter:  Mysql
       host:     127.0.0.1
       port:     3311
@@ -133,9 +133,10 @@ dev:
 
     # 対象のカラムがModelに存在したら使用。上から順に優先。存在が確認できた時点でbreak
     prefix:
-      columns:  # e.g. user_id, id, social_id
+      columns:  # e.g. user_id, id, social_id, [account, password]
         - user_id
         - social_id
+        - [account, password]
         - id
 
     # 共通のマスタがあれば登録「table_」と共有部分だけの記載はtable_*と同義
@@ -146,11 +147,11 @@ dev:
         name: dbCommon
 
       dbs: # e.g.  master_, access_log
-        - mt_
+        - master_
 
     # Sharding設定
     shard:
-      enabled: false # Shardingを使用しない時はfalse
+      enabled: true # Shardingを使用しない時はfalse
 
     # Shardingのマスタ設定
     admin:
@@ -174,11 +175,11 @@ dev:
       #      PRIMARY KEY (`id`),
       #      UNIQUE KEY `social_id` (`social_id`)
       #    ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
-      model:  # e.g. AdminUser
+      model: # e.g. AdminUser or namespace \Project\AdminUser
       column: # e.g. admin_config_db_id
 
       # ユーザマスタの登録「table_」と共有部分だけの記載はtable_*と同義
-      dbs: table, table, table... # e.g. admin_, user_ranking
+      dbs: # e.g. admin_, user_ranking
         - admin_
         
       # Shardingをコントロールするテーブルとカラム
@@ -196,7 +197,7 @@ dev:
       #    (2, 'dbMember2', 50, 0);
       # shard config master
       control:
-        model:  # e.g. AdminConfigDb
+        model:  # e.g. AdminConfigDb or namespace \Project\AdminConfigDb
         column: # e.g. name
 
     # schemaをキャッシュ
