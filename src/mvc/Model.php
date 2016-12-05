@@ -100,6 +100,7 @@ class Model extends \Phalcon\Mvc\Model
      */
     public function initialize()
     {
+        // reset
         self::$_prefix = self::DEFAULT_PREFIX;
 
         // execute model
@@ -918,7 +919,7 @@ class Model extends \Phalcon\Mvc\Model
     /**
      * @return string
      */
-    public static function getShardServiceName()
+    private static function getShardServiceName()
     {
         $mode = \Phalcon\DI::getDefault()
             ->get("config")
@@ -956,7 +957,7 @@ class Model extends \Phalcon\Mvc\Model
      * @param  mixed $primary_key
      * @return string
      */
-    public static function getAdminConfigName($primary_key)
+    private static function getAdminConfigName($primary_key)
     {
         // local cache
         if (isset(self::$_config_class_cache[$primary_key])) {
@@ -1011,7 +1012,7 @@ class Model extends \Phalcon\Mvc\Model
      * @return \Phalcon\Mvc\Model
      * @throws RedisPluginException
      */
-    public static function getAdminClass($_prefix)
+    private static function getAdminClass($_prefix)
     {
         // local cache
         if (isset(self::$_admin_class_cache[$_prefix])) {
@@ -1191,7 +1192,7 @@ class Model extends \Phalcon\Mvc\Model
     /**
      * @return string
      */
-    public static function getServiceNames()
+    private static function getServiceNames()
     {
         switch (true) {
             case self::isCommon():
@@ -1215,7 +1216,7 @@ class Model extends \Phalcon\Mvc\Model
     /**
      * @return bool
      */
-    public static function isCommon()
+    private static function isCommon()
     {
         $config = \Phalcon\DI::getDefault()
             ->get("config")
@@ -1238,7 +1239,7 @@ class Model extends \Phalcon\Mvc\Model
     /**
      * @return bool
      */
-    public static function isAdmin()
+    private static function isAdmin()
     {
         $config = \Phalcon\DI::getDefault()
             ->get("config")
