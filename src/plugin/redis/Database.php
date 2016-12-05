@@ -240,22 +240,22 @@ class Database implements DatabaseInterface
             }
         }
 
+        // auto clear
+        if ($rollback) {
+            self::autoClear();
+
+            error_log(
+                "[rollback] MESSAGE:". $e->getMessage()
+                ." - FILE:". $e->getFile()
+                ." - LINE:". $e->getLine()
+                . $e->getTraceAsString()
+            );
+        }
+
         // reset
         self::$models        = array();
         self::$transactions  = array();
         self::$isTransaction = false;
-
-        // no rollback execute
-        if ($rollback === false) {
-            return;
-        }
-
-        error_log(
-            "[rollback] MESSAGE:". $e->getMessage()
-            ." - FILE:".$e->getFile()
-            ." - LINE:".$e->getLine()
-            .$e->getTraceAsString()
-        );
     }
 
     /**
