@@ -94,7 +94,6 @@ class Model extends \Phalcon\Mvc\Model
      */
     private static $name = null;
 
-
     /**
      * initialize
      */
@@ -1020,7 +1019,7 @@ class Model extends \Phalcon\Mvc\Model
         }
 
         // local cache
-        $_prefix = self::getPrefix();
+        $_prefix        = self::getPrefix();
         $_current_model = self::getCurrentModel();
 
         $class = \Phalcon\DI::getDefault()
@@ -1262,7 +1261,7 @@ class Model extends \Phalcon\Mvc\Model
      * @param  array $databases
      * @return bool
      */
-    public static function isMatch($databases = array())
+    private static function isMatch($databases = array())
     {
         $source = self::getCurrentModel()->getSource();
         foreach ($databases as $name) {
