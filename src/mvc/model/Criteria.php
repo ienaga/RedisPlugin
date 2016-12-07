@@ -314,7 +314,7 @@ class Criteria implements CriteriaInterface
     }
 
     /**
-     * @return \Phalcon\Mvc\Model | bool
+     * @return \Phalcon\Mvc\Model | null
      */
     public function findFirst()
     {
