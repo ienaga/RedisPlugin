@@ -31,7 +31,7 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
     /**
      * @var string
      */
-    const PREFIX_KEY = "__MetaData";
+    const PREFIX_KEY = "__schema";
 
     /**
      * @var string
@@ -47,6 +47,11 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
      * @var array
      */
     private $_cache = array();
+
+    /**
+     * @var string
+     */
+    private $_prefix_key = self::PREFIX_KEY;
 
 
     /**
@@ -75,6 +80,10 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
             $options["select"] = self::SELECT;
         }
 
+        if (isset($options["prefix"])) {
+            $this->setPrefixKey($options["prefix"]);
+        }
+
         $this->setOptions($options);
     }
 
@@ -92,6 +101,22 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
     public function setOptions($options)
     {
         $this->options = $options;
+    }
+
+    /**
+     * @return int|string
+     */
+    public function getPrefixKey()
+    {
+        return $this->_prefix_key;
+    }
+
+    /**
+     * @param mixed $prefix_key
+     */
+    public function setPrefixKey($prefix_key)
+    {
+        $this->_prefix_key = $prefix_key;
     }
 
     /**
@@ -146,7 +171,7 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
      */
     public function getRedisValue($key)
     {
-        return $this->getRedis()->hGet(self::PREFIX_KEY, $key);
+        return $this->getRedis()->hGet($this->getPrefixKey(), $key);
     }
 
     /**
@@ -156,12 +181,12 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
     public function setRedisValue($key, $value)
     {
         // redis
-        $this->getRedis()->hSet(self::PREFIX_KEY, $key, $value);
+        $this->getRedis()->hSet($this->getPrefixKey(), $key, $value);
 
         // set expire
-        if (!$this->getConnection()->isTimeout(self::PREFIX_KEY)) {
+        if (!$this->getConnection()->isTimeout($this->getPrefixKey())) {
             $options = $this->getOptions();
-            $this->getRedis()->setTimeout(self::PREFIX_KEY, $options["expire"]);
+            $this->getRedis()->setTimeout($this->getPrefixKey(), $options["expire"]);
         }
     }
 
@@ -235,7 +260,8 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
      */
     public function reset()
     {
-        $this->getRedis()->delete(self::PREFIX_KEY);
+        $this->getRedis()->delete($this->getPrefixKey());
         return parent::reset();
     }
+
 }
