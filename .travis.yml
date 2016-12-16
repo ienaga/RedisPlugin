@@ -22,7 +22,6 @@ before_script:
   - mysql -uroot < tests/schema.sql
 
 script:
-  - php -r "echo \Phalcon\Version::get();"
   - vendor/bin/phpunit
 
 addons:
