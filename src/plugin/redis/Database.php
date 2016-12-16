@@ -3,7 +3,7 @@
 namespace RedisPlugin;
 
 use \Exception;
-use RedisPlugin\Exception\RedisPluginException;
+use \RedisPlugin\Exception\RedisPluginException;
 
 class Database implements DatabaseInterface
 {

@@ -23,4 +23,15 @@ interface CriteriaInterface
      * @return bool
      */
     public function delete();
+
+    /**
+     * @return mixed
+     */
+    public function count();
+
+    /**
+     * @param  string $column
+     * @return mixed
+     */
+    public function sum($column);
 }

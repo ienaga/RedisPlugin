@@ -1412,7 +1412,7 @@ class Model extends \Phalcon\Mvc\Model
      */
     public static function localCacheClear()
     {
-        self::$_prefix              = null;
+        self::$_prefix             = null;
         self::$_keys               = array();
         self::$_bind               = array();
         self::$_cache              = array();

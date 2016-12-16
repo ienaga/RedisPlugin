@@ -3,6 +3,7 @@
 namespace RedisPlugin;
 
 use \Redis;
+use \RedisPlugin\Exception\RedisPluginException;
 
 class Connection implements ConnectionInterface
 {

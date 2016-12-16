@@ -33,4 +33,17 @@ interface ModelInterface
      */
     public function delete($data = null, $whiteList = null);
 
+    /**
+     * @param  null|string|array $parameters
+     * @return \Phalcon\Mvc\Model
+     */
+    public static function findFirst($parameters = null);
+
+    /**
+     * @param  null|string|array $parameters
+     * @return \Phalcon\Mvc\Model\ResultsetInterface
+     */
+    public static function find($parameters = null);
+
+
 }
