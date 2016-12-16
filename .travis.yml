@@ -19,11 +19,15 @@ before_install:
   - bin/install-phalcon.sh 3.0.x
 
 before_script:
-  - mysql -uroot -e "create database common"
   - mysql -uroot -e "create database admin"
   - mysql -uroot -e "create database user1"
   - mysql -uroot -e "create database user2"
-
+  - mysql -uroot -e "create database common"
+  - mysql -uroot -e "use admin;  create table admin_user (`id` int(11) AUTO_INCREMENT, `admin_config_db_id` tinyint(4))"
+  - mysql -uroot -e "use admin;  create table admin_config_db (`id` int(11) AUTO_INCREMENT, `name` varchar(50), `gravity` tinyint(4))"
+  - mysql -uroot -e "use user1;  create table user (`id` int(11), `name` varchar(50))"
+  - mysql -uroot -e "use user2;  create table user (`id` int(11), `name` varchar(50))"
+  - mysql -uroot -e "use common; create table mst_item (`id` int(11) AUTO_INCREMENT, `name` varchar(50))"
 
 script:
   - php -r "echo \Phalcon\Version::get();"
