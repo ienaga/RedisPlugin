@@ -19,7 +19,7 @@ before_install:
   - bin/install-phalcon.sh 3.0.x
 
 before_script:
-  - mysql -uroot < schema.sql
+  - mysql -uroot < tests/schema.sql
 
 script:
   - php -r "echo \Phalcon\Version::get();"
