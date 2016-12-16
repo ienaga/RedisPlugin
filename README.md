@@ -193,8 +193,8 @@ dev:
       #      PRIMARY KEY (`id`)
       #    ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
       #    INSERT INTO `admin_config_db` (`id`, `name`, `gravity`, `status_number`) VALUES
-      #    (1, 'dbMember1', 50, 0),
-      #    (2, 'dbMember2', 50, 0);
+      #    (1, 'dbUser1', 50, 0),
+      #    (2, 'dbUser2', 50, 0);
       # shard config master
       control:
         model:  # e.g. AdminConfigDb or namespace \Project\AdminConfigDb
