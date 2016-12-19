@@ -13,6 +13,7 @@ class MetaDataTest extends \PHPUnit_Framework_TestCase
     {
         // FactoryDefault
         $di = new Phalcon\Di\FactoryDefault();
+        \Phalcon\DI::setDefault($di);
 
         // config
         $config = new \Phalcon\Config();
@@ -20,17 +21,16 @@ class MetaDataTest extends \PHPUnit_Framework_TestCase
         $config->merge($yml->get("test"));
         $di->set("config", function () use ($config) { return $config; }, true);
 
+        // service
+        $service = new \RedisPlugin\Service();
+        $service->registration();
+
         // modelsMetadata
         $di->setShared("modelsMetadata", function () use ($di) {
             return new \RedisPlugin\Mvc\Model\Metadata\Redis(
                 $this->getConfig()->get("redis")->get("metadata")->toArray()
             );
         });
-
-        \Phalcon\DI::setDefault($di);
-
-        $service = new \RedisPlugin\Service();
-        $service->registration();
     }
 
     /**
