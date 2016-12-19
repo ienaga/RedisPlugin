@@ -88,6 +88,10 @@ return array(
         )
     ),
     "redis" => array(
+        "logger"    => array(
+            "logging" => false,
+            "output"  => "/",
+        ),
         "enabled"   => true,
         "autoIndex" => true,
         "prefix"    => array(

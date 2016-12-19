@@ -1,6 +1,8 @@
 RedisPlugin for Phalcon (The correspondence of MySQL sharding.)
 ======
 
+[![Build Status](https://travis-ci.org/ienaga/RedisPlugin.svg?branch=master)](https://travis-ci.org/ienaga/RedisPlugin)
+
 [![Latest Stable Version](https://poser.pugx.org/ienaga/phalcon-redis-plugin/v/stable)](https://packagist.org/packages/ienaga/phalcon-redis-plugin) [![Total Downloads](https://poser.pugx.org/ienaga/phalcon-redis-plugin/downloads)](https://packagist.org/packages/ienaga/phalcon-redis-plugin) [![Latest Unstable Version](https://poser.pugx.org/ienaga/phalcon-redis-plugin/v/unstable)](https://packagist.org/packages/ienaga/phalcon-redis-plugin) [![License](https://poser.pugx.org/ienaga/phalcon-redis-plugin/license)](https://packagist.org/packages/ienaga/phalcon-redis-plugin)
 
 # Composer

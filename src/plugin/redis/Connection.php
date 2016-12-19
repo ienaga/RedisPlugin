@@ -149,11 +149,12 @@ class Connection implements ConnectionInterface
      */
     public function __destruct()
     {
+        // connection close
         foreach ($this->connections as $redis) {
             $redis->close();
         }
-        // reset
+        // local params reset
         $this->connections = array();
-        self::$redis        = null;
+        self::$redis       = null;
     }
 }
