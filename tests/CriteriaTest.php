@@ -45,7 +45,7 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
             ->add("id", 1)
             ->findFirst();
 
-        $this->assertEquals($mstItem->getName(), "test_1");
+        $this->assertEquals($mstItem->getName(), "item_1");
     }
 
     /**
@@ -82,7 +82,7 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
             ->find();
 
         $this->assertEquals(count($mstItem), 3);
-        foreach ($mstItem as $idx => $item) {
+        foreach ($mstItem as $item) {
             $this->assertEquals($item->getName(), "update");
         }
     }
