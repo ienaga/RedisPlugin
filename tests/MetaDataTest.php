@@ -20,6 +20,13 @@ class MetaDataTest extends \PHPUnit_Framework_TestCase
         $config->merge($yml->get("test"));
         $di->set("config", function () use ($config) { return $config; }, true);
 
+        // modelsMetadata
+        $di->setShared("modelsMetadata", function () use ($di) {
+            return new \RedisPlugin\Mvc\Model\Metadata\Redis(
+                $this->getConfig()->get("redis")->get("metadata")->toArray()
+            );
+        });
+
         \Phalcon\DI::setDefault($di);
     }
 
@@ -28,15 +35,10 @@ class MetaDataTest extends \PHPUnit_Framework_TestCase
      */
     public function testModelsMetadata()
     {
-        $di = \Phalcon\DI::getDefault();
-        $di->setShared("modelsMetadata", function () use ($di) {
-            return new \RedisPlugin\Mvc\Model\Metadata\Redis(
-                $this->getConfig()->get("redis")->get("metadata")->toArray()
-            );
-        });
-        \Phalcon\DI::setDefault($di);
+        $model = MstItem::criteria()
+            ->add("id", 1)
+            ->findFirst();
 
-        $model   = new MstItem();
         $indexes = $model->getModelsMetadata()->readIndexes($model->getSource());
         $this->assertEquals(count($indexes), 2);
     }
