@@ -86,6 +86,7 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
             ->findFirst();
 
         try {
+
             Database::beginTransaction();
 
             $mstItem->setName("rollback");

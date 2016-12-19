@@ -258,10 +258,8 @@ class Database implements DatabaseInterface
             }
         }
 
-        // auto clear
+        // error log
         if ($rollback) {
-            self::autoClear();
-
             error_log(
                 "[rollback] MESSAGE:". $e->getMessage()
                 ." - FILE:". $e->getFile()
@@ -269,6 +267,9 @@ class Database implements DatabaseInterface
                 . $e->getTraceAsString()
             );
         }
+
+        // auto clear
+        self::autoClear();
 
         // reset
         self::$models        = array();
