@@ -4,10 +4,6 @@ namespace RedisPlugin;
 
 interface RankingInterface
 {
-    /**
-     * @return Ranking
-     */
-    static function getInstance();
 
     /**
      * @param  string $key

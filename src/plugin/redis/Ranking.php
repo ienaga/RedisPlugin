@@ -4,20 +4,6 @@ namespace RedisPlugin;
 
 class Ranking extends Connection implements RankingInterface
 {
-    /**
-     * @var \RedisPlugin\Ranking
-     */
-    private static $_instance = null;
-
-    /**
-     * @return Ranking
-     */
-    static function getInstance()
-    {
-        return (self::$_instance === null)
-            ? self::$_instance = new static
-            : self::$_instance;
-    }
 
     /**
      * @param  string $key
