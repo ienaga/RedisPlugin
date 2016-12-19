@@ -128,6 +128,11 @@ prd:
 stg:
 dev:
   redis:
+    # log出力
+    logger:
+      logging: true # logging ON OFF
+      output:  /var/www/project/log/sql.log # output log file path
+      
     enabled:   true # false => cache off
     autoIndex: true # false => auto index off
 
