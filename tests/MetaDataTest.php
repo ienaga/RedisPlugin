@@ -38,6 +38,11 @@ class MetaDataTest extends \PHPUnit_Framework_TestCase
      */
     public function testReadIndexes()
     {
+        // find
+        MstItem::criteria()
+            ->add("id", 1)
+            ->findFirst();
+
         $model   = new MstItem();
         $indexes = $model->getModelsMetadata()->readIndexes($model->getSource());
         $this->assertEquals(count($indexes), 2);
