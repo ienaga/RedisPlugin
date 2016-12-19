@@ -38,6 +38,8 @@ class Service implements ServiceInterface
             ->get("logger");
 
         $databases = $this->getConfig();
+
+        /** @var \Phalcon\Config $arguments */
         foreach ($databases as $db => $arguments)
         {
             // set
@@ -51,6 +53,7 @@ class Service implements ServiceInterface
                     $logger        = new File($log->get("output"));
                     $eventsManager->attach("db", function($event, $connection) use ($logger)
                     {
+                        /** @var \Phalcon\Db\Adapter $connection */
                         if ($event->getType() === "beforeQuery") {
                             $sqlVariables = $connection->getSQLVariables();
                             if (count($sqlVariables)) {
@@ -69,21 +72,13 @@ class Service implements ServiceInterface
             });
 
             // transaction
-            if (isset($arguments['transaction']) && $arguments['transaction']) {
-
-                $service = $arguments["dbname"]
-                    .":". $arguments["host"]
-                    .":". $arguments["port"];
-
-                $this->getDI()->setShared($service, function() use ($db)
+            if (isset($arguments['transaction']) && (bool) $arguments['transaction']) {
+                $this->getDI()->setShared($this->getService($arguments), function() use ($db)
                 {
                     $manager = new Manager();
-                    if ($db !== null) {
-                        $manager->setDbService($db);
-                    }
+                    $manager->setDbService($db);
                     return $manager;
                 });
-
             }
         }
     }
@@ -100,6 +95,9 @@ class Service implements ServiceInterface
             ->get("logger");
 
         $databases = $this->getConfig();
+        $config    = $this->getDI()->get("config");
+
+        /** @var \Phalcon\Config $arguments */
         foreach ($databases as $db => $arguments) {
 
             if (!isset($overwrite[$db])) {
@@ -112,8 +110,10 @@ class Service implements ServiceInterface
                 $overwrite[$db]
             );
 
-            // remove and set
+            // remove
             $this->getDI()->remove($db);
+
+            // set
             $this->getDI()->setShared($db, function () use ($db, $descriptor, $log) {
                 $connection = new Mysql($descriptor);
 
@@ -123,6 +123,7 @@ class Service implements ServiceInterface
                     $logger        = new File($log->get("output"));
                     $eventsManager->attach("db", function($event, $connection) use ($logger)
                     {
+                        /** @var \Phalcon\Db\Adapter $connection */
                         if ($event->getType() === "beforeQuery") {
                             $sqlVariables = $connection->getSQLVariables();
                             if (count($sqlVariables)) {
@@ -140,33 +141,32 @@ class Service implements ServiceInterface
                 return $connection;
             });
 
-            // new config
-            $config = $this->getDI()->get("config");
+            // overwrite config
             $config["database"][$db] = $descriptor;
 
-            // remove and set
-            $this->getDI()->remove("config");
-            $this->getDI()->set("config", function () use ($config) {
-                return $config;
-            }, true);
-
             // transaction
-            if (isset($descriptor['transaction']) && $descriptor['transaction']) {
-
-                $service = $descriptor["dbname"]
-                    .":". $descriptor["host"]
-                    .":". $descriptor["port"];
-
-                $this->getDI()->setShared($service, function () use ($db) {
+            if (isset($descriptor['transaction']) && (bool) $descriptor['transaction']) {
+                $this->getDI()->setShared($this->getService($descriptor), function () use ($db) {
                     $manager = new Manager();
-                    if ($db !== null) {
-                        $manager->setDbService($db);
-                    }
+                    $manager->setDbService($db);
                     return $manager;
                 });
-
             }
         }
+
+        // remove
+        $this->getDI()->remove("config");
+
+        // set
+        $this->getDI()->set("config", function () use ($config) { return $config; }, true);
     }
 
+    /**
+     * @param  array $config
+     * @return string
+     */
+    public function getService($config = array())
+    {
+        return sprintf("%s:%s:%s", $config["dbname"], $config["host"], $config["port"]);
+    }
 }

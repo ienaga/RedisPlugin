@@ -7,16 +7,16 @@ class Ranking extends Connection implements RankingInterface
     /**
      * @var \RedisPlugin\Ranking
      */
-    private static $instance = null;
+    private static $_instance = null;
 
     /**
      * @return Ranking
      */
     static function getInstance()
     {
-        return (self::$instance === null)
-            ? self::$instance = new static
-            : self::$instance;
+        return (self::$_instance === null)
+            ? self::$_instance = new static
+            : self::$_instance;
     }
 
     /**
