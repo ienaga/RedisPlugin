@@ -91,15 +91,14 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
             $mstItem->setName("rollback");
             $mstItem->save();
 
-            throw new \Exception("test rollback");
+            $e = new \Exception("test rollback");
 
-            Database::commit();
+            Database::rollback($e);
 
         } catch (\Exception $e) {
 
             $this->assertEquals($e->getMessage(), "test rollback");
 
-            Database::rollback($e);
         }
 
         $mstItem = MstItem::criteria()
