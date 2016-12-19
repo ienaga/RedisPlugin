@@ -13,8 +13,6 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        parent::setUp();
-
         // DI
         $di = new Phalcon\Di\FactoryDefault();
 
@@ -28,12 +26,13 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
         $dbService = new \RedisPlugin\Service();
         $dbService->registration();
 
-        $di->setShared("modelsMetadata", function () {
-            var_dump($this->getConfig()->get("redis")->get("metadata")->toArray());
+        $di["modelsMetadata"] = function () use ($config)
+        {
+            var_dump($config->get("redis")->get("metadata")->toArray());
             return new \RedisPlugin\Mvc\Model\Metadata\Redis(
-                $this->getConfig()->get("redis")->get("metadata")->toArray()
+                $config->get("redis")->get("metadata")->toArray()
             );
-        });
+        };
     }
 
     /**

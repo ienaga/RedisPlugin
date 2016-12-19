@@ -11,8 +11,6 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-        parent::setUp();
-
         // config
         $config = new \Phalcon\Config();
         $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/redis.yml");
