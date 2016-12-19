@@ -16,7 +16,7 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         // config
         $config = new \Phalcon\Config();
         $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/redis.yml");
-        $config->merge($yml->get("dev"));
+        $config->merge($yml->get("test"));
 
         $di = new Phalcon\Di\FactoryDefault();
         $di->set("config", function () use ($config) { return $config; }, true);
@@ -33,14 +33,42 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * test connection
+     * test connection paten 1
      */
-    public function testConnection()
+    public function testConnection1()
     {
         $redis = Connection::getInstance();
         $bool  = $redis
             ->connect()
             ->hasConnections("127.0.0.1:6379:0");
+        $this->assertEquals($bool, true);
+    }
+
+    /**
+     * test connection paten 2
+     */
+    public function testConnection2()
+    {
+        $redis = Connection::getInstance();
+        $bool  = $redis
+            ->connect()
+            ->hasConnections("127.0.0.1:6379:10");
+        $this->assertEquals($bool, false);
+    }
+
+    /**
+     * test connection paten 3
+     */
+    public function testConnection3()
+    {
+        $redis = Connection::getInstance();
+        $bool  = $redis
+            ->connect(array(
+                "host"   => "127.0.0.1",
+                "port"   => 6379,
+                "select" => 10
+            ))
+            ->hasConnections("127.0.0.1:6379:10");
         $this->assertEquals($bool, true);
     }
 }
