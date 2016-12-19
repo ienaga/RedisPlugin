@@ -67,6 +67,29 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * test count
+     */
+    public function testCount()
+    {
+        $count = MstItem::criteria()
+            ->add("level", 1)
+            ->count();
+        $this->assertEquals($count, 0);
+    }
+
+    /**
+     * test sum
+     */
+    public function testSum()
+    {
+        $sum = MstItem::criteria()
+            ->add("mode", 1)
+            ->sum("level");
+
+        $this->assertEquals($sum, 4);
+    }
+
+    /**
      * update test
      */
     public function testUpdate()
@@ -103,5 +126,4 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(count($mstItem), 0);
     }
-
 }
