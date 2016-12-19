@@ -97,9 +97,9 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
 
         } catch (\Exception $e) {
 
-            Database::rollback($e);
-
             $this->assertEquals($e->getMessage(), "test rollback");
+
+            Database::rollback($e);
         }
 
         $mstItem = MstItem::criteria()
