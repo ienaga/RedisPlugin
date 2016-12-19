@@ -482,7 +482,7 @@ class Model extends \Phalcon\Mvc\Model
 
             foreach ($fields as $field) {
 
-                $field = trim($field);
+                $field  = trim($field);
 
                 $values = explode(" ", $field);
 
@@ -575,7 +575,7 @@ class Model extends \Phalcon\Mvc\Model
      * @param  array $parameters
      * @return array
      */
-    private static function buildParameters($parameters)
+    public static function buildParameters($parameters)
     {
         // init
         $indexQuery  = array();
@@ -609,8 +609,9 @@ class Model extends \Phalcon\Mvc\Model
                     $chkQuery = array();
                     foreach ($columns as $column) {
 
-                        if (!isset($query[$column]))
+                        if (!isset($query[$column])) {
                             break;
+                        }
 
                         $chkQuery[$column] = $query[$column];
                     }
@@ -620,8 +621,9 @@ class Model extends \Phalcon\Mvc\Model
                     }
 
                     // PRIMARY優先
-                    if ($key === 0)
+                    if ($key === "PRIMARY" && count($chkQuery)) {
                         break;
+                    }
                 }
             }
 

@@ -23,4 +23,13 @@ interface RankingInterface
      * @return bool
      */
     public function isRank($key, $member);
+
+    /**
+     * @param string $key
+     * @param int    $offset
+     * @param int    $limit
+     * @param bool   $bool
+     * @return array
+     */
+    public function getRanking($key, $offset = 0, $limit = -1, $bool = true);
 }

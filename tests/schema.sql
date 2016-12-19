@@ -47,8 +47,6 @@ INSERT INTO `mst_item` (`id`, `name`, `level`, `mode`) VALUES
   (6, 'item_6', 2, 2);
 
 
-
-
 USE `user1`;
 
 CREATE TABLE IF NOT EXISTS `user` (

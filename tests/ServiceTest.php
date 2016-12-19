@@ -5,11 +5,6 @@ require_once __DIR__ . "/../src/plugin/redis/Service.php";
 class ServiceTest extends \PHPUnit_Framework_TestCase
 {
     /**
-     * @var \RedisPlugin\Service
-     */
-    protected $service = null;
-
-    /**
      * set up
      */
     public function setUp()
@@ -23,10 +18,6 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
         $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/redis.yml");
         $config->merge($yml->get("test"));
         $di->set("config", function () use ($config) { return $config; }, true);
-
-
-        // service class
-        $this->service = new \RedisPlugin\Service();
     }
 
     /**

@@ -43,4 +43,16 @@ class Ranking extends Connection implements RankingInterface
     {
         return ($this->getRedis()->zRank($key, $member) !== false);
     }
+
+    /**
+     * @param string $key
+     * @param int    $offset
+     * @param int    $limit
+     * @param bool   $bool
+     * @return array
+     */
+    public function getRanking($key, $offset = 0, $limit = -1, $bool = true)
+    {
+        return $this->getRedis()->zRevRange($key, $offset, $limit, $bool);
+    }
 }

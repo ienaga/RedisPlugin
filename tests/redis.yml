@@ -5,7 +5,7 @@ test:
       host:        127.0.0.1
       port:        3306
       username:    root
-      password:
+      password:    2ZeCJHFu5ZSs5SJn
       dbname:      admin
       options:
         20:        false
@@ -16,7 +16,7 @@ test:
       host:        127.0.0.1
       port:        3306
       username:    root
-      password:
+      password:    2ZeCJHFu5ZSs5SJn
       dbname:      admin
       options:
         20:        false
@@ -27,7 +27,7 @@ test:
       host:        127.0.0.1
       port:        3306
       username:    root
-      password:
+      password:    2ZeCJHFu5ZSs5SJn
       dbname:      common
       options:
         20:        false
@@ -38,7 +38,7 @@ test:
       host:        127.0.0.1
       port:        3306
       username:    root
-      password:
+      password:    2ZeCJHFu5ZSs5SJn
       dbname:      common
       options:
         20:        false
@@ -49,7 +49,7 @@ test:
       host:        127.0.0.1
       port:        3306
       username:    root
-      password:
+      password:    2ZeCJHFu5ZSs5SJn
       dbname:      user1
       options:
         20:        false
@@ -60,7 +60,7 @@ test:
       host:        127.0.0.1
       port:        3306
       username:    root
-      password:
+      password:    2ZeCJHFu5ZSs5SJn
       dbname:      user1
       options:
         20:        false
@@ -71,7 +71,7 @@ test:
       host:        127.0.0.1
       port:        3306
       username:    root
-      password:
+      password:    2ZeCJHFu5ZSs5SJn
       dbname:      user2
       options:
         20:        false
@@ -82,7 +82,7 @@ test:
       host:        127.0.0.1
       port:        3306
       username:    root
-      password:
+      password:    2ZeCJHFu5ZSs5SJn
       dbname:      user2
       options:
         20:        false
@@ -120,38 +120,38 @@ test:
         column: name
     server:
       dbAdminMaster:
-        host:   127.0.0.1
+        host:   media-division-dev.oux1sz.0001.apne1.cache.amazonaws.com
         port:   6379
         select: 0
       dbAdminSlave:
-        host:   127.0.0.1
+        host:   media-division-dev.oux1sz.0001.apne1.cache.amazonaws.com
         port:   6379
         select: 1
       dbCommonMaster:
-        host:   127.0.0.1
+        host:   media-division-dev.oux1sz.0001.apne1.cache.amazonaws.com
         port:   6379
         select: 0
       dbCommonSlave:
-        host:   127.0.0.1
+        host:   media-division-dev.oux1sz.0001.apne1.cache.amazonaws.com
         port:   6379
         select: 1
       dbUser1Master:
-        host:   127.0.0.1
+        host:   media-division-dev.oux1sz.0001.apne1.cache.amazonaws.com
         port:   6379
         select: 0
       dbUser1Slave:
-        host:   127.0.0.1
+        host:   media-division-dev.oux1sz.0001.apne1.cache.amazonaws.com
         port:   6379
         select: 1
       dbUser2Master:
-        host:   127.0.0.1
+        host:   media-division-dev.oux1sz.0001.apne1.cache.amazonaws.com
         port:   6379
         select: 0
       dbUser2Slave:
-        host:   127.0.0.1
+        host:   media-division-dev.oux1sz.0001.apne1.cache.amazonaws.com
         port:   6379
         select: 1
     metadata:
-      host:   127.0.0.1
+      host:   media-division-dev.oux1sz.0001.apne1.cache.amazonaws.com
       port:   6379
       select: 0
