@@ -6,17 +6,19 @@ use \RedisPlugin\Connection;
 
 class ConnectionTest extends \PHPUnit_Framework_TestCase
 {
+
     /**
      * set up
      */
     public function setUp()
     {
+        // FactoryDefault
+        $di = new Phalcon\Di\FactoryDefault();
+
         // config
         $config = new \Phalcon\Config();
         $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/redis.yml");
         $config->merge($yml->get("test"));
-
-        $di = new Phalcon\Di\FactoryDefault();
         $di->set("config", function () use ($config) { return $config; }, true);
     }
 
