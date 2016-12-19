@@ -28,6 +28,9 @@ class MetaDataTest extends \PHPUnit_Framework_TestCase
         });
 
         \Phalcon\DI::setDefault($di);
+
+        $service = new \RedisPlugin\Service();
+        $service->registration();
     }
 
     /**
