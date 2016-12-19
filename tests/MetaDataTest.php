@@ -37,7 +37,7 @@ class MetaDataTest extends \PHPUnit_Framework_TestCase
         \Phalcon\DI::setDefault($di);
 
         $model   = new MstItem();
-        $indexes = $model->getModelsMetadata()->readIndexes($model);
+        $indexes = $model->getModelsMetadata()->readIndexes($model->getSource());
         $this->assertEquals(count($indexes), 2);
     }
 }
