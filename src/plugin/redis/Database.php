@@ -238,8 +238,6 @@ class Database implements DatabaseInterface
      */
     public static function rollback(Exception $e)
     {
-        $rollback = false;
-
         foreach (self::$transactions as $service => $transaction) {
 
             /** @var \Phalcon\Mvc\Model\Transaction\Manager $manager */
@@ -254,18 +252,7 @@ class Database implements DatabaseInterface
                     self::rollback($e);
                 }
 
-                $rollback = true;
             }
-        }
-
-        // error log
-        if ($rollback) {
-            error_log(
-                "[rollback] MESSAGE:". $e->getMessage()
-                ." - FILE:". $e->getFile()
-                ." - LINE:". $e->getLine()
-                . $e->getTraceAsString()
-            );
         }
 
         // auto clear
@@ -275,6 +262,16 @@ class Database implements DatabaseInterface
         self::$models        = array();
         self::$transactions  = array();
         self::$isTransaction = false;
+
+        // error log
+        error_log(
+            sprintf("[rollback] MESSAGE: %s  - FILE: %s - LINE: %s - Trace: %s",
+                $e->getMessage(),
+                $e->getFile(),
+                $e->getLine(),
+                $e->getTraceAsString()
+            )
+        );
     }
 
     /**
