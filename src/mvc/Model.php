@@ -1161,9 +1161,9 @@ class Model extends \Phalcon\Mvc\Model
 
         foreach ($databases as $db => $arguments) {
 
-            $key  = Database::getCacheKey($model, $arguments, " ");
-            $key  = trim($key);
-            $keys = Database::getRedis($db)->keys($key."*");
+            $key  = trim(Database::getCacheKey($model, $arguments, " "));
+            $key .= "*";
+            $keys = Database::getRedis($db)->keys($key);
             foreach ($keys as $cKey) {
                 Database::getRedis($db)->delete($cKey);
             }

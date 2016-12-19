@@ -193,10 +193,11 @@ class Database implements DatabaseInterface
      */
     public static function getCacheKey(\Phalcon\Mvc\Model $model, $arguments, $prefix = \RedisPlugin\Mvc\Model::DEFAULT_PREFIX)
     {
-        $key  = $arguments["dbname"] .":". $arguments["host"] .":". $arguments["port"];
-        $key .= ":". $model->getSource();
-        $key .= ":". $prefix;
-        return $key;
+        return sprintf("%s:%s:%s",
+            self::generateServiceName($arguments),
+            $model->getSource(),
+            $prefix
+        );
     }
 
     /**
@@ -206,12 +207,25 @@ class Database implements DatabaseInterface
     private static function getServiceName(\Phalcon\Mvc\Model $model)
     {
         // config
-        $c = \Phalcon\DI::getDefault()
+        $config = \Phalcon\DI::getDefault()
             ->get("config")
             ->get("database")
             ->get($model->getReadConnectionService());
 
-        return $c["dbname"] .":". $c["host"] .":". $c["port"];
+        return self::generateServiceName($config);
+    }
+
+    /**
+     * @param  array $config
+     * @return string
+     */
+    private static function generateServiceName($config = array())
+    {
+        return sprintf("%s:%s:%s",
+            $config["dbname"],
+            $config["host"],
+            $config["port"]
+        );
     }
 
     /**
