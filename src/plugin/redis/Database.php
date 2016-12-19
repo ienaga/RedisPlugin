@@ -40,10 +40,14 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @return \Phalcon\Mvc\Model\TransactionInterface
+     * @return null|\Phalcon\Mvc\Model\TransactionInterface
      */
     public static function getTransaction(\Phalcon\Mvc\Model $model)
     {
+        if (!self::isTransaction()) {
+            return null;
+        }
+
         $service = self::getServiceName($model);
         if (!isset(self::$transactions[$service])) {
             /** @var \Phalcon\Mvc\Model\Transaction\Manager $manager */
