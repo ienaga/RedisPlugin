@@ -15,18 +15,21 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
     {
         parent::setUp();
 
+        // DI
+        $di = new Phalcon\Di\FactoryDefault();
+
         // config
         $config = new \Phalcon\Config();
         $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/redis.yml");
         $config->merge($yml->get("test"));
 
-        $di = new Phalcon\Di\FactoryDefault();
         $di->set("config", function () use ($config) { return $config; }, true);
 
         $dbService = new \RedisPlugin\Service();
         $dbService->registration();
 
         $di->setShared("modelsMetadata", function () {
+            var_dump($this->getConfig()->get("redis")->get("metadata")->toArray());
             return new \RedisPlugin\Mvc\Model\Metadata\Redis(
                 $this->getConfig()->get("redis")->get("metadata")->toArray()
             );
