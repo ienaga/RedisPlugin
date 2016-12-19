@@ -248,7 +248,7 @@ class Database implements DatabaseInterface
             if ($manager->has()) {
 
                 try {
-                    $transaction->rollback();
+                    $transaction->rollback($e->getMessage());
                 } catch (RedisPluginException $e) {
                     array_shift(self::$transactions);
                     self::rollback($e);
