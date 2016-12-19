@@ -3,8 +3,6 @@
 require_once __DIR__ . "/../src/mvc/model/metadata/Redis.php";
 require_once __DIR__ . "/MstItem.php";
 
-use \RedisPlugin\Mvc\Model\Metadata\Redis;
-
 class MetaDataTest extends \PHPUnit_Framework_TestCase
 {
 
@@ -32,7 +30,9 @@ class MetaDataTest extends \PHPUnit_Framework_TestCase
     {
         $di = \Phalcon\DI::getDefault();
         $di->setShared("modelsMetadata", function () use ($di) {
-            return new Redis($di->get("redis")->get("metadata")->toArray());
+            return new \RedisPlugin\Mvc\Model\Metadata\Redis(
+                $this->getConfig()->get("redis")->get("metadata")->toArray()
+            );
         });
         \Phalcon\DI::setDefault($di);
 
