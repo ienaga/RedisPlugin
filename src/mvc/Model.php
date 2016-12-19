@@ -2,11 +2,10 @@
 
 namespace RedisPlugin\Mvc;
 
-use RedisPlugin\Connection;
-use RedisPlugin\Database;
-use RedisPlugin\Mvc\Model\Criteria;
-use RedisPlugin\Exception\RedisPluginException;
-
+use \RedisPlugin\Connection;
+use \RedisPlugin\Database;
+use \RedisPlugin\Mvc\Model\Criteria;
+use \RedisPlugin\Exception\RedisPluginException;
 
 class Model extends \Phalcon\Mvc\Model
 {
@@ -596,7 +595,7 @@ class Model extends \Phalcon\Mvc\Model
         }
 
         $query = $parameters["query"];
-        if ($autoIndex) {
+        if (count($query) && $autoIndex) {
 
             $indexes = self::getIndexes();
 
@@ -606,9 +605,6 @@ class Model extends \Phalcon\Mvc\Model
                 foreach ($indexes as $key => $index) {
 
                     $columns = $index->getColumns();
-
-                    if (!isset($query[$columns[0]]))
-                        continue;
 
                     $chkQuery = array();
                     foreach ($columns as $column) {

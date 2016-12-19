@@ -2,8 +2,8 @@
 
 namespace RedisPlugin\Mvc\Model\Metadata;
 
-use RedisPlugin\Connection;
-use RedisPlugin\Mvc\Model;
+use \RedisPlugin\Connection;
+use \RedisPlugin\Mvc\Model;
 
 class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
 {

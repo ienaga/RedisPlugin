@@ -2,11 +2,11 @@
 
 namespace RedisPlugin;
 
-use Phalcon\Db\Adapter\Pdo\Mysql;
-use Phalcon\Mvc\Model\Transaction\Manager;
-use Phalcon\Events\Manager as EventManager;
-use Phalcon\Logger\Adapter\File;
-use Phalcon\Logger;
+use \Phalcon\Db\Adapter\Pdo\Mysql;
+use \Phalcon\Mvc\Model\Transaction\Manager;
+use \Phalcon\Events\Manager as EventManager;
+use \Phalcon\Logger\Adapter\File;
+use \Phalcon\Logger;
 
 class Service implements ServiceInterface
 {

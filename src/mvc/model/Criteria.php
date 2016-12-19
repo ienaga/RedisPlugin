@@ -2,8 +2,6 @@
 
 namespace RedisPlugin\Mvc\Model;
 
-use RedisPlugin\Mvc\Model;
-
 class Criteria implements CriteriaInterface
 {
 
