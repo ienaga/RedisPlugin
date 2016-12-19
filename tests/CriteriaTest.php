@@ -60,9 +60,48 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals(count($mstItem), 3);
 
-        $names = array("item_1", "item_5", "item_5");
+        $names = array("item_1", "item_3", "item_5");
         foreach ($mstItem as $idx => $item) {
             $this->assertEquals($item->getName(), $names[$idx]);
         }
     }
+
+    /**
+     * update test
+     */
+    public function testUpdate()
+    {
+        MstItem::criteria()
+            ->set("name", "update")
+            ->add("level", 1)
+            ->update();
+
+        /** @var MstItem[] $mstItem */
+        $mstItem = MstItem::criteria()
+            ->add("level", 1)
+            ->find();
+
+        $this->assertEquals(count($mstItem), 3);
+        foreach ($mstItem as $idx => $item) {
+            $this->assertEquals($item->getName(), "update");
+        }
+    }
+
+    /**
+     * test delete
+     */
+    public function testDelete()
+    {
+        MstItem::criteria()
+            ->add("level", 1)
+            ->delete();
+
+        /** @var MstItem[] $mstItem */
+        $mstItem = MstItem::criteria()
+            ->add("level", 1)
+            ->find();
+
+        $this->assertEquals(count($mstItem), 0);
+    }
+
 }
