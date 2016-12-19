@@ -2,6 +2,7 @@
 
 require_once __DIR__ . "/../src/mvc/model/Criteria.php";
 require_once __DIR__ . "/../src/plugin/redis/Service.php";
+require_once __DIR__ . "/../src/mvc/model/metadata/Redis.php";
 require_once __DIR__ . "/MstItem.php";
 
 class CriteriaTest extends \PHPUnit_Framework_TestCase
