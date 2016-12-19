@@ -667,7 +667,7 @@ class Model extends \Phalcon\Mvc\Model
         } else if (is_int($column)) {
 
             $column = "";
-            $value["operator"] = Criteria::OR;
+            $value["operator"] = Criteria::ADD_OR;
 
         } else {
 
@@ -726,7 +726,7 @@ class Model extends \Phalcon\Mvc\Model
 
                         break;
 
-                    case $operator === Criteria::OR:
+                    case $operator === Criteria::ADD_OR:
 
                         self::$_keys[] = $operator;
 

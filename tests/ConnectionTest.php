@@ -14,9 +14,11 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
         parent::setUp();
 
         // config
-        $config = require_once __DIR__ . "/config.php";
-        var_dump($config);
-        $config = new \Phalcon\Config($config);
+        $config = new \Phalcon\Config();
+        $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/redis.yml");
+        $config->merge($yml->get("dev"));
+
+        \Phalcon\DI::getDefault()->remove("config");
         \Phalcon\DI::getDefault()->set("config", function () use ($config) { return $config; }, true);
     }
 

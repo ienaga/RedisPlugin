@@ -19,7 +19,7 @@ class Criteria implements CriteriaInterface
     const IN            = "IN";
     const NOT_IN        = "NOT IN";
     const BETWEEN       = "BETWEEN";
-    const OR            = "OR";
+    const ADD_OR        = "OR";
     const ASC           = "ASC";
     const DESC          = "DESC";
 
@@ -208,7 +208,7 @@ class Criteria implements CriteriaInterface
     public function addOr($column, $value, $operator = self::EQUAL)
     {
         $this->conditions["query"][] = array(
-            "operator" => self::OR,
+            "operator" => self::ADD_OR,
             $column    => $this->queryToArray($value, $operator)
         );
 
