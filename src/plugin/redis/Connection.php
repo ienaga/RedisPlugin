@@ -7,15 +7,21 @@ use \RedisPlugin\Exception\RedisPluginException;
 
 class Connection implements ConnectionInterface
 {
+
+    /**
+     * @var string
+     */
+    const CONNECTION_CACHE_KEY = "%s:%s:%s";
+
     /**
      * @var \RedisPlugin\Connection
      */
-    private static $instance = null;
+    private static $_instance = null;
 
     /**
      * @var Redis
      */
-    protected static $redis = null;
+    protected static $current_client = null;
 
     /**
      * @var Redis[]
@@ -36,9 +42,9 @@ class Connection implements ConnectionInterface
      */
     static function getInstance()
     {
-        return (self::$instance === null)
-            ? self::$instance = new static
-            : self::$instance;
+        return (self::$_instance === null)
+            ? self::$_instance = new static
+            : self::$_instance;
     }
 
     /**
@@ -75,15 +81,7 @@ class Connection implements ConnectionInterface
         $port   = (isset($config["port"]))   ? $config["port"]   : self::PORT;
         $select = (isset($config["select"])) ? $config["select"] : self::SELECT;
 
-        // cache key
-        $key = $host .":". $port .":". $select;
-
-        // cache set
-        if (!$this->hasConnections($key)) {
-            $this->connections[$key] = $this->createClient($host, $port, $select);
-        }
-
-        self::$redis = $this->connections[$key];
+        self::$current_client = $this->createClient($host, $port, $select);
 
         return $this;
     }
@@ -105,6 +103,13 @@ class Connection implements ConnectionInterface
      */
     public function createClient($host = self::HOST, $port = self::PORT, $select = self::SELECT)
     {
+        // local cache key
+        $key = $this->getConnectionCacheKey($host, $port, $select);
+
+        if ($this->hasConnections($key)) {
+            return $this->connections[$key];
+        }
+
         try {
             $redis = new Redis();
             $redis->pconnect($host, $port, 0, "x");
@@ -114,7 +119,21 @@ class Connection implements ConnectionInterface
             die($e->getMessage());
         }
 
+        // set local cache
+        $this->connections[$key] = $redis;
+
         return $redis;
+    }
+
+    /**
+     * @param  string $host
+     * @param  int    $port
+     * @param  int    $select
+     * @return string
+     */
+    public function getConnectionCacheKey($host = self::HOST, $port = self::PORT, $select = self::SELECT)
+    {
+        return sprintf(self::CONNECTION_CACHE_KEY, $host, $port, $select);
     }
 
     /**
@@ -122,7 +141,7 @@ class Connection implements ConnectionInterface
      */
     public function getRedis()
     {
-        return self::$redis;
+        return self::$current_client;
     }
 
     /**
@@ -154,7 +173,7 @@ class Connection implements ConnectionInterface
             $redis->close();
         }
         // local params reset
-        $this->connections = array();
-        self::$redis       = null;
+        $this->connections    = array();
+        self::$current_client = null;
     }
 }

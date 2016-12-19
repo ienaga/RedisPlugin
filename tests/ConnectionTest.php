@@ -33,9 +33,19 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * test connection paten 1
+     * local cache key test
      */
-    public function testConnection1()
+    public function testConnectionCacheKey()
+    {
+        $instance = Connection::getInstance();
+        $key = $instance->getConnectionCacheKey("127.0.0.1", 6379, 0);
+        $this->assertEquals($key, "127.0.0.1:6379:0");
+    }
+
+    /**
+     * test has connection
+     */
+    public function testHasConnection()
     {
         $redis = Connection::getInstance();
         $bool  = $redis
@@ -45,9 +55,9 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * test connection paten 2
+     * test connection paten 1
      */
-    public function testConnection2()
+    public function testConnection1()
     {
         $redis = Connection::getInstance();
         $bool  = $redis
@@ -57,9 +67,9 @@ class ConnectionTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * test connection paten 3
+     * test connection paten 2
      */
-    public function testConnection3()
+    public function testConnection2()
     {
         $redis = Connection::getInstance();
         $bool  = $redis

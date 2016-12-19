@@ -40,6 +40,14 @@ interface ConnectionInterface
      * @param  string $host
      * @param  int    $port
      * @param  int    $select
+     * @return string
+     */
+    public function getConnectionCacheKey($host = self::HOST, $port = self::PORT, $select = self::SELECT);
+
+    /**
+     * @param  string $host
+     * @param  int    $port
+     * @param  int    $select
      * @return \Redis
      */
     public function createClient($host = self::HOST, $port = self::PORT, $select = self::SELECT);
