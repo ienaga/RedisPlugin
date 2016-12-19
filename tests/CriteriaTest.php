@@ -2,8 +2,11 @@
 
 require_once __DIR__ . "/../src/mvc/model/Criteria.php";
 require_once __DIR__ . "/../src/plugin/redis/Service.php";
+require_once __DIR__ . "/../src/plugin/redis/Database.php";
 require_once __DIR__ . "/../src/mvc/model/metadata/Redis.php";
 require_once __DIR__ . "/MstItem.php";
+
+use \RedisPlugin\Database;
 
 class CriteriaTest extends \PHPUnit_Framework_TestCase
 {
@@ -74,7 +77,8 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
         $count = MstItem::criteria()
             ->add("level", 1)
             ->count();
-        $this->assertEquals($count, 0);
+
+        $this->assertEquals($count, 3);
     }
 
     /**
@@ -94,10 +98,12 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
      */
     public function testUpdate()
     {
+        Database::beginTransaction();
         MstItem::criteria()
             ->set("name", "update")
             ->add("level", 1)
             ->update();
+        Database::commit();
 
         /** @var MstItem[] $mstItem */
         $mstItem = MstItem::criteria()
@@ -115,9 +121,11 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
      */
     public function testDelete()
     {
+        Database::beginTransaction();
         MstItem::criteria()
             ->add("level", 1)
             ->delete();
+        Database::commit();
 
         /** @var MstItem[] $mstItem */
         $mstItem = MstItem::criteria()

@@ -1079,7 +1079,7 @@ class Model extends \Phalcon\Mvc\Model
         // bind
         $bind  = $params["bind"];
         foreach ($bind as $column => $value) {
-            $where = str_replace(":".$column.":", $value, $where);
+            $where = str_replace(":". $column .":", $value, $where);
         }
 
         // update
@@ -1087,7 +1087,7 @@ class Model extends \Phalcon\Mvc\Model
         $sets   = [];
         foreach ($update as $column => $value) {
             if (is_string($value)) {
-                $value = "\"".$value."\"";
+                $value = "\"". $value ."\"";
             } else if ($value === null) {
                 $value = "NULL";
             }
@@ -1099,11 +1099,8 @@ class Model extends \Phalcon\Mvc\Model
         // execute
         $service = $model->getReadConnectionService();
         $adapter = \Phalcon\DI::getDefault()->getShared($service);
-        $result  = $adapter->execute(
-            "UPDATE "  . $model->getSource()
-            ." SET "   . $set
-            ." WHERE " . $where
-        );
+        $sql     = sprintf("UPDATE %s SET %s WHERE %s", $model->getSource(), $set, $where);
+        $result  = $adapter->execute($sql);
 
         // cache delete
         self::cacheAllDelete($model);
@@ -1137,16 +1134,14 @@ class Model extends \Phalcon\Mvc\Model
         // bind
         $bind  = $params["bind"];
         foreach ($bind as $column => $value) {
-            $where = str_replace(":".$column.":", $value, $where);
+            $where = str_replace(":". $column .":", $value, $where);
         }
 
         // execute
         $service = $model->getReadConnectionService();
         $adapter = \Phalcon\DI::getDefault()->getShared($service);
-        $result  = $adapter->execute(
-            "DELETE FROM " . $model->getSource()
-            ." WHERE "     . $where
-        );
+        $sql     = sprintf("DELETE FROM %s WHERE %s", $model->getSource(), $where);
+        $result  = $adapter->execute($sql);
 
         // cache delete
         self::cacheAllDelete($model);
