@@ -98,15 +98,25 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
      */
     public function testUpdate()
     {
-        MstItem::criteria()
-            ->set("name", "update")
-            ->add("level", 1)
-            ->update();
+        try {
+            Database::beginTransaction();
+
+            MstItem::criteria()
+                ->set("name", "update")
+                ->set("mode", 3)
+                ->add("level", 1)
+                ->update();
+
+            Database::commit();
+        } catch (\Exception $e) {
+
+            Database::rollback($e);
+
+        }
 
         /** @var MstItem[] $mstItem */
         $mstItem = MstItem::criteria()
             ->add("level", 1)
-            ->cache(false)
             ->find();
 
         $this->assertEquals(count($mstItem), 3);
@@ -120,14 +130,23 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
      */
     public function testDelete()
     {
-        MstItem::criteria()
-            ->add("level", 1)
-            ->delete();
+        try {
+            Database::beginTransaction();
+
+            MstItem::criteria()
+                ->add("level", 1)
+                ->delete();
+
+            Database::commit();
+        } catch (\Exception $e) {
+
+            Database::rollback($e);
+
+        }
 
         /** @var MstItem[] $mstItem */
         $mstItem = MstItem::criteria()
             ->add("level", 1)
-            ->cache(false)
             ->find();
 
         $this->assertEquals(count($mstItem), 0);

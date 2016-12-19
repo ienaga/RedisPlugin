@@ -1094,7 +1094,7 @@ class Model extends \Phalcon\Mvc\Model
 
             $sets[] = $column ." = ". $value;
         }
-        $set = implode(",", $sets);
+        $set = implode(", ", $sets);
 
         // execute
         $service = $model->getReadConnectionService();
@@ -1169,6 +1169,8 @@ class Model extends \Phalcon\Mvc\Model
             }
 
         }
+
+        self::localCacheClear();
     }
 
     /**
