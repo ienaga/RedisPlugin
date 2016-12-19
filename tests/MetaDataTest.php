@@ -36,7 +36,7 @@ class MetaDataTest extends \PHPUnit_Framework_TestCase
     /**
      * test meta data
      */
-    public function testModelsMetadata()
+    public function testReadIndexes()
     {
         $model = MstItem::criteria()
             ->add("id", 1)
