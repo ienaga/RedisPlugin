@@ -21,7 +21,7 @@ before_install:
   - bin/install-phalcon.sh 3.0.x
 
 before_script:
-  - mysql -uroot < tests/schema.sql
+  - mysql -uroot < tests/config/schema.sql
 
 script:
   - vendor/bin/phpunit
