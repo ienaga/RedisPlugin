@@ -45,5 +45,9 @@ interface ModelInterface
      */
     public static function find($parameters = null);
 
-
+    /**
+     * @param  array $parameters
+     * @return array
+     */
+    public static function buildParameters($parameters);
 }

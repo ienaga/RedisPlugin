@@ -4,7 +4,7 @@ require_once __DIR__ . "/../src/mvc/model/Criteria.php";
 require_once __DIR__ . "/../src/plugin/redis/Service.php";
 require_once __DIR__ . "/../src/plugin/redis/Database.php";
 require_once __DIR__ . "/../src/mvc/model/metadata/Redis.php";
-require_once __DIR__ . "/MstItem.php";
+require_once __DIR__ . "/model/MstItem.php";
 
 use \RedisPlugin\Database;
 
@@ -22,7 +22,7 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
 
         // config
         $config = new \Phalcon\Config();
-        $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/redis.yml");
+        $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/config/redis.yml");
         $config->merge($yml->get("test"));
         $di->set("config", function () use ($config) { return $config; }, true);
 

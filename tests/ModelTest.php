@@ -1,9 +1,14 @@
 <?php
 
 require_once __DIR__ . "/../src/mvc/Model.php";
-require_once __DIR__ . "/MstItem.php";
+require_once __DIR__ . "/../src/plugin/redis/Database.php";
+require_once __DIR__ . "/model/MstItem.php";
+require_once __DIR__ . "/model/AdminUser.php";
+require_once __DIR__ . "/model/AdminConfigDb.php";
+require_once __DIR__ . "/model/User.php";
 
 use \RedisPlugin\Mvc\Model;
+use \RedisPlugin\Database;
 
 class ModelTest extends \PHPUnit_Framework_TestCase
 {
@@ -19,7 +24,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         // config
         $config = new \Phalcon\Config();
-        $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/redis.yml");
+        $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/config/redis.yml");
         $config->merge($yml->get("test"));
         $di->set("config", function () use ($config) { return $config; }, true);
 
@@ -79,5 +84,89 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $query = Model::buildParameters($param);
 
         $this->assertEquals($query[0], "[id] = :id: AND [mode] = :mode: AND [level] = :level:");
+    }
+
+    /**
+     * test shard
+     */
+    public function testShard()
+    {
+        try {
+
+            Database::beginTransaction();
+
+            $totalGravity   = AdminConfigDb::criteria()->sum("gravity");
+
+            /** @var AdminConfigDb[] $adminDbConfigs */
+            $adminDbConfigs = AdminConfigDb::criteria()->find();
+
+            for ($i = 1; $i <= 10; $i++) {
+                // 当選番号
+                $prizeNo = mt_rand(0, $totalGravity);
+
+                // 抽選
+                $gravity        = 0;
+                foreach ($adminDbConfigs as $adminDbConfig) {
+
+                    $gravity += $adminDbConfig->getGravity();
+
+                    if ($gravity >= $prizeNo) {
+                        $configId = $adminDbConfig->getId();
+                        break;
+                    }
+                }
+
+                // 登録
+                $adminUser = new AdminUser();
+                $adminUser->setAdminConfigDbId($configId);
+                $adminUser->save();
+
+                $user = new User();
+                $user->setId($adminUser->getId());
+                $user->setName("test_user_".$i);
+                $user->save();
+            }
+
+            Database::commit();
+
+        } catch (\Exception $e) {
+
+            Database::rollback($e);
+
+        }
+
+        sleep(1);
+
+        /** @var User $user */
+        $user = User::criteria()
+            ->add("id", 1)
+            ->findFirst();
+
+        $this->assertEquals($user->getName(), "test_user_1");
+
+        try {
+
+            Database::beginTransaction();
+
+            $user->setName("update_user_1");
+            $user->save();
+
+            Database::commit();
+
+        } catch (\Exception $e) {
+
+            Database::rollback($e);
+
+        }
+
+        sleep(1);
+
+        /** @var User $user */
+        $user = User::criteria()
+            ->add("id", 1)
+            ->findFirst();
+
+        $this->assertEquals($user->getName(), "update_user_1");
+
     }
 }

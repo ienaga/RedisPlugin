@@ -15,7 +15,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
 
         // config
         $config = new \Phalcon\Config();
-        $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/redis.yml");
+        $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/config/redis.yml");
         $config->merge($yml->get("test"));
         $di->set("config", function () use ($config) { return $config; }, true);
     }

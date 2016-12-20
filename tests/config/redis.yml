@@ -1,0 +1,157 @@
+test:
+  database:
+    dbAdminMaster:
+      adapter:     Mysql
+      host:        127.0.0.1
+      port:        3306
+      username:    root
+      password:
+      dbname:      admin
+      options:
+        20:        false
+      charset:     utf8
+      transaction: true
+    dbAdminSlave:
+      adapter:     Mysql
+      host:        127.0.0.1
+      port:        3306
+      username:    root
+      password:
+      dbname:      admin
+      options:
+        20:        false
+      charset:     utf8
+      transaction: false
+    dbCommonMaster:
+      adapter:     Mysql
+      host:        127.0.0.1
+      port:        3306
+      username:    root
+      password:
+      dbname:      common
+      options:
+        20:        false
+      charset:     utf8
+      transaction: true
+    dbCommonSlave:
+      adapter:     Mysql
+      host:        127.0.0.1
+      port:        3306
+      username:    root
+      password:
+      dbname:      common
+      options:
+        20:        false
+      charset:     utf8
+      transaction: false
+    dbUser1Master:
+      adapter:     Mysql
+      host:        127.0.0.1
+      port:        3306
+      username:    root
+      password:
+      dbname:      user1
+      options:
+        20:        false
+      charset:     utf8
+      transaction: true
+    dbUser1Slave:
+      adapter:     Mysql
+      host:        127.0.0.1
+      port:        3306
+      username:    root
+      password:
+      dbname:      user1
+      options:
+        20:        false
+      charset:     utf8
+      transaction: false
+    dbUser2Master:
+      adapter:     Mysql
+      host:        127.0.0.1
+      port:        3306
+      username:    root
+      password:
+      dbname:      user2
+      options:
+        20:        false
+      charset:     utf8
+      transaction: true
+    dbUser2Slave:
+      adapter:     Mysql
+      host:        127.0.0.1
+      port:        3306
+      username:    root
+      password:
+      dbname:      user2
+      options:
+        20:        false
+      charset:     utf8
+      transaction: false
+
+  redis:
+    logger:
+      logging: false
+      output:  /
+    enabled:   true
+    autoIndex: true
+    prefix:
+      columns:
+        - [account, password]
+        - user_id
+        - id
+    common:
+      enabled: true
+      service:
+        name: dbCommon
+      dbs:
+        - mst_
+    shard:
+      enabled: true
+    admin:
+      service:
+        name: dbAdmin
+      model: AdminUser
+      column: admin_db_config_id
+      dbs:
+        - admin_
+      control:
+        model: AdminDbConfig
+        column: name
+    server:
+      dbAdminMaster:
+        host:   127.0.0.1
+        port:   6379
+        select: 0
+      dbAdminSlave:
+        host:   127.0.0.1
+        port:   6379
+        select: 1
+      dbCommonMaster:
+        host:   127.0.0.1
+        port:   6379
+        select: 0
+      dbCommonSlave:
+        host:   127.0.0.1
+        port:   6379
+        select: 1
+      dbUser1Master:
+        host:   127.0.0.1
+        port:   6379
+        select: 0
+      dbUser1Slave:
+        host:   127.0.0.1
+        port:   6379
+        select: 1
+      dbUser2Master:
+        host:   127.0.0.1
+        port:   6379
+        select: 0
+      dbUser2Slave:
+        host:   127.0.0.1
+        port:   6379
+        select: 1
+    metadata:
+      host:   127.0.0.1
+      port:   6379
+      select: 0

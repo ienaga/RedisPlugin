@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . "/../src/mvc/model/metadata/Redis.php";
-require_once __DIR__ . "/MstItem.php";
+require_once __DIR__ . "/model/MstItem.php";
 
 class MetaDataTest extends \PHPUnit_Framework_TestCase
 {
@@ -17,7 +17,7 @@ class MetaDataTest extends \PHPUnit_Framework_TestCase
 
         // config
         $config = new \Phalcon\Config();
-        $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/redis.yml");
+        $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/config/redis.yml");
         $config->merge($yml->get("test"));
         $di->set("config", function () use ($config) { return $config; }, true);
 
