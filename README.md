@@ -374,7 +374,7 @@ DELETE FROM `robot` WHERE `user_status` = 1 AND `power` >= 100;
 ```php
 class Robot extends \RedisPlugin\Mvc\Model {}
 
-Robot::criteria()
+$count = Robot::criteria()
     ->add("user_status", 1)
     ->add("power", 100)
     ->add("status", 2)
@@ -387,7 +387,7 @@ Robot::criteria()
 ```php
 class Robot extends \RedisPlugin\Mvc\Model {}
 
-Robot::criteria()
+$sum = Robot::criteria()
     ->add("user_status", 1)
     ->sum("price");
 ```
@@ -395,32 +395,28 @@ Robot::criteria()
 
 ## autoIndex
 
+e.g. PRIMARY = type, INDEX = id, status
 ※autoIndexをtrueにする事で、PRIMARYもしくはINDEXに一番マッチするクエリに並び替えて発行。
 
+ 
 ```php
-class Robot extends \Phalcon\Mvc\Model
-{
-    // e.g. PRIMARY = type, INDEX = id, status
+class Robot extends \Phalcon\Mvc\Model {}
 
-    public static function find($id, $status, $name)
-    {
-        return self::criteria()
-            ->limit(10)
-            ->add('name', $name)
-            ->group('type')
-            ->add('id', $id)
-            ->order('id DESC')
-            ->add('status', $status)
-            ->find();
-    }
-}
+$robot = Robot::criteria()
+    ->limit(10)
+    ->add("type", $type)
+    ->addGroup("type")
+    ->addOrder("id", "DESC")
+    ->add("status", $status)
+    ->add("id", $id)
+    ->find();
 ```
 
 ```mysql
-SELECT * FROM `table` 
+SELECT * FROM `robot` 
 WHERE `id` = :id: 
-AND `status_number` = :status: 
 AND `type` = :type:
+AND `status` = :status: 
 GROUP BY `type`
 ORDER BY `id` DESC
 LIMIT 10
