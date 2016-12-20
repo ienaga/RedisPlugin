@@ -14,7 +14,7 @@ class AdminUser extends Model
     /**
      * @var int
      */
-    protected $admin_config_db_id;
+    protected $admin_db_config_id;
 
     /**
      * @return int
@@ -35,16 +35,16 @@ class AdminUser extends Model
     /**
      * @return int
      */
-    public function getAdminConfigDbId()
+    public function getAdminDbConfigId()
     {
-        return $this->admin_config_db_id;
+        return $this->admin_db_config_id;
     }
 
     /**
-     * @param int $admin_config_db_id
+     * @param int $admin_db_config_id
      */
-    public function setAdminConfigDbId($admin_config_db_id)
+    public function setAdminDbConfigId($admin_db_config_id)
     {
-        $this->admin_config_db_id = $admin_config_db_id;
+        $this->admin_db_config_id = $admin_db_config_id;
     }
 }
