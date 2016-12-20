@@ -1,5 +1,6 @@
 <?php
 
+require_once __DIR__ . "/../src/mvc/model/Criteria.php";
 require_once __DIR__ . "/../src/mvc/Model.php";
 require_once __DIR__ . "/../src/plugin/redis/Database.php";
 require_once __DIR__ . "/model/MstIndex.php";
@@ -12,6 +13,7 @@ require_once __DIR__ . "/model/MstEqual.php";
 
 
 use \RedisPlugin\Mvc\Model;
+use \RedisPlugin\Mvc\Model\Criteria;
 use \RedisPlugin\Database;
 
 class ModelTest extends \PHPUnit_Framework_TestCase
@@ -224,6 +226,28 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         foreach ($mstEqual as $key => $equal) {
             $this->assertEquals($equal->getName(), "equal". (4+$key));
+        }
+    }
+
+    /**
+     * test Not Equal
+     */
+    public function testNotEqual()
+    {
+        /** @var MstNotEqual $mstNotEqual */
+        $mstNotEqual = MstNotEqual::criteria()
+            ->add("mode", 1, Criteria::NOT_EQUAL)
+            ->findFirst();
+
+        $this->assertEquals($mstNotEqual->getMode(), 0);
+
+        /** @var MstNotEqual[] $mstNotEqual */
+        $mstNotEqual = MstNotEqual::criteria()
+            ->add("type", 1, Criteria::NOT_EQUAL)
+            ->find();
+
+        foreach ($mstNotEqual as $notEqual) {
+            $this->assertEquals($notEqual->getType(), 2);
         }
     }
 }

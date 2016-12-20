@@ -78,6 +78,27 @@ INSERT INTO `common`.`mst_equal` (`id`, `name`, `type`) VALUES
 
 
 
+CREATE TABLE IF NOT EXISTS `common`.`mst_not_equal` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `type` int(10) unsigned NOT NULL,
+  `mode` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+ALTER TABLE `common`.`mst_not_equal`
+  ADD KEY `type_idx` (`type`) USING BTREE,
+  ADD KEY `mode_idx` (`mode`) USING BTREE;
+
+INSERT INTO `common`.`mst_not_equal` (`id`, `name`, `type`, `mode`) VALUES
+  (1, 'not_equal1', 1, 0),
+  (2, 'not_equal2', 1, 1),
+  (3, 'not_equal3', 1, 1),
+  (4, 'not_equal4', 2, 1),
+  (5, 'not_equal5', 2, 1),
+  (6, 'not_equal6', 2, 1);
+
+
 CREATE TABLE IF NOT EXISTS `user1`.`user` (
   `id` int(10) unsigned NOT NULL,
   `name` varchar(50) NOT NULL,
