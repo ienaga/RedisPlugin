@@ -7,6 +7,9 @@ require_once __DIR__ . "/model/AdminUser.php";
 require_once __DIR__ . "/model/AdminDbConfig.php";
 require_once __DIR__ . "/model/User.php";
 require_once __DIR__ . "/model/UserItem.php";
+require_once __DIR__ . "/model/MstEqual.php";
+
+
 
 use \RedisPlugin\Mvc\Model;
 use \RedisPlugin\Database;
@@ -200,5 +203,27 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             ->findFirst();
 
         $this->assertEquals($userItem->getItemId(), 10);
+    }
+
+    /**
+     * test Equal
+     */
+    public function testEqual()
+    {
+        /** @var MstEqual $mstEqual */
+        $mstEqual = MstEqual::criteria()
+            ->add("id", 1)
+            ->findFirst();
+
+        $this->assertEquals($mstEqual->getName(), "equal1");
+
+        /** @var MstEqual[] $mstEqual */
+        $mstEqual = MstEqual::criteria()
+            ->add("type", 2)
+            ->find();
+
+        foreach ($mstEqual as $key => $equal) {
+            $this->assertEquals($equal->getName(), "equal". (4+$key));
+        }
     }
 }
