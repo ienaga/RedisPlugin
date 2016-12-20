@@ -29,11 +29,14 @@ CREATE TABLE IF NOT EXISTS `common`.`mst_index` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
   `type` int(10) unsigned NOT NULL,
+  `level` int(10) unsigned NOT NULL,
+  `mode` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 ALTER TABLE `common`.`mst_index`
-  ADD KEY `type_idx` (`type`) USING BTREE;
+  ADD KEY `type_idx` (`type`) USING BTREE,
+  ADD KEY `level_mode_idx` (`level`, `mode`) USING BTREE;
 
 
 
@@ -45,12 +48,12 @@ CREATE TABLE IF NOT EXISTS `common`.`mst_database` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 INSERT INTO `common`.`mst_database` (`id`, `name`) VALUES
-  (1, 'mst_database_1'),
-  (2, 'mst_database_2'),
-  (3, 'mst_database_3'),
-  (4, 'mst_database_4'),
-  (5, 'mst_database_5'),
-  (6, 'mst_database_6');
+  (1, 'database_1'),
+  (2, 'database_2'),
+  (3, 'database_3'),
+  (4, 'database_4'),
+  (5, 'database_5'),
+  (6, 'database_6');
 
 
 
@@ -58,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `common`.`mst_equal` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
   `type` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY `id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 ALTER TABLE `common`.`mst_equal`

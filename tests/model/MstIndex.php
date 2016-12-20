@@ -22,6 +22,16 @@ class MstIndex extends Model
     protected $type;
 
     /**
+     * @var int
+     */
+    protected $level;
+
+    /**
+     * @var int
+     */
+    protected $mode;
+
+    /**
      * @return int
      */
     public function getId()
@@ -68,4 +78,38 @@ class MstIndex extends Model
     {
         $this->type = $type;
     }
+
+    /**
+     * @return int
+     */
+    public function getLevel()
+    {
+        return $this->level;
+    }
+
+    /**
+     * @param int $level
+     */
+    public function setLevel($level)
+    {
+        $this->level = $level;
+    }
+
+    /**
+     * @return int
+     */
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
+    /**
+     * @param int $mode
+     */
+    public function setMode($mode)
+    {
+        $this->mode = $mode;
+    }
+
+
 }

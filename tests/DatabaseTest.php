@@ -106,7 +106,7 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
             ->add("id", 4)
             ->findFirst();
 
-        $this->assertEquals($mstDatabase->getName(), "mst_database_4");
+        $this->assertEquals($mstDatabase->getName(), "database_4");
     }
 
 

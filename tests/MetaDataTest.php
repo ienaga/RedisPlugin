@@ -45,6 +45,6 @@ class MetaDataTest extends \PHPUnit_Framework_TestCase
 
         $model   = new MstIndex();
         $indexes = $model->getModelsMetadata()->readIndexes($model->getSource());
-        $this->assertEquals(count($indexes), 2);
+        $this->assertEquals(count($indexes), 3);
     }
 }

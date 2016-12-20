@@ -2,7 +2,7 @@
 
 require_once __DIR__ . "/../src/mvc/Model.php";
 require_once __DIR__ . "/../src/plugin/redis/Database.php";
-require_once __DIR__ . "/model/MstItem.php";
+require_once __DIR__ . "/model/MstIndex.php";
 require_once __DIR__ . "/model/AdminUser.php";
 require_once __DIR__ . "/model/AdminDbConfig.php";
 require_once __DIR__ . "/model/User.php";
@@ -40,8 +40,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             );
         });
 
-        // cache
-        MstItem::criteria()->find();
+        // meta data cache
+        MstIndex::criteria()->find();
     }
 
     /**
@@ -49,14 +49,15 @@ class ModelTest extends \PHPUnit_Framework_TestCase
      */
     public function testIndexes1()
     {
-        $criteria = MstItem::criteria()
+        $criteria = MstIndex::criteria()
             ->add("mode", 1)
+            ->add("level", 2)
             ->add("id", 2);
 
         $param = $criteria->getConditions();
         $query = Model::buildParameters($param);
 
-        $this->assertEquals($query[0], "[id] = :id: AND [mode] = :mode:");
+        $this->assertEquals($query[0], "[id] = :id: AND [mode] = :mode: AND [level] = :level:");
     }
 
     /**
@@ -64,14 +65,15 @@ class ModelTest extends \PHPUnit_Framework_TestCase
      */
     public function testIndexes2()
     {
-        $criteria = MstItem::criteria()
-            ->add("mode", 1)
-            ->add("level", 2);
+        $criteria = MstIndex::criteria()
+            ->add("name", "test")
+            ->add("mode", 10)
+            ->add("type", 2);
 
         $param = $criteria->getConditions();
         $query = Model::buildParameters($param);
 
-        $this->assertEquals($query[0], "[level] = :level: AND [mode] = :mode:");
+        $this->assertEquals($query[0], "[type] = :type: AND [name] = :name: AND [mode] = :mode:");
     }
 
     /**
@@ -79,15 +81,15 @@ class ModelTest extends \PHPUnit_Framework_TestCase
      */
     public function testIndexes3()
     {
-        $criteria = MstItem::criteria()
+        $criteria = MstIndex::criteria()
             ->add("mode", 1)
             ->add("level", 2)
-            ->add("id", 6);
+            ->add("name", "test");
 
         $param = $criteria->getConditions();
         $query = Model::buildParameters($param);
 
-        $this->assertEquals($query[0], "[id] = :id: AND [mode] = :mode: AND [level] = :level:");
+        $this->assertEquals($query[0], "[level] = :level: AND [mode] = :mode: AND [name] = :name:");
     }
 
     /**
