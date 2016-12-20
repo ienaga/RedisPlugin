@@ -943,6 +943,7 @@ class Model extends \Phalcon\Mvc\Model
     /**
      * @param  mixed $primary_key
      * @return string
+     * @throws RedisPluginException
      */
     private static function getAdminConfigName($primary_key)
     {
@@ -973,6 +974,12 @@ class Model extends \Phalcon\Mvc\Model
         $configClass = $class::criteria()
             ->add($primary, $primary_key)
             ->findFirst();
+
+        if (!$configClass) {
+            throw new RedisPluginException(
+                sprintf("Not Found Admin Config: %s : %s", $primary, $primary_key)
+            );
+        }
 
         // local cache
         self::$_config_class_cache[$primary_key] = ($configClass)
