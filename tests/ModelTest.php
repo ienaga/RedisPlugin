@@ -95,7 +95,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
             Database::beginTransaction();
 
-            $totalGravity   = AdminConfigDb::criteria()->sum("gravity");
+            $totalGravity = AdminConfigDb::criteria()->sum("gravity");
 
             /** @var AdminConfigDb[] $adminDbConfigs */
             $adminDbConfigs = AdminConfigDb::criteria()->find();
@@ -105,7 +105,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
                 $prizeNo = mt_rand(0, $totalGravity);
 
                 // 抽選
-                $gravity        = 0;
+                $gravity  = 0;
+                $configId = null;
                 foreach ($adminDbConfigs as $adminDbConfig) {
 
                     $gravity += $adminDbConfig->getGravity();
@@ -123,7 +124,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
                 $user = new User();
                 $user->setId($adminUser->getId());
-                $user->setName("test_user_".$i);
+                $user->setName("test_user_". $i);
                 $user->save();
             }
 

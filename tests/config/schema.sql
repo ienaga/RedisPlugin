@@ -7,7 +7,7 @@ USE `admin`;
 
 CREATE TABLE IF NOT EXISTS `admin_user` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `admin_config_db_id` tinyint(3) unsigned NOT NULL COMMENT 'AdminConfigDb.ID',
+  `admin_config_db_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
