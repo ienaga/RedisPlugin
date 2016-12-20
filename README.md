@@ -10,7 +10,7 @@ RedisPlugin for Phalcon (The correspondence of MySQL sharding.)
 ```json
 {
     "require": {
-       "ienaga/phalcon-redis-plugin": "*"
+       "ienaga/phalcon-redis-plugin": "2.*"
     }
 }
 ```
@@ -20,7 +20,7 @@ RedisPlugin for Phalcon (The correspondence of MySQL sharding.)
 
 PHP 5.x/7.x
 
-Phalcon 1.x/2.x/3.x 
+Phalcon 3.x 
 
 
 ## phpredis and YAML
@@ -154,7 +154,7 @@ dev:
         name: dbCommon
 
       dbs: # e.g.  master_, access_log
-        - master_
+        - mst_
 
     # Sharding設定
     shard:
@@ -173,17 +173,12 @@ dev:
       # e.g.
       #    CREATE TABLE IF NOT EXISTS `admin_user` (
       #      `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-      #      `social_id` varchar(255) NOT NULL COMMENT 'ソーシャルID',
-      #      `admin_config_db_id` tinyint(3) unsigned NOT NULL COMMENT 'AdminConfigDb.ID',
-      #      `admin_flag` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '0=一般、1=管理者',
-      #      `status_number` tinyint(3) unsigned NOT NULL DEFAULT '0',
-      #      `created_at` datetime NOT NULL,
-      #      `updated_at` datetime NOT NULL,
-      #      PRIMARY KEY (`id`),
-      #      UNIQUE KEY `social_id` (`social_id`)
+      #      `social_id` varchar(255) NOT NULL,
+      #      `admin_db_config_id` int(10) unsigned NOT NULL,
+      #      PRIMARY KEY (`id`)
       #    ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
-      model: # e.g. AdminUser or namespace \Project\AdminUser
-      column: # e.g. admin_config_db_id
+      model: AdminUser # e.g. AdminUser or namespace \Project\AdminUser
+      column: admin_db_config_id # e.g. admin_db_config_id
 
       # ユーザマスタの登録「table_」と共有部分だけの記載はtable_*と同義
       dbs: # e.g. admin_, user_ranking
@@ -192,20 +187,19 @@ dev:
       # Shardingをコントロールするテーブルとカラム
       #
       # e.g.
-      #    CREATE TABLE IF NOT EXISTS `admin_config_db` (
+      #    CREATE TABLE IF NOT EXISTS `admin_db_config` (
       #      `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-      #      `name` varchar(50) NOT NULL COMMENT 'DBコンフィグ名',
-      #      `gravity` tinyint(3) unsigned NOT NULL DEFAULT '0' COMMENT '重み(振り分け用)',
-      #      `status_number` tinyint(3) unsigned NOT NULL DEFAULT '0',
+      #      `name` varchar(50) NOT NULL,
+      #      `gravity` tinyint(3) unsigned NOT NULL DEFAULT '0',
       #      PRIMARY KEY (`id`)
       #    ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
-      #    INSERT INTO `admin_config_db` (`id`, `name`, `gravity`, `status_number`) VALUES
-      #    (1, 'dbUser1', 50, 0),
-      #    (2, 'dbUser2', 50, 0);
+      #    INSERT INTO `admin_db_config` (`id`, `name`, `gravity`) VALUES
+      #    (1, 'dbUser1', 50),
+      #    (2, 'dbUser2', 50);
       # shard config master
       control:
-        model:  # e.g. AdminConfigDb or namespace \Project\AdminConfigDb
-        column: # e.g. name
+        model: AdminDbConfig # e.g. AdminConfigDb or namespace \Project\AdminConfigDb
+        column: name # e.g. name
 
     # schemaをキャッシュ
     metadata:
@@ -218,11 +212,11 @@ dev:
       dbMaster:
         host: XXXXX
         port: 6379
-        select: 1 # redis select [データベースインデックス]
+        select: 0 # redis select [データベースインデックス]
       dbSlave:
         host: XXXXX
         port: 6379
-        select: 1
+        select: 0
       dbCommonMaster:
         host: XXXXX
         port: 6379
@@ -234,19 +228,19 @@ dev:
       dbMember1Master:
         host: XXXXX
         port: 6379
-        select: 2
+        select: 0
       dbMember1Slave:
         host: XXXXX
         port: 6379
-        select: 2
+        select: 0
       dbMember2Master:
         host: XXXXX
         port: 6379
-        select: 3
+        select: 0
       dbMember2Slave:
         host: XXXXX
         port: 6379
-        select: 3
+        select: 0
 ```
 
 
@@ -270,69 +264,76 @@ $di->setShared('modelsMetadata', function () {
 ```
 
 
-## Criteria
+## findFirst
 
 ```php
-class Robot extends \RedisPlugin\Mvc\Model
-{
+class Robot extends \RedisPlugin\Mvc\Model {}
 
-    public static function findFirst($id, $type)
-    {
-        return self::criteria()
-            ->add('id', $id)
-            ->add('type', $type, Criteria::NOT_EQUAL)
-            ->group('type')
-            ->findFirst();
-    }
+# findFirst
+$robot = Robot::criteria()
+    ->add('id', $id)
+    ->add('type', $type, Criteria::NOT_EQUAL)
+    ->group('type')
+    ->findFirst();
+```
 
-    public static function find($id, $start, $end)
-    {
-         return self::criteria()
-            ->add('id', array($id), Criteria::IN)
-            ->add('type', array($start, $end), Criteria::BETWEEN)
-            ->limit(10, 5) // limit, offset
-            ->order('type DESC')
-            ->find();
-    }
 
-    // ->cache($boolean)でキャッシュをコントロール
-    public static function no_cache($id, $start, $end)
-    {
-         return self::criteria()
-            ->add('id', array($id), Criteria::IN)
-            ->add('type', array($start, $end), Criteria::BETWEEN)
-            ->limit(10, 30)
-            ->order('type DESC')
-            ->cache(false)
-            ->find();
-    }
+## find
 
-    // ->autoIndex($boolean)でautoIndexをコントロール
-    public static function no_autoIndex($id, $start, $end)
-    {
-         return self::criteria()
-            ->add('id', array($id), Criteria::IN)
-            ->add('type', array($start, $end), Criteria::BETWEEN)
-            ->limit(10, 30)
-            ->order('type DESC')
-            ->autoIndex(false)
-            ->find();
-    }
-}
+```php
+class Robot extends \RedisPlugin\Mvc\Model {}
+
+$robot = Robot::criteria()
+    ->add('id', array($id), Criteria::IN)
+    ->add('type', array($start, $end), Criteria::BETWEEN)
+    ->limit(10, 5) // limit, offset
+    ->order('type DESC')
+    ->find();
+```
+            
+            
+## cache Control
+
+```php
+class Robot extends \RedisPlugin\Mvc\Model {}
+
+$robot = Robot::criteria()
+    ->add('id', array($id), Criteria::IN)
+    ->add('type', array($start, $end), Criteria::BETWEEN)
+    ->limit(10, 30)
+    ->order('type DESC')
+    ->cache(false)
+    ->find();
+```
+
+
+## autoIndex Control
+
+```php
+class Robot extends \RedisPlugin\Mvc\Model {}
+
+$robot = Robot::criteria()
+    ->add('id', array($id), Criteria::IN)
+    ->add('type', array($start, $end), Criteria::BETWEEN)
+    ->limit(10, 30)
+    ->order('type DESC')
+    ->autoIndex(false)
+    ->find();
 ```
 
 
 ## save
 
 ```php
-class Robot extends \RedisPlugin\Mvc\Model {}
+class UserItem extends \RedisPlugin\Mvc\Model {}
 
-$robot = new Robot;
-$robot->setId($id);
-$robot->setType($type);
-$robot->save();
+$userItem = new UserItem();
+$userItem->setId($id);
+$userItem->setType($type);
+$userItem->save();
 
 ```
+
 
 ## update
 
@@ -343,11 +344,12 @@ Robot::criteria()
     ->add("user_status", 1)
     ->add("power", 100)
     ->set("status", 2)
+    ->set("name", "robot")
     ->update();
 ```
 
 ```mysql
-UPDATE `robot` SET `status` = 2 WHERE `user_status` = 1 AND `power` = 100;
+UPDATE `robot` SET `status` = 2, `name` = "robot" WHERE `user_status` = 1 AND `power` = 100;
 ```
 
 
@@ -366,6 +368,7 @@ Robot::criteria()
 DELETE FROM `robot` WHERE `user_status` = 1 AND `power` >= 100;
 ```
 
+
 ## count
 
 ```php
@@ -377,6 +380,7 @@ Robot::criteria()
     ->add("status", 2)
     ->count();
 ```
+
 
 ## sum
 
