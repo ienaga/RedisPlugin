@@ -97,7 +97,6 @@ test:
     autoIndex: true
     prefix:
       columns:
-        - [account, password]
         - user_id
         - id
     common:
