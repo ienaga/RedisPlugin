@@ -4,7 +4,7 @@ require_once __DIR__ . "/../../src/mvc/Model.php";
 
 use \RedisPlugin\Mvc\Model;
 
-class AdminConfigDb extends Model
+class AdminDbConfig extends Model
 {
     /**
      * @var int

@@ -7,18 +7,18 @@ CREATE DATABASE IF NOT EXISTS `user2`;
 
 CREATE TABLE IF NOT EXISTS `admin`.`admin_user` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `admin_config_db_id` int(10) unsigned NOT NULL,
+  `admin_db_config_id` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
-CREATE TABLE IF NOT EXISTS `admin`.`admin_config_db` (
+CREATE TABLE IF NOT EXISTS `admin`.`admin_db_config` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
   `gravity` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
-INSERT INTO `admin`.`admin_config_db` (`id`, `name`, `gravity`) VALUES
+INSERT INTO `admin`.`admin_db_config` (`id`, `name`, `gravity`) VALUES
 (1, 'dbUser1', 50),
 (2, 'dbUser2', 50);
 

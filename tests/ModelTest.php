@@ -4,7 +4,7 @@ require_once __DIR__ . "/../src/mvc/Model.php";
 require_once __DIR__ . "/../src/plugin/redis/Database.php";
 require_once __DIR__ . "/model/MstItem.php";
 require_once __DIR__ . "/model/AdminUser.php";
-require_once __DIR__ . "/model/AdminConfigDb.php";
+require_once __DIR__ . "/model/AdminDbConfig.php";
 require_once __DIR__ . "/model/User.php";
 require_once __DIR__ . "/model/UserItem.php";
 
@@ -99,10 +99,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
             Database::beginTransaction();
 
-            $totalGravity = AdminConfigDb::criteria()->sum("gravity");
+            $totalGravity = AdminDbConfig::criteria()->sum("gravity");
 
-            /** @var AdminConfigDb[] $adminDbConfigs */
-            $adminDbConfigs = AdminConfigDb::criteria()->find();
+            /** @var AdminDbConfig[] $adminDbConfigs */
+            $adminDbConfigs = AdminDbConfig::criteria()->find();
 
             for ($i = 1; $i <= 10; $i++) {
                 // 当選番号
@@ -123,7 +123,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
                 // 登録
                 $adminUser = new AdminUser();
-                $adminUser->setAdminConfigDbId($configId);
+                $adminUser->setAdminDbConfigId($configId);
                 $adminUser->save();
 
                 $user = new User();

@@ -111,11 +111,11 @@ test:
       service:
         name: dbAdmin
       model: AdminUser
-      column: admin_config_db_id
+      column: admin_db_config_id
       dbs:
         - admin_
       control:
-        model: AdminConfigDb
+        model: AdminDbConfig
         column: name
     server:
       dbAdminMaster:
