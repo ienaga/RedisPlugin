@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . "/../src/mvc/model/metadata/Redis.php";
-require_once __DIR__ . "/model/MstItem.php";
+require_once __DIR__ . "/model/MstIndex.php";
 
 class MetaDataTest extends \PHPUnit_Framework_TestCase
 {
@@ -39,11 +39,11 @@ class MetaDataTest extends \PHPUnit_Framework_TestCase
     public function testReadIndexes()
     {
         // find
-        MstItem::criteria()
+        MstIndex::criteria()
             ->add("id", 1)
             ->findFirst();
 
-        $model   = new MstItem();
+        $model   = new MstIndex();
         $indexes = $model->getModelsMetadata()->readIndexes($model->getSource());
         $this->assertEquals(count($indexes), 2);
     }

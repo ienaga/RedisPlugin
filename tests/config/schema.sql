@@ -24,6 +24,56 @@ INSERT INTO `admin`.`admin_db_config` (`id`, `name`, `gravity`) VALUES
 
 
 
+
+CREATE TABLE IF NOT EXISTS `common`.`mst_index` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `type` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+ALTER TABLE `common`.`mst_index`
+  ADD KEY `type_idx` (`type`) USING BTREE;
+
+
+
+
+CREATE TABLE IF NOT EXISTS `common`.`mst_database` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+INSERT INTO `common`.`mst_database` (`id`, `name`) VALUES
+  (1, 'mst_database_1'),
+  (2, 'mst_database_2'),
+  (3, 'mst_database_3'),
+  (4, 'mst_database_4'),
+  (5, 'mst_database_5'),
+  (6, 'mst_database_6');
+
+
+
+CREATE TABLE IF NOT EXISTS `common`.`mst_equal` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `type` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+ALTER TABLE `common`.`mst_equal`
+  ADD KEY `type_idx` (`type`) USING BTREE;
+
+INSERT INTO `common`.`mst_equal` (`id`, `name`, `type`) VALUES
+  (1, 'equal1', 1),
+  (2, 'equal2', 1),
+  (3, 'equal3', 1),
+  (4, 'equal4', 2),
+  (5, 'equal5', 2),
+  (6, 'equal6', 2);
+
+
+
 CREATE TABLE IF NOT EXISTS `common`.`mst_item` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
@@ -42,6 +92,7 @@ INSERT INTO `common`.`mst_item` (`id`, `name`, `level`, `mode`) VALUES
   (4, 'item_4', 2, 2),
   (5, 'item_5', 1, 2),
   (6, 'item_6', 2, 2);
+
 
 
 

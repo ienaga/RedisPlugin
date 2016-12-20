@@ -770,7 +770,7 @@ class Model extends \Phalcon\Mvc\Model
 
             if ($value === null) {
 
-                $operator = Criteria::ISNULL;
+                $operator = Criteria::IS_NULL;
 
                 self::$_keys[$named_place] = "IS_NULL";
 
@@ -1305,8 +1305,8 @@ class Model extends \Phalcon\Mvc\Model
     }
 
     /**
-     * @param null $data
-     * @param null $whiteList
+     * @param  null $data
+     * @param  null $whiteList
      * @return bool
      */
     public function create($data = null, $whiteList = null)

@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . "/../src/plugin/redis/Database.php";
-require_once __DIR__ . "/model/MstItem.php";
+require_once __DIR__ . "/model/MstDatabase.php";
 
 use \RedisPlugin\Database;
 
@@ -39,7 +39,7 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
      */
     public function testTransaction()
     {
-        $model = new MstItem();
+        $model = new MstDatabase();
 
         // not transaction
         $transaction = Database::getTransaction($model);
@@ -56,23 +56,21 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
      */
     public function testCommit()
     {
-        /** @var MstItem $mstItem */
-        $mstItem = MstItem::criteria()
-            ->add("id", 6)
-            ->findFirst();
 
         Database::beginTransaction();
 
-        $mstItem->setName("commit");
-        $mstItem->save();
+        $mstDatabase = new MstDatabase();
+        $mstDatabase->setName("commit");
+        $mstDatabase->save();
 
         Database::commit();
 
-        $mstItem = MstItem::criteria()
-            ->add("id", 6)
+        /** @var MstDatabase $mstDatabase */
+        $mstDatabase = MstDatabase::criteria()
+            ->add("id", 7)
             ->findFirst();
 
-        $this->assertEquals($mstItem->getName(), "commit");
+        $this->assertEquals($mstDatabase->getName(), "commit");
     }
 
     /**
@@ -80,8 +78,8 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
      */
     public function testRollback()
     {
-        /** @var MstItem $mstItem */
-        $mstItem = MstItem::criteria()
+        /** @var MstDatabase $mstDatabase */
+        $mstDatabase = MstDatabase::criteria()
             ->add("id", 4)
             ->findFirst();
 
@@ -89,8 +87,8 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
 
             Database::beginTransaction();
 
-            $mstItem->setName("rollback");
-            $mstItem->save();
+            $mstDatabase->setName("rollback");
+            $mstDatabase->save();
 
             $e = new \Exception("test rollback");
 
@@ -104,11 +102,11 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
 
         }
 
-        $mstItem = MstItem::criteria()
+        $mstDatabase = MstDatabase::criteria()
             ->add("id", 4)
             ->findFirst();
 
-        $this->assertEquals($mstItem->getName(), "item_4");
+        $this->assertEquals($mstDatabase->getName(), "database_4");
     }
 
 

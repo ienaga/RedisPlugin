@@ -35,11 +35,6 @@ class Criteria implements CriteriaInterface
     protected $model = null;
 
     /**
-     * @var null
-     */
-    protected $class_name = null;
-
-    /**
      * @var int
      */
     protected $expire = 0;
@@ -61,9 +56,12 @@ class Criteria implements CriteriaInterface
      */
     public function __construct(\Phalcon\Mvc\Model $model = null, $expire = 0)
     {
-        $this
-            ->setModel($model)
-            ->setExpire($expire);
+        if ($model) {
+            $this->setModel($model);
+        }
+        if ($expire) {
+            $this->setExpire($expire);
+        }
     }
 
     /**
@@ -201,6 +199,24 @@ class Criteria implements CriteriaInterface
 
     /**
      * @param  string $column
+     * @return Criteria
+     */
+    public function isNull($column)
+    {
+        return $this->add($column, null, self::IS_NULL);
+    }
+
+    /**
+     * @param  string $column
+     * @return Criteria
+     */
+    public function isNotNull($column)
+    {
+        return $this->add($column, null, self::IS_NOT_NULL);
+    }
+
+    /**
+     * @param  string $column
      * @param  mixed  $value
      * @param  string $operator
      * @return $this
@@ -331,7 +347,7 @@ class Criteria implements CriteriaInterface
 
     /**
      * @param  string $column
-     * @return mixed
+     * @return int
      */
     public function sum($column)
     {
@@ -340,7 +356,7 @@ class Criteria implements CriteriaInterface
     }
 
     /**
-     * @return mixed
+     * @return int
      */
     public function count()
     {

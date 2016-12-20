@@ -5,12 +5,12 @@ namespace RedisPlugin\Mvc\Model;
 interface CriteriaInterface
 {
     /**
-     * @return \Phalcon\Mvc\Model | bool
+     * @return \Phalcon\Mvc\Model | null
      */
     public function findFirst();
 
     /**
-     * @return \Phalcon\Mvc\Model[] | array
+     * @return \Phalcon\Mvc\Model\ResultsetInterface
      */
     public function find();
 
@@ -25,13 +25,13 @@ interface CriteriaInterface
     public function delete();
 
     /**
-     * @return mixed
+     * @return int
      */
     public function count();
 
     /**
      * @param  string $column
-     * @return mixed
+     * @return int
      */
     public function sum($column);
 }
