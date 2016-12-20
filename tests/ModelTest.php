@@ -6,6 +6,7 @@ require_once __DIR__ . "/model/MstItem.php";
 require_once __DIR__ . "/model/AdminUser.php";
 require_once __DIR__ . "/model/AdminConfigDb.php";
 require_once __DIR__ . "/model/User.php";
+require_once __DIR__ . "/model/UserItem.php";
 
 use \RedisPlugin\Mvc\Model;
 use \RedisPlugin\Database;
@@ -38,6 +39,9 @@ class ModelTest extends \PHPUnit_Framework_TestCase
                 $this->getConfig()->get("redis")->get("metadata")->toArray()
             );
         });
+
+        // cache
+        MstItem::criteria()->find();
     }
 
     /**
@@ -169,5 +173,30 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         $this->assertEquals($user->getName(), "update_user_1");
 
+        try {
+
+            Database::beginTransaction();
+
+            $userItem = new UserItem();
+            $userItem->setUserId(1);
+            $userItem->setItemId(10);
+            $user->save();
+
+            Database::commit();
+
+        } catch (\Exception $e) {
+
+            Database::rollback($e);
+
+        }
+
+        sleep(1);
+
+        /** @var UserItem $userItem */
+        $userItem = UserItem::criteria()
+            ->add("user_id", 1)
+            ->findFirst();
+
+        $this->assertEquals($userItem->getItemId(), 10);
     }
 }

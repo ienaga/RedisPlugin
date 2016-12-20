@@ -79,16 +79,6 @@ class Model extends \Phalcon\Mvc\Model
     private static $_config_class_cache = array();
 
     /**
-     * @var array
-     */
-    private static $_admin_query = array();
-
-    /**
-     * @var array
-     */
-    private static $_config_query = array();
-
-    /**
      * @var null|string
      */
     private static $name = null;
@@ -971,26 +961,18 @@ class Model extends \Phalcon\Mvc\Model
             ->get("admin")
             ->get("control");
 
-        $class = $config->get("model");
-        if (!isset(self::$_config_query["query"])) {
+        $class   = $config->get("model");
+        $indexes = self::getIndexes(new $class);
 
-            $primary = "id";
-            $indexes = self::getIndexes(new $class);
-
-            if (isset($indexes["PRIMARY"])) {
-
-                $primary = $indexes["PRIMARY"]->getColumns()[0];
-
-            }
-
-            self::$_config_query = array(
-                "query" => array($primary => $primary_key)
-            );
-
+        $primary = "id";
+        if (isset($indexes["PRIMARY"])) {
+            $primary = $indexes["PRIMARY"]->getColumns()[0];
         }
 
         // config
-        $configClass = $class::findFirst(self::$_config_query);
+        $configClass = $class::criteria()
+            ->add($primary, $primary_key)
+            ->findFirst();
 
         // local cache
         self::$_config_class_cache[$primary_key] = ($configClass)
@@ -1026,22 +1008,17 @@ class Model extends \Phalcon\Mvc\Model
             ->get("admin")
             ->get("model");
 
-        if (!isset(self::$_admin_query["query"])) {
+        $indexes = self::getIndexes(new $class);
 
-            $primary = "id";
-            $indexes = self::getIndexes(new $class);
-
-            if (isset($indexes["PRIMARY"])) {
-
-                $primary = $indexes["PRIMARY"]->getColumns()[0];
-
-            }
-
-            self::$_admin_query = array("query" => array($primary => $_prefix));
-
+        $primary = "id";
+        if (isset($indexes["PRIMARY"])) {
+            $primary = $indexes["PRIMARY"]->getColumns()[0];
         }
 
-        $adminClass = $class::findFirst(self::$_admin_query);
+        $adminClass = $class::criteria()
+            ->add($primary, $_prefix)
+            ->findFirst();
+
         if (!$adminClass) {
             throw new RedisPluginException("Not Created Admin Member: Prefix: ". $_prefix);
         }
@@ -1408,6 +1385,7 @@ class Model extends \Phalcon\Mvc\Model
      */
     public static function localCacheClear()
     {
+        self::$name                = null;
         self::$_prefix             = null;
         self::$_keys               = array();
         self::$_bind               = array();
@@ -1415,7 +1393,6 @@ class Model extends \Phalcon\Mvc\Model
         self::$_current_model      = null;
         self::$_admin_class_cache  = array();
         self::$_config_class_cache = array();
-        self::$_admin_query        = array();
     }
 
     /**
@@ -1441,13 +1418,11 @@ class Model extends \Phalcon\Mvc\Model
                 continue;
             }
 
-            $method = "get" . ucfirst(str_replace(" ", "", ucwords(str_replace("_", " ", $attribute))));
-
-            if (!method_exists($this, $method)) {
+            if (!property_exists($this, $attribute)) {
                 continue;
             }
 
-            $obj[$attribute] = call_user_func([$this, $method]);
+            $obj[$attribute] = $this->{$attribute};
         }
 
         return $obj;
