@@ -9,6 +9,7 @@ require_once __DIR__ . "/model/AdminDbConfig.php";
 require_once __DIR__ . "/model/User.php";
 require_once __DIR__ . "/model/UserItem.php";
 require_once __DIR__ . "/model/MstEqual.php";
+require_once __DIR__ . "/model/MstNotEqual.php";
 
 
 
