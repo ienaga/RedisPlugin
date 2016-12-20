@@ -55,7 +55,7 @@ dev:
       port:     3301
       username: root
       password: XXXXX
-      dbname:   XXXXX
+      dbname:   admin
       charset:  utf8
       transaction: true
     dbAdminSlave:
@@ -64,7 +64,7 @@ dev:
       port:     3311
       username: root
       password: XXXXX
-      dbname:   XXXXX
+      dbname:   admin
       charset:  utf8
       transaction: false
     dbCommonMaster:
@@ -73,7 +73,7 @@ dev:
       port:     3301
       username: root
       password: XXXXX
-      dbname:   XXXXX
+      dbname:   common
       charset:  utf8
       transaction: false
     dbCommonSlave:
@@ -82,43 +82,43 @@ dev:
       port:     3311
       username: root
       password: XXXXX
-      dbname:   XXXXX
+      dbname:   common
       charset:  utf8
       transaction: false
-    dbMember1Master:
+    dbUser1Master:
       adapter:  Mysql
       host:     127.0.0.1
       port:     3306
       username: root
       password: XXXXX
-      dbname:   XXXXX
+      dbname:   user
       charset:  utf8
       transaction: true
-    dbMember1Slave:
+    dbUser1Slave:
       adapter:  Mysql
       host:     127.0.0.1
       port:     3316
       username: root
       password: XXXXX
-      dbname:   XXXXX
+      dbname:   user
       charset:  utf8
       transaction: false
-    dbMember2Master:
+    dbUser2Master:
       adapter:  Mysql
       host:     127.0.0.1
       port:     3307
       username: root
       password: XXXXX
-      dbname:   XXXXX
+      dbname:   user
       charset:  utf8
       transaction: true
-    dbMember2Slave:
+    dbUser2Slave:
       adapter:  Mysql
       host:     127.0.0.1
       port:     3317
       username: root
       password: XXXXX
-      dbname:   XXXXX
+      dbname:   user
       charset:  utf8
       transaction: false
 ```
@@ -210,35 +210,35 @@ dev:
     # servers
     server:
       dbMaster:
-        host: XXXXX
+        host: 127.0.01
         port: 6379
         select: 0 # redis select [データベースインデックス]
       dbSlave:
-        host: XXXXX
+        host: 127.0.01
         port: 6379
         select: 0
       dbCommonMaster:
-        host: XXXXX
+        host: 127.0.01
         port: 6379
         select: 0
       dbCommonSlave:
-        host: XXXXX
+        host: 127.0.01
         port: 6379
         select: 0
-      dbMember1Master:
-        host: XXXXX
+      dbUser1Master:
+        host: 127.0.01
         port: 6379
         select: 0
-      dbMember1Slave:
-        host: XXXXX
+      dbUser1Slave:
+        host: 127.0.01
         port: 6379
         select: 0
-      dbMember2Master:
-        host: XXXXX
+      dbUser2Master:
+        host: 127.0.01
         port: 6379
         select: 0
-      dbMember2Slave:
-        host: XXXXX
+      dbUser2Slave:
+        host: 127.0.01
         port: 6379
         select: 0
 ```
