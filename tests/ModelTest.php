@@ -180,7 +180,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             $userItem = new UserItem();
             $userItem->setUserId(1);
             $userItem->setItemId(10);
-            $user->save();
+            $userItem->save();
 
             Database::commit();
 
