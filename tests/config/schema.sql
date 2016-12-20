@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `common`.`mst_equal` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
   `type` int(10) unsigned NOT NULL,
-  PRIMARY KEY `id`)
+  PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 ALTER TABLE `common`.`mst_equal`
