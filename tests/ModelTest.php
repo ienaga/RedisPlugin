@@ -10,6 +10,8 @@ require_once __DIR__ . "/model/User.php";
 require_once __DIR__ . "/model/UserItem.php";
 require_once __DIR__ . "/model/MstEqual.php";
 require_once __DIR__ . "/model/MstNotEqual.php";
+require_once __DIR__ . "/model/MstGreaterThan.php";
+require_once __DIR__ . "/model/MstLessThan.php";
 
 
 
@@ -251,4 +253,50 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals($notEqual->getType(), 2);
         }
     }
+
+    /**
+     * test GREATER_THAN
+     */
+    public function testGreaterThan()
+    {
+        /** @var MstGreaterThan $mstGreaterThan */
+        $mstGreaterThan = MstGreaterThan::criteria()
+            ->add("id", 5, Criteria::GREATER_THAN)
+            ->findFirst();
+
+        $this->assertEquals($mstGreaterThan->getId(), 6);
+
+        /** @var MstGreaterThan[] $mstGreaterThan */
+        $mstGreaterThan = MstGreaterThan::criteria()
+            ->add("type", 0, Criteria::GREATER_THAN)
+            ->find();
+
+        foreach ($mstGreaterThan as $greaterThan) {
+            $this->assertEquals($greaterThan->getType(), 1);
+        }
+    }
+
+    /**
+     * test LESS_THAN
+     */
+    public function testLessThan()
+    {
+        /** @var MstLessThan $mstLessThan */
+        $mstLessThan = MstLessThan::criteria()
+            ->add("id", 2, Criteria::LESS_THAN)
+            ->findFirst();
+
+        $this->assertEquals($mstLessThan->getId(), 1);
+
+        /** @var MstLessThan[] $mstLessThan */
+        $mstLessThan = MstLessThan::criteria()
+            ->add("type", 1, Criteria::LESS_THAN)
+            ->find();
+
+        foreach ($mstLessThan as $lessThan) {
+            $this->assertEquals($lessThan->getType(), 0);
+        }
+    }
+
+
 }
