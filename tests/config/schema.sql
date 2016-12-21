@@ -70,7 +70,7 @@ INSERT INTO `common`.`mst_equal` (`id`, `type`) VALUES
   (1, 1),
   (2, 1),
   (3, 1),
-  (4, 2)
+  (4, 2),
   (5, 2),
   (6, 2);
 
@@ -99,7 +99,7 @@ INSERT INTO `common`.`mst_not_equal` (`id`, `type`, `mode`) VALUES
 
 CREATE TABLE IF NOT EXISTS `common`.`mst_greater_than` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `type` int(10) unsigned NOTNULL,
+  `type` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
