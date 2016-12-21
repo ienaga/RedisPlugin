@@ -228,7 +228,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             ->add("type", 2)
             ->find();
 
-        $this->assertEquals(count($mstEqual), 2);
+        $this->assertEquals(count($mstEqual), 3);
 
         foreach ($mstEqual as $key => $equal) {
             $this->assertEquals($equal->getType(), 2);
@@ -321,7 +321,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         /** @var MstGreaterEqual[] $mstGreaterEqual */
         $mstGreaterEqual = MstGreaterEqual::criteria()
-            ->add("type", 2, Criteria::GREATER_THAN)
+            ->add("type", 2, Criteria::GREATER_EQUAL)
             ->find();
 
         $this->assertEquals(count($mstGreaterEqual), 4);
