@@ -59,7 +59,6 @@ INSERT INTO `common`.`mst_database` (`id`, `name`) VALUES
 
 CREATE TABLE IF NOT EXISTS `common`.`mst_equal` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
   `type` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
@@ -67,20 +66,19 @@ CREATE TABLE IF NOT EXISTS `common`.`mst_equal` (
 ALTER TABLE `common`.`mst_equal`
   ADD KEY `type_idx` (`type`) USING BTREE;
 
-INSERT INTO `common`.`mst_equal` (`id`, `name`, `type`) VALUES
-  (1, 'equal1', 1),
-  (2, 'equal2', 1),
-  (3, 'equal3', 1),
-  (4, 'equal4', 2),
-  (5, 'equal5', 2),
-  (6, 'equal6', 2);
+INSERT INTO `common`.`mst_equal` (`id`, `type`) VALUES
+  (1, 1),
+  (2, 1),
+  (3, 1),
+  (4, 2)
+  (5, 2),
+  (6, 2);
 
 
 
 
 CREATE TABLE IF NOT EXISTS `common`.`mst_not_equal` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
   `type` int(10) unsigned NOT NULL,
   `mode` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
@@ -90,38 +88,36 @@ ALTER TABLE `common`.`mst_not_equal`
   ADD KEY `type_idx` (`type`) USING BTREE,
   ADD KEY `mode_idx` (`mode`) USING BTREE;
 
-INSERT INTO `common`.`mst_not_equal` (`id`, `name`, `type`, `mode`) VALUES
-  (1, 'not_equal1', 1, 0),
-  (2, 'not_equal2', 1, 1),
-  (3, 'not_equal3', 1, 1),
-  (4, 'not_equal4', 2, 1),
-  (5, 'not_equal5', 2, 1),
-  (6, 'not_equal6', 2, 1);
+INSERT INTO `common`.`mst_not_equal` (`id`, `type`, `mode`) VALUES
+  (1, 1, 0),
+  (2, 1, 1),
+  (3, 1, 1),
+  (4, 2, 1),
+  (5, 2, 1),
+  (6, 2, 1);
 
 
 CREATE TABLE IF NOT EXISTS `common`.`mst_greater_than` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
-  `type` int(10) unsigned NOT NULL,
+  `type` int(10) unsigned NOTNULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 ALTER TABLE `common`.`mst_greater_than`
   ADD KEY `type_idx` (`type`) USING BTREE;
 
-INSERT INTO `common`.`mst_greater_than` (`id`, `name`, `type`) VALUES
-  (1, 'greater_than1', 0),
-  (2, 'greater_than2', 0),
-  (3, 'greater_than3', 1),
-  (4, 'greater_than4', 1),
-  (5, 'greater_than5', 1),
-  (6, 'greater_than6', 1);
+INSERT INTO `common`.`mst_greater_than` (`id`, `type`) VALUES
+  (1, 0),
+  (2, 0),
+  (3, 1),
+  (4, 1),
+  (5, 1),
+  (6, 1);
 
 
 
 CREATE TABLE IF NOT EXISTS `common`.`mst_less_than` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(50) NOT NULL,
   `type` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
@@ -129,13 +125,34 @@ CREATE TABLE IF NOT EXISTS `common`.`mst_less_than` (
 ALTER TABLE `common`.`mst_less_than`
   ADD KEY `type_idx` (`type`) USING BTREE;
 
-INSERT INTO `common`.`mst_less_than` (`id`, `name`, `type`) VALUES
-  (1, 'less_than1', 0),
-  (2, 'less_than2', 0),
-  (3, 'less_than3', 1),
-  (4, 'less_than4', 1),
-  (5, 'less_than5', 1),
-  (6, 'less_than6', 1);
+INSERT INTO `common`.`mst_less_than` (`id`, `type`) VALUES
+  (1, 0),
+  (2, 0),
+  (3, 1),
+  (4, 1),
+  (5, 1),
+  (6, 1);
+
+
+
+CREATE TABLE IF NOT EXISTS `common`.`mst_greater_equal` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+ALTER TABLE `common`.`mst_greater_equal`
+  ADD KEY `type_idx` (`type`) USING BTREE;
+
+INSERT INTO `common`.`mst_greater_equal` (`id`, `type`) VALUES
+  (1, 0),
+  (2, 1),
+  (3, 2),
+  (4, 2),
+  (5, 2),
+  (6, 2);
+
+
 
 
 CREATE TABLE IF NOT EXISTS `user1`.`user` (

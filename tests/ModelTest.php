@@ -12,6 +12,7 @@ require_once __DIR__ . "/model/MstEqual.php";
 require_once __DIR__ . "/model/MstNotEqual.php";
 require_once __DIR__ . "/model/MstGreaterThan.php";
 require_once __DIR__ . "/model/MstLessThan.php";
+require_once __DIR__ . "/model/MstGreaterEqual.php";
 
 
 
@@ -220,15 +221,17 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             ->add("id", 1)
             ->findFirst();
 
-        $this->assertEquals($mstEqual->getName(), "equal1");
+        $this->assertEquals($mstEqual->getId(), 1);
 
         /** @var MstEqual[] $mstEqual */
         $mstEqual = MstEqual::criteria()
             ->add("type", 2)
             ->find();
 
+        $this->assertEquals(count($mstEqual), 2);
+
         foreach ($mstEqual as $key => $equal) {
-            $this->assertEquals($equal->getName(), "equal". (4+$key));
+            $this->assertEquals($equal->getType(), 2);
         }
     }
 
@@ -248,6 +251,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $mstNotEqual = MstNotEqual::criteria()
             ->add("type", 1, Criteria::NOT_EQUAL)
             ->find();
+
+        $this->assertEquals(count($mstNotEqual), 3);
 
         foreach ($mstNotEqual as $notEqual) {
             $this->assertEquals($notEqual->getType(), 2);
@@ -271,6 +276,8 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             ->add("type", 0, Criteria::GREATER_THAN)
             ->find();
 
+        $this->assertEquals(count($mstGreaterThan), 4);
+
         foreach ($mstGreaterThan as $greaterThan) {
             $this->assertEquals($greaterThan->getType(), 1);
         }
@@ -293,8 +300,34 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             ->add("type", 1, Criteria::LESS_THAN)
             ->find();
 
+        $this->assertEquals(count($mstLessThan), 2);
+
         foreach ($mstLessThan as $lessThan) {
             $this->assertEquals($lessThan->getType(), 0);
+        }
+    }
+
+    /**
+     * test GREATER_EQUAL
+     */
+    public function testGreaterEqual()
+    {
+        /** @var MstGreaterEqual $mstGreaterEqual */
+        $mstGreaterEqual = MstGreaterEqual::criteria()
+            ->add("id", 6, Criteria::GREATER_EQUAL)
+            ->findFirst();
+
+        $this->assertEquals($mstGreaterEqual->getId(), 6);
+
+        /** @var MstGreaterEqual[] $mstGreaterEqual */
+        $mstGreaterEqual = MstGreaterEqual::criteria()
+            ->add("type", 2, Criteria::GREATER_THAN)
+            ->find();
+
+        $this->assertEquals(count($mstGreaterEqual), 4);
+
+        foreach ($mstGreaterEqual as $greaterEqual) {
+            $this->assertEquals($greaterEqual->getType(), 2);
         }
     }
 
