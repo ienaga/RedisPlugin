@@ -691,12 +691,16 @@ class Model extends \Phalcon\Mvc\Model
 
                     case $operator === Criteria::BETWEEN:
 
-                        self::$_bind[$named_place."0"] = $_bindValue[0];
-                        self::$_bind[$named_place."1"] = $_bindValue[1];
+                        $start = $named_place."0";
+                        $end   = $named_place."1";
 
-                        self::$_keys[$named_place] = $operator . implode("_", $_bindValue);
+                        self::$_bind[$start] = $_bindValue[0];
+                        self::$_bind[$end] = $_bindValue[1];
 
-                        $query = sprintf(":%s: AND :%s:", $_bindValue[0], $_bindValue[1]);
+                        self::$_keys[$named_place] = $operator
+                            . implode("_", str_replace(" ", "_", $_bindValue));
+
+                        $query = sprintf(":%s: AND :%s:", $start, $end);
 
                         break;
 

@@ -188,8 +188,8 @@ class Criteria implements CriteriaInterface
 
     /**
      * @param  string $column
-     * @param  mixed $start
-     * @param  mixed $end
+     * @param  mixed  $start
+     * @param  mixed  $end
      * @return Criteria
      */
     public function between($column, $start, $end)
