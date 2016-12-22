@@ -20,6 +20,7 @@ require_once __DIR__ . "/model/MstLike.php";
 require_once __DIR__ . "/model/MstNotLike.php";
 require_once __DIR__ . "/model/MstIn.php";
 require_once __DIR__ . "/model/MstNotIn.php";
+require_once __DIR__ . "/model/MstBetween.php";
 
 
 
@@ -106,6 +107,22 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $query = Model::buildParameters($param);
 
         $this->assertEquals($query[0], "[level] = :level: AND [mode] = :mode: AND [name] = :name:");
+    }
+
+    /**
+     * test indexes pattern 4
+     */
+    public function testIndexes4()
+    {
+        $criteria = MstIndex::criteria()
+            ->add("mode", 1)
+            ->add("type", 2)
+            ->add("level", 1);
+
+        $param = $criteria->getConditions();
+        $query = Model::buildParameters($param);
+
+        $this->assertEquals($query[0], "[level] = :level: AND [type] = :type: AND [mode] = :mode:");
     }
 
     /**
@@ -506,7 +523,29 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * test BETWEEN
+     */
+    public function testBetween()
+    {
+        /** @var MstBetween $mstBetween */
+        $mstBetween = MstBetween::criteria()
+            ->between("type",0, 1)
+            ->findFirst();
 
+        $this->assertEquals($mstBetween->getId(), 1);
+
+        /** @var MstBetween[] $mstBetween */
+        $mstBetween = MstBetween::criteria()
+            ->between("type", 1, 5)
+            ->find();
+
+        $this->assertEquals(count($mstBetween), 5);
+
+        foreach ($mstBetween as $between) {
+            $this->assertEquals($between->getMode(), 2);
+        }
+    }
 
 
 }
