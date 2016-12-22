@@ -362,16 +362,16 @@ class ModelTest extends \PHPUnit_Framework_TestCase
      */
     public function testIsNull()
     {
-        /** @var MstIsNull $mstLessEqual */
+        /** @var MstIsNull $mstIsNull */
         $mstIsNull = MstIsNull::criteria()
             ->isNull("type")
             ->findFirst();
 
         $this->assertEquals($mstIsNull->getId(), 1);
 
-        /** @var MstIsNull[] $mstLessEqual */
+        /** @var MstIsNull[] $mstIsNull */
         $mstIsNull = MstIsNull::criteria()
-            ->add("type", 1, Criteria::LESS_EQUAL)
+            ->isNull("type")
             ->find();
 
         $this->assertEquals(count($mstIsNull), 3);
