@@ -18,6 +18,7 @@ require_once __DIR__ . "/model/MstIsNull.php";
 require_once __DIR__ . "/model/MstIsNotNull.php";
 require_once __DIR__ . "/model/MstLike.php";
 require_once __DIR__ . "/model/MstILike.php";
+require_once __DIR__ . "/model/MstIn.php";
 
 
 
@@ -438,14 +439,14 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     public function testILike()
     {
         /** @var MstILike $mstILike */
-        $mstILike = MstILike::criteria()
+        $mstILike = MstIn::criteria()
             ->add("name", "A", Criteria::I_LIKE)
             ->findFirst();
 
         $this->assertEquals($mstILike->getId(), 1);
 
-        /** @var MstILike[] $mstILike */
-        $mstILike = MstILike::criteria()
+        /** @var MstIn[] $mstILike */
+        $mstILike = MstIn::criteria()
             ->add("name", "%D%", Criteria::I_LIKE)
             ->find();
 
@@ -456,5 +457,28 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * test IN
+     */
+    public function testIn()
+    {
+        /** @var MstIn $mstIn */
+        $mstIn = MstIn::criteria()
+            ->in("type", array(0))
+            ->findFirst();
+
+        $this->assertEquals($mstIn->getId(), 1);
+
+        /** @var MstIn[] $mstIn */
+        $mstIn = MstIn::criteria()
+            ->in("type", array(0, 1))
+            ->find();
+
+        $this->assertEquals(count($mstIn), 4);
+
+        foreach ($mstIn as $in) {
+            $this->assertEquals($in->getMode(), 2);
+        }
+    }
 
 }

@@ -250,6 +250,28 @@ INSERT INTO `common`.`mst_i_like` (`id`, `name`, `mode`) VALUES
 
 
 
+CREATE TABLE IF NOT EXISTS `common`.`mst_in` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type` int(10) unsigned NOT NULL,
+  `mode` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+ALTER TABLE `common`.`mst_in`
+  ADD KEY `type_idx` (`type`) USING BTREE;
+
+INSERT INTO `common`.`mst_in` (`id`, `type`, `, `type``) VALUES
+  (1, 0, 1),
+  (2, 1, 1),
+  (3, 1, 1),
+  (4, 1, 1),
+  (5, 2, 2),
+  (6, 2, 2);
+
+
+
+
+
 
 
 
