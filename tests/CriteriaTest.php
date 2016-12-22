@@ -351,21 +351,17 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
             ->buildCondition();
 
         $this->assertArrayHasKey("query", $condition);
+        $this->assertArrayHasKey("or", $condition);
 
         // operator test
-        $query = $condition["query"];
+        $conditions = $condition["or"];
 
-        foreach ($query as $values) {
-            $this->assertArrayHasKey("id",       $values);
-            $this->assertArrayHasKey("operator", $values);
+        foreach ($conditions as $values) {
+            $map = each($values);
 
-            $this->assertEquals($values["operator"], "OR");
-
-            $this->assertArrayHasKey("value",    $values["id"]);
-            $this->assertArrayHasKey("operator", $values["id"]);
-
-            $this->assertEquals($values["id"]["value"], 1);
-            $this->assertEquals($values["id"]["operator"], "=");
+            $this->assertEquals($map["key"], "id");
+            $this->assertEquals($map["value"]["value"], 1);
+            $this->assertEquals($map["value"]["operator"], "=");
         }
     }
 

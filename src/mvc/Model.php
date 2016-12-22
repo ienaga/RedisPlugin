@@ -607,6 +607,10 @@ class Model extends \Phalcon\Mvc\Model
         // クエリを発行
         foreach ($query as $column => $value) {
 
+            if ($value === Criteria::ADD_OR) {
+                $value = $parameters["or"];
+            }
+
             $where[] = implode(" ", self::buildQuery($column, $value));
 
         }
@@ -625,6 +629,10 @@ class Model extends \Phalcon\Mvc\Model
 
         unset($parameters["query"]);
 
+        if (isset($parameters["or"])) {
+            unset($parameters["or"]);
+        }
+
         return $parameters;
     }
 
@@ -635,35 +643,35 @@ class Model extends \Phalcon\Mvc\Model
      */
     private static function buildQuery($column, $value)
     {
+
         if (count($aliased = explode(".", $column)) > 1) {
 
             $named_place = $aliased[1];
-            $column = sprintf("[%s].[%s]", $aliased[0], $aliased[1]);
+            $column      = sprintf("[%s].[%s]", $aliased[0], $aliased[1]);
 
         } else if (is_int($column)) {
 
-            $column = "";
-            $value["operator"] = Criteria::ADD_OR;
+            $column = null;
 
         } else {
 
             $named_place = $column;
-            $column = sprintf("[%s]", $column);
+            $column      = sprintf("[%s]", $column);
 
         }
 
-        if (is_array($value)) {
+        if (is_array($value) && $column) {
 
             if (isset($value["operator"])) {
 
-                $operator  = $value["operator"];
+                $operator   = $value["operator"];
                 $_bindValue = $value["value"];
 
                 switch ($operator) {
                     case $operator === Criteria::IS_NULL:
                     case $operator === Criteria::IS_NOT_NULL:
 
-                        $_keys[$named_place] = str_replace(" ", "_", $operator);
+                        self::$_keys[$named_place] = str_replace(" ", "_", $operator);
 
                         $query = "";
 
@@ -706,28 +714,11 @@ class Model extends \Phalcon\Mvc\Model
 
                         break;
 
-                    case $operator === Criteria::ADD_OR:
-
-                        self::$_keys[] = $operator;
-
-                        $operator = "";
-
-                        $queryStrings = array();
-                        foreach ($value as $col => $val) {
-
-                            $queryStrings[] = implode(" ", self::buildQuery($col, $val));
-
-                        }
-
-                        $query = "(" . implode(" OR ", $queryStrings) . ")";
-
-                        break;
-
                     default:
 
                         self::$_bind[$named_place] = $_bindValue;
 
-                        self::$_keys[$named_place] = $operator.$_bindValue;
+                        self::$_keys[$named_place] = $operator.str_replace(" ", "_", $_bindValue);
 
                         $query = sprintf(":%s:", $named_place);
 
@@ -764,14 +755,16 @@ class Model extends \Phalcon\Mvc\Model
 
                 $query = "";
 
-            } else if (is_array($value)) {
+            } else if ($column === null) {
 
                 $operator = "";
 
                 $queryStrings = array();
-                foreach ($value as $col => $val) {
+                foreach ($value as $conditions) {
 
-                    $queryStrings[] = implode(" ", self::buildQuery($col, $val));
+                    $map = each($conditions);
+
+                    $queryStrings[] = implode(" ", self::buildQuery($map["key"], $map["value"]));
 
                 }
 
@@ -783,7 +776,7 @@ class Model extends \Phalcon\Mvc\Model
 
                 self::$_bind[$named_place] = $value;
 
-                self::$_keys[$named_place] = "=".$value;
+                self::$_keys[$named_place] = "=". str_replace(" ", "_", $value);
 
                 $query = sprintf(":%s:", $named_place);
 

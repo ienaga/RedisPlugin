@@ -49,6 +49,11 @@ class Criteria implements CriteriaInterface
      */
     protected $groups = array();
 
+    /**
+     * @var array
+     */
+    protected $or = array();
+
 
     /**
      * @param \Phalcon\Mvc\Model $model
@@ -139,6 +144,14 @@ class Criteria implements CriteriaInterface
     }
 
     /**
+     * @return array
+     */
+    public function getOr()
+    {
+        return $this->or;
+    }
+
+    /**
      * @param  mixed  $value
      * @param  string $operator
      * @return array
@@ -223,9 +236,12 @@ class Criteria implements CriteriaInterface
      */
     public function addOr($column, $value, $operator = self::EQUAL)
     {
-        $this->conditions["query"][] = array(
-            "operator" => self::ADD_OR,
-            $column    => $this->queryToArray($value, $operator)
+        if (!isset($this->conditions["query"][0])) {
+            $this->conditions["query"][0] = self::ADD_OR;
+        }
+
+        $this->or[] = array(
+            $column => $this->queryToArray($value, $operator)
         );
 
         return $this;
@@ -319,6 +335,11 @@ class Criteria implements CriteriaInterface
         // group by
         if (count($this->getGroups())) {
             $this->conditions["group"] = join(", ", $this->getGroups());
+        }
+
+        // or
+        if (count($this->getOr())) {
+            $this->conditions["or"] = $this->getOr();
         }
 
         // expire
