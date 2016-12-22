@@ -194,6 +194,23 @@ INSERT INTO `common`.`mst_is_null` (`id`, `type`, `mode`) VALUES
 
 
 
+CREATE TABLE IF NOT EXISTS `common`.`mst_is_not_null` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type` int(10) unsigned,
+  `mode` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+ALTER TABLE `common`.`mst_is_not_null`
+  ADD KEY `type_idx` (`type`) USING BTREE;
+
+INSERT INTO `common`.`mst_is_not_null` (`id`, `type`, `mode`) VALUES
+  (1, null, 2),
+  (2, null, 2),
+  (3, null, 2),
+  (4, 2, 3),
+  (5, 2, 3),
+  (6, 2, 3);
 
 
 
