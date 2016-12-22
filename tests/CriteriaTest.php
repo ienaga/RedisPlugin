@@ -233,13 +233,13 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * test ILIKE
+     * test NOT_LIKE
      */
-    public function testILike()
+    public function testNotLike()
     {
         $criteria  = new Criteria();
         $condition = $criteria
-            ->add("id", 1, Criteria::I_LIKE)
+            ->add("id", 1, Criteria::NOT_LIKE)
             ->buildCondition();
 
         $this->assertArrayHasKey("query", $condition);
@@ -253,7 +253,7 @@ class CriteriaTest extends \PHPUnit_Framework_TestCase
             $this->assertArrayHasKey("operator", $values);
 
             $this->assertEquals($values["value"], 1);
-            $this->assertEquals($values["operator"], "ILIKE");
+            $this->assertEquals($values["operator"], "NOT LIKE");
         }
     }
 
