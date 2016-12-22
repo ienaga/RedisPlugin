@@ -5,9 +5,10 @@ namespace RedisPlugin\Mvc;
 use \RedisPlugin\Connection;
 use \RedisPlugin\Database;
 use \RedisPlugin\Mvc\Model\Criteria;
+use \RedisPlugin\Mvc\Model\OperatorInterface;
 use \RedisPlugin\Exception\RedisPluginException;
 
-class Model extends \Phalcon\Mvc\Model
+class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterface
 {
 
     /**
