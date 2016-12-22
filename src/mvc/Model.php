@@ -70,6 +70,8 @@ class Model extends \Phalcon\Mvc\Model
      */
     public function initialize()
     {
+        $this->useDynamicUpdate(true);
+
         // reset
         self::$_prefix = self::DEFAULT_PREFIX;
 

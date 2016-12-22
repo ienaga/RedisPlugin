@@ -309,6 +309,24 @@ INSERT INTO `common`.`mst_between` (`id`, `type`, `mode`) VALUES
 
 
 
+CREATE TABLE IF NOT EXISTS `common`.`mst_or` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type` int(10) unsigned NOT NULL,
+  `mode` int(10) unsigned NOT NULL,
+  `name` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+INSERT INTO `common`.`mst_or` (`id`, `type`, `mode`, `name`) VALUES
+  (1, 0, 0, 'OK'),
+  (2, 0, 0, 'OK'),
+  (3, 1, 1, 'OK'),
+  (4, 1, 1, 'OK'),
+  (5, 2, 2, 'NO'),
+  (6, 5, 6, 'NO');
+
+
+
 
 CREATE TABLE IF NOT EXISTS `user1`.`user` (
   `id` int(10) unsigned NOT NULL,

@@ -21,6 +21,7 @@ require_once __DIR__ . "/model/MstNotLike.php";
 require_once __DIR__ . "/model/MstIn.php";
 require_once __DIR__ . "/model/MstNotIn.php";
 require_once __DIR__ . "/model/MstBetween.php";
+require_once __DIR__ . "/model/MstOr.php";
 
 
 
@@ -544,6 +545,32 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         foreach ($mstBetween as $between) {
             $this->assertEquals($between->getMode(), 2);
+        }
+    }
+
+    /**
+     * test ADD_OR
+     */
+    public function testOr()
+    {
+        /** @var MstOr $mstOr */
+        $mstOr = MstOr::criteria()
+            ->add("type", 5)
+            ->addOr("mode", 6)
+            ->findFirst();
+
+        $this->assertEquals($mstOr->getId(), 6);
+
+        /** @var MstOr[] $mstOr */
+        $mstOr = MstOr::criteria()
+            ->add("type", 0)
+            ->addOr("mode", 1)
+            ->find();
+
+        $this->assertEquals(count($mstOr), 4);
+
+        foreach ($mstOr as $or) {
+            $this->assertEquals($or->getName(), "OK");
         }
     }
 
