@@ -16,6 +16,7 @@ require_once __DIR__ . "/model/MstGreaterEqual.php";
 require_once __DIR__ . "/model/MstLessEqual.php";
 require_once __DIR__ . "/model/MstIsNull.php";
 require_once __DIR__ . "/model/MstIsNotNull.php";
+require_once __DIR__ . "/model/MstLike.php";
 
 
 
@@ -406,7 +407,29 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * test LIKE
+     */
+    public function testLike()
+    {
+        /** @var MstLike $mstLike */
+        $mstLike = MstLike::criteria()
+            ->add("name", "a", Criteria::LIKE)
+            ->findFirst();
 
+        $this->assertEquals($mstLike->getId(), 1);
+
+        /** @var MstLike[] $mstLike */
+        $mstLike = MstIsNotNull::criteria()
+            ->add("name", "%d%", Criteria::LIKE)
+            ->find();
+
+        $this->assertEquals(count($mstLike), 3);
+
+        foreach ($mstLike as $like) {
+            $this->assertEquals($like->getMode(), 3);
+        }
+    }
 
 
 }
