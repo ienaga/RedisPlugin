@@ -420,7 +420,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($mstLike->getId(), 1);
 
         /** @var MstLike[] $mstLike */
-        $mstLike = MstIsNotNull::criteria()
+        $mstLike = MstLike::criteria()
             ->add("name", "%d%", Criteria::LIKE)
             ->find();
 
