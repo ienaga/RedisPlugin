@@ -232,6 +232,25 @@ INSERT INTO `common`.`mst_like` (`id`, `name`, `mode`) VALUES
 
 
 
+CREATE TABLE IF NOT EXISTS `common`.`mst_i_like` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(50) NOT NULL,
+  `mode` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+INSERT INTO `common`.`mst_i_like` (`id`, `name`, `mode`) VALUES
+  (1, 'A', 2),
+  (2, 'ab', 2),
+  (3, 'ABC', 2),
+  (4, 'ABCD', 3),
+  (5, 'abcde', 3),
+  (6, 'ABCDEF', 3);
+
+
+
+
+
 
 
 CREATE TABLE IF NOT EXISTS `user1`.`user` (
