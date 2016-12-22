@@ -4,7 +4,7 @@ require_once __DIR__ . "/../../src/mvc/Model.php";
 
 use \RedisPlugin\Mvc\Model;
 
-class MstILike extends Model
+class MstNotLike extends Model
 {
     /**
      * @var int

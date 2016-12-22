@@ -17,7 +17,7 @@ require_once __DIR__ . "/model/MstLessEqual.php";
 require_once __DIR__ . "/model/MstIsNull.php";
 require_once __DIR__ . "/model/MstIsNotNull.php";
 require_once __DIR__ . "/model/MstLike.php";
-require_once __DIR__ . "/model/MstILike.php";
+require_once __DIR__ . "/model/MstNotLike.php";
 require_once __DIR__ . "/model/MstIn.php";
 
 
@@ -436,24 +436,24 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     /**
      * test I_LIKE
      */
-    public function testILike()
+    public function testNotLike()
     {
-        /** @var MstILike $mstILike */
-        $mstILike = MstIn::criteria()
-            ->add("name", "A", Criteria::I_LIKE)
+        /** @var MstNotLike $mstNotLike */
+        $mstNotLike = MstNotLike::criteria()
+            ->add("name", "b", Criteria::NOT_LIKE)
             ->findFirst();
 
-        $this->assertEquals($mstILike->getId(), 1);
+        $this->assertEquals($mstNotLike->getId(), 1);
 
-        /** @var MstIn[] $mstILike */
-        $mstILike = MstIn::criteria()
-            ->add("name", "%D%", Criteria::I_LIKE)
+        /** @var MstNotLike[] $mstNotLike */
+        $mstNotLike = MstNotLike::criteria()
+            ->add("name", "%D%", Criteria::NOT_LIKE)
             ->find();
 
-        $this->assertEquals(count($mstILike), 3);
+        $this->assertEquals(count($mstNotLike), 3);
 
-        foreach ($mstILike as $iLike) {
-            $this->assertEquals($iLike->getMode(), 3);
+        foreach ($mstNotLike as $notLike) {
+            $this->assertEquals($notLike->getMode(), 2);
         }
     }
 

@@ -222,24 +222,24 @@ CREATE TABLE IF NOT EXISTS `common`.`mst_like` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 INSERT INTO `common`.`mst_like` (`id`, `name`, `mode`) VALUES
-  (1, 'a', 2),
+  (1, 'A', 2),
   (2, 'ab', 2),
-  (3, 'abc', 2),
-  (4, 'abcd', 3),
+  (3, 'ABC', 2),
+  (4, 'ABCD', 3),
   (5, 'abcde', 3),
-  (6, 'abcdef', 3);
+  (6, 'ABCDEF', 3);
 
 
 
 
-CREATE TABLE IF NOT EXISTS `common`.`mst_i_like` (
+CREATE TABLE IF NOT EXISTS `common`.`mst_not_like` (
   `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `name` varchar(50) NOT NULL,
   `mode` int(10) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
-INSERT INTO `common`.`mst_i_like` (`id`, `name`, `mode`) VALUES
+INSERT INTO `common`.`mst_not_like` (`id`, `name`, `mode`) VALUES
   (1, 'A', 2),
   (2, 'ab', 2),
   (3, 'ABC', 2),
@@ -260,7 +260,7 @@ CREATE TABLE IF NOT EXISTS `common`.`mst_in` (
 ALTER TABLE `common`.`mst_in`
   ADD KEY `type_idx` (`type`) USING BTREE;
 
-INSERT INTO `common`.`mst_in` (`id`, `type`, `, `type``) VALUES
+INSERT INTO `common`.`mst_in` (`id`, `type`, `mode`) VALUES
   (1, 0, 1),
   (2, 1, 1),
   (3, 1, 1),

@@ -15,7 +15,7 @@ class Criteria implements CriteriaInterface
     const IS_NULL       = "IS NULL";
     const IS_NOT_NULL   = "IS NOT NULL";
     const LIKE          = "LIKE";
-    const I_LIKE        = "ILIKE";
+    const NOT_LIKE      = "NOT LIKE";
     const IN            = "IN";
     const NOT_IN        = "NOT IN";
     const BETWEEN       = "BETWEEN";
