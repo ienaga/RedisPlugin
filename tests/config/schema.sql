@@ -155,6 +155,29 @@ INSERT INTO `common`.`mst_greater_equal` (`id`, `type`) VALUES
 
 
 
+CREATE TABLE IF NOT EXISTS `common`.`mst_less_equal` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type` int(10) unsigned NOT NULL,
+  `mode` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+ALTER TABLE `common`.`mst_less_equal`
+  ADD KEY `type_idx` (`type`) USING BTREE;
+
+INSERT INTO `common`.`mst_less_equal` (`id`, `type`, `mode`) VALUES
+  (1, 0, 2),
+  (2, 1, 2),
+  (3, 2, 3),
+  (4, 2, 3),
+  (5, 2, 3),
+  (6, 2, 3);
+
+
+
+
+
+
 CREATE TABLE IF NOT EXISTS `user1`.`user` (
   `id` int(10) unsigned NOT NULL,
   `name` varchar(50) NOT NULL,
