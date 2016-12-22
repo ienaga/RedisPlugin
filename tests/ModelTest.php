@@ -14,6 +14,7 @@ require_once __DIR__ . "/model/MstGreaterThan.php";
 require_once __DIR__ . "/model/MstLessThan.php";
 require_once __DIR__ . "/model/MstGreaterEqual.php";
 require_once __DIR__ . "/model/MstLessEqual.php";
+require_once __DIR__ . "/model/MstIsNull.php";
 
 
 
@@ -352,9 +353,32 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(count($mstLessEqual), 2);
 
         foreach ($mstLessEqual as $lessEqual) {
-            $this->assertEquals($lessEqual->getMode(), 3);
+            $this->assertEquals($lessEqual->getMode(), 2);
         }
     }
 
+    /**
+     * test IS_NULL
+     */
+    public function testIsNull()
+    {
+        /** @var MstIsNull $mstLessEqual */
+        $mstIsNull = MstIsNull::criteria()
+            ->isNull("type")
+            ->findFirst();
+
+        $this->assertEquals($mstIsNull->getId(), 1);
+
+        /** @var MstIsNull[] $mstLessEqual */
+        $mstIsNull = MstIsNull::criteria()
+            ->add("type", 1, Criteria::LESS_EQUAL)
+            ->find();
+
+        $this->assertEquals(count($mstIsNull), 3);
+
+        foreach ($mstIsNull as $isNull) {
+            $this->assertEquals($isNull->getMode(), 2);
+        }
+    }
 
 }
