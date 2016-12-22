@@ -19,6 +19,7 @@ require_once __DIR__ . "/model/MstIsNotNull.php";
 require_once __DIR__ . "/model/MstLike.php";
 require_once __DIR__ . "/model/MstNotLike.php";
 require_once __DIR__ . "/model/MstIn.php";
+require_once __DIR__ . "/model/MstNotIn.php";
 
 
 
@@ -477,8 +478,35 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(count($mstIn), 4);
 
         foreach ($mstIn as $in) {
-            $this->assertEquals($in->getMode(), 2);
+            $this->assertEquals($in->getMode(), 1);
         }
     }
+
+    /**
+     * test NOT_IN
+     */
+    public function testNotIn()
+    {
+        /** @var MstNotIn $mstNotIn */
+        $mstNotIn = MstNotIn::criteria()
+            ->notIn("type", array(1,2))
+            ->findFirst();
+
+        $this->assertEquals($mstNotIn->getId(), 1);
+
+        /** @var MstNotIn[] $mstNotIn */
+        $mstNotIn = MstNotIn::criteria()
+            ->notIn("type", array(0))
+            ->find();
+
+        $this->assertEquals(count($mstNotIn), 5);
+
+        foreach ($mstNotIn as $notIn) {
+            $this->assertEquals($notIn->getMode(), 2);
+        }
+    }
+
+
+
 
 }
