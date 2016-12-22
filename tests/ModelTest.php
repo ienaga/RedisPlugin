@@ -115,14 +115,14 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     public function testIndexes4()
     {
         $criteria = MstIndex::criteria()
-            ->add("mode", 1)
             ->add("type", 2)
+            ->add("mode", 1)
             ->add("level", 1);
 
         $param = $criteria->getConditions();
         $query = Model::buildParameters($param);
 
-        $this->assertEquals($query[0], "[level] = :level: AND [type] = :type: AND [mode] = :mode:");
+        $this->assertEquals($query[0], "[level] = :level: AND [mode] = :mode: AND [type] = :type:");
     }
 
     /**
