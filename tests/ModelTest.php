@@ -563,7 +563,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         /** @var MstOr[] $mstOr */
         $mstOr = MstOr::criteria()
-            ->add("type", 0)
+            ->addOr("type", 0)
             ->addOr("mode", 1)
             ->find();
 
