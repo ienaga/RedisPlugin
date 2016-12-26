@@ -23,6 +23,7 @@ require_once __DIR__ . "/model/MstNotIn.php";
 require_once __DIR__ . "/model/MstBetween.php";
 require_once __DIR__ . "/model/MstOr.php";
 require_once __DIR__ . "/model/MstTestSum.php";
+require_once __DIR__ . "/model/MstTestCount.php";
 
 
 
@@ -580,7 +581,6 @@ class ModelTest extends \PHPUnit_Framework_TestCase
      */
     public function testSum1()
     {
-        /** @var MstTestSum $mstTestSum */
         $point = MstTestSum::criteria()
             ->add("type", 1)
             ->sum("point");
@@ -593,10 +593,31 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             ->addGroup("mode")
             ->sum("point");
 
-        $results = array(120, 500);
+        $values = array(120, 500);
         foreach ($mstTestSum as $key => $testSum) {
-            $this->assertEquals((int) $testSum->sumatory, $results[$key]);
+            $this->assertEquals((int) $testSum->sumatory, $values[$key]);
         }
+    }
 
+    /**
+     * test count 1
+     */
+    public function testCount1()
+    {
+        $count = MstTestCount::criteria()
+            ->add("type", 1)
+            ->count();
+
+        $this->assertEquals($count, 3);
+
+        /** @var MstTestCount $mstTestCount */
+        $mstTestCount = MstTestCount::criteria()
+            ->addGroup("type")
+            ->count();
+
+        $values = array(3, 2, 1);
+        foreach ($mstTestCount as $key => $testCount) {
+            $this->assertEquals((int) $testCount->rowcount, $values[$key]);
+        }
     }
 }
