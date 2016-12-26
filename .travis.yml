@@ -18,7 +18,7 @@ before_install:
   - echo "extension=redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - composer install --dev -o --prefer-source --no-interaction
   - chmod +x bin/install-phalcon.sh
-  - bin/install-phalcon.sh 3.0.x
+  - bin/install-phalcon.sh v3.0.3
 
 before_script:
   - mysql -uroot < tests/config/schema.sql
