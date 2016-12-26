@@ -17,16 +17,6 @@ class MstTestCount extends Model
     protected $type;
 
     /**
-     * @var int
-     */
-    protected $mode;
-
-    /**
-     * @var int
-     */
-    protected $point;
-
-    /**
      * @return int
      */
     public function getId()
@@ -57,38 +47,4 @@ class MstTestCount extends Model
     {
         $this->type = $type;
     }
-
-    /**
-     * @return int
-     */
-    public function getMode()
-    {
-        return $this->mode;
-    }
-
-    /**
-     * @param int $mode
-     */
-    public function setMode($mode)
-    {
-        $this->mode = $mode;
-    }
-
-    /**
-     * @return int
-     */
-    public function getPoint()
-    {
-        return $this->point;
-    }
-
-    /**
-     * @param int $point
-     */
-    public function setName($point)
-    {
-        $this->point = $point;
-    }
-
-
 }
