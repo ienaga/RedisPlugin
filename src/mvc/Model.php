@@ -356,15 +356,16 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
         // execute mode
         $result = null;
+
         switch ($mode) {
             case "find":
                 $result = parent::find($params);
                 break;
             case "sum":
-                $result = (int) parent::sum($params);
+                $result = parent::sum($params);
                 break;
             case "count":
-                $result = (int) parent::count($params);
+                $result = parent::count($params);
                 break;
         }
 

@@ -349,7 +349,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
     /**
      * @param  string $column
-     * @return int
+     * @return mixed
      */
     public function sum($column)
     {
@@ -358,7 +358,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     }
 
     /**
-     * @return int
+     * @return mixed
      */
     public function count()
     {

@@ -25,13 +25,13 @@ interface CriteriaInterface
     public function delete();
 
     /**
-     * @return int
+     * @return mixed
      */
     public function count();
 
     /**
      * @param  string $column
-     * @return int
+     * @return mixed
      */
     public function sum($column);
 }

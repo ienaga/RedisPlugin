@@ -583,9 +583,20 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         /** @var MstTestSum $mstTestSum */
         $point = MstTestSum::criteria()
             ->add("type", 1)
-            ->addGroup("mode")
             ->sum("point");
 
         $this->assertEquals($point, 620);
+
+        /** @var MstTestSum $mstTestSum */
+        $mstTestSum = MstTestSum::criteria()
+            ->add("type", 1)
+            ->addGroup("mode")
+            ->sum("point");
+
+        $results = array(120, 500);
+        foreach ($mstTestSum as $key => $testSum) {
+            $this->assertEquals($testSum, $results[$key]);
+        }
+
     }
 }
