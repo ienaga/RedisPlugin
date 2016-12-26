@@ -449,6 +449,20 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
         $addKeys = array();
 
+        // sum
+        if (isset($parameters["column"])) {
+
+            $addKeys[] = "column";
+
+            $fields = explode(",", $parameters["column"]);
+
+            foreach ($fields as $field) {
+
+                $addKeys[] = trim($field);
+
+            }
+        }
+
         // order by
         if (isset($parameters["order"])) {
 
