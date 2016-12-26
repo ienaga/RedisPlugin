@@ -595,7 +595,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         $results = array(120, 500);
         foreach ($mstTestSum as $key => $testSum) {
-            $this->assertEquals($testSum, $results[$key]);
+            $this->assertEquals((int) $testSum->sumatory, $results[$key]);
         }
 
     }
