@@ -22,6 +22,7 @@ require_once __DIR__ . "/model/MstIn.php";
 require_once __DIR__ . "/model/MstNotIn.php";
 require_once __DIR__ . "/model/MstBetween.php";
 require_once __DIR__ . "/model/MstOr.php";
+require_once __DIR__ . "/model/MstTestSum.php";
 
 
 
@@ -574,5 +575,17 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         }
     }
 
+    /**
+     * test sum 1
+     */
+    public function testSum1()
+    {
+        /** @var MstTestSum $mstTestSum */
+        $point = MstTestSum::criteria()
+            ->add("type", 1)
+            ->addGroup("mode")
+            ->sum("point");
 
+        $this->assertEquals($point, 620);
+    }
 }

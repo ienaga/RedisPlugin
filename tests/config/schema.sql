@@ -327,6 +327,23 @@ INSERT INTO `common`.`mst_or` (`id`, `type`, `mode`, `name`) VALUES
 
 
 
+CREATE TABLE IF NOT EXISTS `common`.`mst_test_sum` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type` int(10) unsigned NOT NULL,
+  `mode` int(10) unsigned NOT NULL,
+  `point` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+INSERT INTO `common`.`mst_test_sum` (`id`, `type`, `mode`, `point`) VALUES
+  (1, 1, 0, 100),
+  (2, 1, 0, 20),
+  (3, 1, 1, 500),
+  (4, 2, 1, 70),
+  (5, 2, 2, 10),
+  (6, 2, 6, 30);
+
+
 
 CREATE TABLE IF NOT EXISTS `user1`.`user` (
   `id` int(10) unsigned NOT NULL,

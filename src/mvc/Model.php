@@ -64,7 +64,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @var null|string
      */
-    private static $name = null;
+    private static $config_name = null;
 
     /**
      * initialize
@@ -1142,12 +1142,11 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * first insert only
-     * @param $name
+     * @param $config_name
      */
-    public static function setServiceName($name)
+    public static function setServiceName($config_name)
     {
-        self::$name = $name;
+        self::$config_name = $config_name;
     }
 
     /**
@@ -1163,15 +1162,15 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
                 $configName = self::getAdminServiceName();
                 break;
             default:
-                $configName = (self::$name === null)
+                $configName = (self::$config_name === null)
                     ? self::getShardServiceName()
-                    : self::$name;
+                    : self::$config_name;
                 break;
         }
 
-        $slaveName  = $configName;
-        $slaveName .= (Database::isTransaction()) ? "Master" : "Slave";
-        return $slaveName;
+        return (Database::isTransaction())
+            ? $configName ."Master"
+            : $configName ."Slave";
     }
 
     /**
@@ -1374,7 +1373,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      */
     public static function localCacheClear()
     {
-        self::$name                = null;
+        self::$config_name         = null;
         self::$_prefix             = null;
         self::$_keys               = array();
         self::$_bind               = array();
