@@ -3,7 +3,6 @@ php:
   - 5.4
   - 5.5
   - 5.6
-  - 7.0
 
 cache:
   directories:
@@ -13,9 +12,9 @@ cache:
 
 before_install:
   - pecl channel-update pecl.php.net
-  - pecl install -f yaml-2.0.0 < /dev/null
+  - bin/install-yaml.sh
   - echo "extension=yaml.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - pecl install -f redis < /dev/null
+  - pecl install redis < /dev/null
   - echo "extension=redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - composer install --dev -o --prefer-source --no-interaction
   - chmod +x bin/install-phalcon.sh
