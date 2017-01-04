@@ -14,13 +14,13 @@ cache:
     - ~/cphalcon
 
 before_install:
+  - chmod +x bin/*.sh
   - pecl channel-update pecl.php.net
   - bin/install-yaml.sh
   - echo "extension=yaml.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - pecl install redis < /dev/null
   - echo "extension=redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - composer install --dev -o --prefer-source --no-interaction
-  - chmod +x bin/install-phalcon.sh
   - bin/install-phalcon.sh v3.0.2
 
 before_script:
