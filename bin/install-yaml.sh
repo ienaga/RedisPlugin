@@ -12,8 +12,12 @@ fi
 
 PHP_VER=$(phpenv version-name)
 
+echo "PHP Version: ${PHP_VER}"
+
 if [[ $PHP_VER == 7* ]]; then
+    echo "Install yaml ver 2.0.0"
     sudo pecl install -f yaml-2.0.0  < /dev/null
 else
+    echo "Install yaml."
     sudo pecl install -f yaml  < /dev/null
 fi
