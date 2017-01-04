@@ -13,9 +13,9 @@ cache:
 
 before_install:
   - pecl channel-update pecl.php.net
-  - pecl install -f yaml
+  - pecl install -f yaml < /dev/null
   - echo "extension=yaml.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - pecl install -f redis
+  - pecl install -f redis < /dev/null
   - echo "extension=redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - composer install --dev -o --prefer-source --no-interaction
   - chmod +x bin/install-phalcon.sh
