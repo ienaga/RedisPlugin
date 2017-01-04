@@ -13,7 +13,7 @@ cache:
 
 before_install:
   - pecl channel-update pecl.php.net
-  - pecl install -f yaml < /dev/null
+  - pecl install -f yaml-2.0.0 < /dev/null
   - echo "extension=yaml.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - pecl install -f redis < /dev/null
   - echo "extension=redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
