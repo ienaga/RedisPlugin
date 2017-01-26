@@ -400,7 +400,7 @@ e.g. PRIMARY = type, INDEX = id, status
 
  
 ```php
-class Robot extends \Phalcon\Mvc\Model {}
+class Robot extends \RedisPlugin\Mvc\Model {}
 
 $robot = Robot::criteria()
     ->limit(10)
@@ -430,7 +430,7 @@ LIMIT 10
 
 * 単体
 ```php
-class Robot extends \Phalcon\Mvc\Model {}
+class Robot extends \RedisPlugin\Mvc\Model {}
 
 $robot = Robot::criteria()
     ->limit(10)
@@ -446,9 +446,9 @@ $robot = Robot::criteria()
 * 全体
 
 ```php
-class Robot extends \Phalcon\Mvc\Model {}
+class Robot extends \RedisPlugin\Mvc\Model {}
 
-\Phalcon\Mvc\Model::test(true);
+\RedisPlugin\Mvc\Model::test(true);
 
 $robot = Robot::criteria()
     ->limit(10)
