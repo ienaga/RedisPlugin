@@ -427,6 +427,8 @@ LIMIT 10
 テストモードをtrueにしてSQLを発行。
 どのIndexにもマッチしない時はErrorを出力。
 
+
+* 単体
 ```php
 class Robot extends \Phalcon\Mvc\Model {}
 
@@ -438,5 +440,22 @@ $robot = Robot::criteria()
     ->add("status", $status)
     ->add("id", $id)
     ->test(true)
+    ->find();
+```
+
+* 全体
+
+```php
+class Robot extends \Phalcon\Mvc\Model {}
+
+\Phalcon\Mvc\Model::test(true);
+
+$robot = Robot::criteria()
+    ->limit(10)
+    ->add("type", $type)
+    ->addGroup("type")
+    ->addOrder("id", "DESC")
+    ->add("status", $status)
+    ->add("id", $id)
     ->find();
 ```

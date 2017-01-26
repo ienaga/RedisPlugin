@@ -27,6 +27,11 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     const DEFAULT_EXPIRE = 3600;
 
     /**
+     * @var bool
+     */
+    private static $_test = false;
+
+    /**
      * @var null
      */
     private static $_prefix = self::DEFAULT_PREFIX;
@@ -81,6 +86,14 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
         // mysql connection
         $this->setReadConnectionService(self::getServiceNames());
+    }
+
+    /**
+     * @param bool $bool
+     */
+    public static function test($bool = false)
+    {
+        self::$_test = $bool;
     }
 
     /**
@@ -592,7 +605,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
             if ($indexes) {
 
-                $test = false;
+                $test = self::$_test;
                 if (isset($parameters["test"])) {
                     $test = $parameters["test"];
                     unset($parameters["test"]);
