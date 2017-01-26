@@ -422,3 +422,21 @@ ORDER BY `id` DESC
 LIMIT 10
 ```
 
+## Index Test Mode
+
+テストモードをtrueにしてSQLを発行。
+どのIndexにもマッチしない時はErrorを出力。
+
+```php
+class Robot extends \Phalcon\Mvc\Model {}
+
+$robot = Robot::criteria()
+    ->limit(10)
+    ->add("type", $type)
+    ->addGroup("type")
+    ->addOrder("id", "DESC")
+    ->add("status", $status)
+    ->add("id", $id)
+    ->test(true)
+    ->find();
+```
