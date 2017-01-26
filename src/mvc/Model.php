@@ -564,6 +564,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @param  array $parameters
      * @return array
+     * @throws RedisPluginException
      */
     public static function buildParameters($parameters)
     {
@@ -591,6 +592,12 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
             if ($indexes) {
 
+                $test = false;
+                if (isset($parameters["test"])) {
+                    $test = $parameters["test"];
+                    unset($parameters["test"]);
+                }
+
                 // 一番マッチするindexにあわせてクエリを発行(PRIMARY優先)
                 foreach ($indexes as $key => $index) {
 
@@ -614,6 +621,10 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
                     if ($key === "PRIMARY" && count($chkQuery)) {
                         break;
                     }
+                }
+
+                if ($test && !count($indexQuery)) {
+                    throw new RedisPluginException("index not match.");
                 }
             }
 

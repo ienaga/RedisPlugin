@@ -289,6 +289,17 @@ class Criteria implements CriteriaInterface, OperatorInterface
     }
 
     /**
+     * @param  bool  $bool
+     * @return $this
+     */
+    public function test($bool = false)
+    {
+        $this->conditions["test"] = $bool;
+
+        return $this;
+    }
+
+    /**
      * @param  string $column
      * @param  mixed  $value
      * @return $this
