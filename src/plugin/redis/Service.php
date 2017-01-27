@@ -120,7 +120,7 @@ class Service implements ServiceInterface
                 // logging
                 if ($log->get("logging")) {
                     $eventsManager = new EventManager();
-                    $logger        = new File($log->get("output"));
+                    $logger        = new File(getcwd()."/../log/".$log->get("output"));
                     $eventsManager->attach("db", function($event, $connection) use ($logger)
                     {
                         /** @var \Phalcon\Db\Adapter $connection */
