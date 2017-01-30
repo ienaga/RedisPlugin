@@ -48,24 +48,29 @@ class Service implements ServiceInterface
                 $connection = new Mysql($arguments->toArray());
 
                 // logging
-                if ($log->get("logging")) {
-                    $eventsManager = new EventManager();
-                    $logger        = new File(getcwd()."/../log/".$log->get("output"));
-                    $eventsManager->attach("db", function($event, $connection) use ($logger)
-                    {
-                        /** @var \Phalcon\Db\Adapter $connection */
-                        if ($event->getType() === "beforeQuery") {
-                            $sqlVariables = $connection->getSQLVariables();
-                            if (count($sqlVariables)) {
-                                $logger->log($connection->getSQLStatement() . " " . join(", ", $sqlVariables), Logger::INFO);
-                            } else {
-                                $logger->log($connection->getSQLStatement(), Logger::INFO);
-                            }
-                        }
-                    });
+                if ($log && $log->get("logging")) {
 
-                    // event set
-                    $connection->setEventsManager($eventsManager);
+                    $logPath = __DIR__."/../../../../../../log/";
+
+                    if (file_exists($logPath)) {
+                        $eventsManager = new EventManager();
+                        $logger        = new File(getcwd()."/../log/".$log->get("output"));
+                        $eventsManager->attach("db", function($event, $connection) use ($logger)
+                        {
+                            /** @var \Phalcon\Db\Adapter $connection */
+                            if ($event->getType() === "beforeQuery") {
+                                $sqlVariables = $connection->getSQLVariables();
+                                if (count($sqlVariables)) {
+                                    $logger->log($connection->getSQLStatement() . " " . join(", ", $sqlVariables), Logger::INFO);
+                                } else {
+                                    $logger->log($connection->getSQLStatement(), Logger::INFO);
+                                }
+                            }
+                        });
+
+                        // event set
+                        $connection->setEventsManager($eventsManager);
+                    }
                 }
 
                 return $connection;
@@ -118,24 +123,29 @@ class Service implements ServiceInterface
                 $connection = new Mysql($descriptor);
 
                 // logging
-                if ($log->get("logging")) {
-                    $eventsManager = new EventManager();
-                    $logger        = new File(getcwd()."/../log/".$log->get("output"));
-                    $eventsManager->attach("db", function($event, $connection) use ($logger)
-                    {
-                        /** @var \Phalcon\Db\Adapter $connection */
-                        if ($event->getType() === "beforeQuery") {
-                            $sqlVariables = $connection->getSQLVariables();
-                            if (count($sqlVariables)) {
-                                $logger->log($connection->getSQLStatement() . " " . join(", ", $sqlVariables), Logger::INFO);
-                            } else {
-                                $logger->log($connection->getSQLStatement(), Logger::INFO);
-                            }
-                        }
-                    });
+                if ($log && $log->get("logging")) {
 
-                    // event set
-                    $connection->setEventsManager($eventsManager);
+                    $logPath = __DIR__."/../../../../../../log/";
+
+                    if (file_exists($logPath)) {
+                        $eventsManager = new EventManager();
+                        $logger        = new File(getcwd()."/../log/".$log->get("output"));
+                        $eventsManager->attach("db", function($event, $connection) use ($logger)
+                        {
+                            /** @var \Phalcon\Db\Adapter $connection */
+                            if ($event->getType() === "beforeQuery") {
+                                $sqlVariables = $connection->getSQLVariables();
+                                if (count($sqlVariables)) {
+                                    $logger->log($connection->getSQLStatement() . " " . join(", ", $sqlVariables), Logger::INFO);
+                                } else {
+                                    $logger->log($connection->getSQLStatement(), Logger::INFO);
+                                }
+                            }
+                        });
+
+                        // event set
+                        $connection->setEventsManager($eventsManager);
+                    }
                 }
 
                 return $connection;
