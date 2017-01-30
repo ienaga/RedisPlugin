@@ -54,7 +54,7 @@ class Service implements ServiceInterface
 
                     if (file_exists($logPath)) {
                         $eventsManager = new EventManager();
-                        $logger        = new File(getcwd()."/../log/".$log->get("output"));
+                        $logger        = new File($logPath.$log->get("output"));
                         $eventsManager->attach("db", function($event, $connection) use ($logger)
                         {
                             /** @var \Phalcon\Db\Adapter $connection */
@@ -129,7 +129,7 @@ class Service implements ServiceInterface
 
                     if (file_exists($logPath)) {
                         $eventsManager = new EventManager();
-                        $logger        = new File(getcwd()."/../log/".$log->get("output"));
+                        $logger        = new File($logPath.$log->get("output"));
                         $eventsManager->attach("db", function($event, $connection) use ($logger)
                         {
                             /** @var \Phalcon\Db\Adapter $connection */
