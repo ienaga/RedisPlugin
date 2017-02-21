@@ -19,7 +19,7 @@ before_install:
   - pecl install -f redis < /dev/null
   - echo "extension=redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - composer install --dev -o --prefer-source --no-interaction
-  - bin/install-phalcon.sh v3.0.2
+  - bin/install-phalcon.sh v3.0.4
 
 before_script:
   - mysql -uroot < tests/config/schema.sql
