@@ -48,9 +48,9 @@ class Service implements ServiceInterface
                 $connection = new Mysql($arguments->toArray());
 
                 // logging
-                if ($log && $log->get("logging")) {
+                if ($log && $log->get("logging") && $log->get("output")) {
 
-                    $logPath = __DIR__."/../../../../../../log/";
+                    $logPath = getcwd()."/../log/";
 
                     if (file_exists($logPath)) {
                         $eventsManager = new EventManager();
@@ -123,9 +123,11 @@ class Service implements ServiceInterface
                 $connection = new Mysql($descriptor);
 
                 // logging
-                if ($log && $log->get("logging")) {
+                if ($log && $log->get("logging") && $log->get("output")) {
 
-                    $logPath = __DIR__."/../../../../../../log/";
+                    error_log(getcwd());
+
+                    $logPath = getcwd()."/../log/";
 
                     if (file_exists($logPath)) {
                         $eventsManager = new EventManager();
