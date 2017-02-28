@@ -49,7 +49,7 @@ class Service implements ServiceInterface
 
                 // logging
                 if ($log && $log->get("logging") && $log->get("output")) {
-
+z
                     $logPath = getcwd()."/../log/";
 
                     if (file_exists($logPath)) {
@@ -124,8 +124,6 @@ class Service implements ServiceInterface
 
                 // logging
                 if ($log && $log->get("logging") && $log->get("output")) {
-
-                    error_log(getcwd());
 
                     $logPath = getcwd()."/../log/";
 
