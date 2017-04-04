@@ -395,4 +395,13 @@ class Criteria implements CriteriaInterface, OperatorInterface
         return $model::queryDelete($this->buildCondition(), $model);
     }
 
+    /**
+     * @return bool
+     */
+    public function truncate()
+    {
+        $model = $this->getModel();
+        return $model::truncate($model);
+    }
+
 }

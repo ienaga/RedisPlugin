@@ -1079,14 +1079,17 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
         $params = self::buildParameters($parameters);
 
         // replace
-        $where = $params[0];
-        $where = str_replace("[", "`", $where);
-        $where = str_replace("]", "`", $where);
+        $where = 1;
+        if (isset($params[0])) {
+            $where = $params[0];
+            $where = str_replace("[", "`", $where);
+            $where = str_replace("]", "`", $where);
 
-        // bind
-        $bind  = $params["bind"];
-        foreach ($bind as $column => $value) {
-            $where = str_replace(":". $column .":", $value, $where);
+            // bind
+            $bind  = $params["bind"];
+            foreach ($bind as $column => $value) {
+                $where = str_replace(":". $column .":", $value, $where);
+            }
         }
 
         // update
@@ -1134,20 +1137,44 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
         $params = self::buildParameters($parameters);
 
         // replace
-        $where = $params[0];
-        $where = str_replace("[", "", $where);
-        $where = str_replace("]", "", $where);
+        $where = 1;
+        if (isset($params[0])) {
+            $where = $params[0];
+            $where = str_replace("[", "", $where);
+            $where = str_replace("]", "", $where);
 
-        // bind
-        $bind  = $params["bind"];
-        foreach ($bind as $column => $value) {
-            $where = str_replace(":". $column .":", $value, $where);
+            // bind
+            $bind  = $params["bind"];
+            foreach ($bind as $column => $value) {
+                $where = str_replace(":". $column .":", $value, $where);
+            }
         }
 
         // execute
         $service = $model->getReadConnectionService();
         $adapter = \Phalcon\DI::getDefault()->getShared($service);
         $sql     = sprintf("DELETE FROM %s WHERE %s", $model->getSource(), $where);
+        $result  = $adapter->execute($sql);
+
+        // cache delete
+        self::cacheAllDelete($model);
+
+        return $result;
+    }
+
+    /**
+     * @param \Phalcon\Mvc\Model $model
+     * @return mixed
+     */
+    public static function truncate(\Phalcon\Mvc\Model $model)
+    {
+        // initialize
+        $model->initialize();
+
+        // execute
+        $service = $model->getReadConnectionService();
+        $adapter = \Phalcon\DI::getDefault()->getShared($service);
+        $sql     = sprintf("TRUNCATE %s", $model->getSource());
         $result  = $adapter->execute($sql);
 
         // cache delete
