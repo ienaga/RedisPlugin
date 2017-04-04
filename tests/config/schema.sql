@@ -360,6 +360,16 @@ INSERT INTO `common`.`mst_test_count` (`id`, `type`) VALUES
   (6, 3);
 
 
+CREATE TABLE IF NOT EXISTS `common`.`mst_truncate` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+INSERT INTO `common`.`mst_truncate` (`id`) VALUES
+  (1),(2),(3),(4),(5),(6);
+
+
+
 
 CREATE TABLE IF NOT EXISTS `user1`.`user` (
   `id` int(10) unsigned NOT NULL,

@@ -24,6 +24,7 @@ require_once __DIR__ . "/model/MstBetween.php";
 require_once __DIR__ . "/model/MstOr.php";
 require_once __DIR__ . "/model/MstTestSum.php";
 require_once __DIR__ . "/model/MstTestCount.php";
+require_once __DIR__ . "/model/MstTruncate.php";
 
 
 
@@ -619,5 +620,19 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         foreach ($mstTestCount as $key => $testCount) {
             $this->assertEquals((int) $testCount->rowcount, $values[$key]);
         }
+    }
+
+    /**
+     * test truncate
+     */
+    public function testTruncate()
+    {
+        $data = MstTruncate::criteria()->find();
+        $this->assertEquals(count($data), 6);
+
+        MstTruncate::criteria()->truncate();
+
+        $data = MstTruncate::criteria()->find();
+        $this->assertEquals(count($data), 0);
     }
 }
