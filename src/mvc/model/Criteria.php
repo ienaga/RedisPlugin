@@ -267,6 +267,17 @@ class Criteria implements CriteriaInterface, OperatorInterface
     }
 
     /**
+     * @param string $columns
+     * @return $this
+     */
+    public function setColumns($columns)
+    {
+        $this->conditions["columns"] = $columns;
+
+        return $this;
+    }
+
+    /**
      * @param  bool  $bool
      * @return $this
      */

@@ -24,6 +24,7 @@ require_once __DIR__ . "/model/MstBetween.php";
 require_once __DIR__ . "/model/MstOr.php";
 require_once __DIR__ . "/model/MstTestSum.php";
 require_once __DIR__ . "/model/MstTestCount.php";
+require_once __DIR__ . "/model/MstTestColumns.php";
 require_once __DIR__ . "/model/MstTruncate.php";
 
 
@@ -634,5 +635,43 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         $data = MstTruncate::criteria()->find();
         $this->assertEquals(count($data), 0);
+    }
+
+    /**
+     * test columns
+     */
+    public function testColumns()
+    {
+        $data = MstTestColumns::criteria()->find();
+        $this->assertTrue(isset($data["alpha"]));
+        $this->assertTrue(isset($data["beta"]));
+        $this->assertTrue(isset($data["gamma"]));
+
+        $data = MstTestColumns::criteria()
+            ->setColumns("alpha")
+            ->add("alpha",1)
+            ->findFirst();
+        $this->assertTrue(isset($data["alpha"]));
+        $this->assertFalse(isset($data["beta"]));
+        $this->assertFalse(isset($data["gamma"]));
+
+
+        $data = MstTestColumns::criteria()
+            ->setColumns("alpha,beta")
+            ->add("beta",1)
+            ->findFirst();
+        $this->assertTrue(isset($data["alpha"]));
+        $this->assertTrue(isset($data["beta"]));
+        $this->assertFalse(isset($data["gamma"]));
+
+
+        $data = MstTestColumns::criteria()
+            ->setColumns("beta,gamma")
+            ->add("gamma",1)
+            ->findFirst();
+        $this->assertFalse(isset($data["alpha"]));
+        $this->assertTrue(isset($data["beta"]));
+        $this->assertTrue(isset($data["gamma"]));
+
     }
 }
