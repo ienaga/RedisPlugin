@@ -301,6 +301,34 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
     /**
      * @param  null|string|array $parameters
+     * @return mixed
+     */
+    public static function max($parameters = null)
+    {
+        // parent
+        if (!is_array($parameters) || !isset($parameters["query"])) {
+            return parent::maximum($parameters);
+        }
+
+        // params
+        $params = self::buildParameters($parameters);
+
+        // bind to prefix
+        self::bindToPrefix($params);
+
+        // field key
+        $field  = self::getFieldKey($params, __FUNCTION__);
+
+        // redis
+        $result = self::findRedis($field);
+
+        return ($result)
+            ? $result
+            : self::findDatabase($field, $params, __FUNCTION__);
+    }
+
+    /**
+     * @param  null|string|array $parameters
      * @return \Phalcon\Mvc\Model
      */
     public static function findFirst($parameters = null)
@@ -379,6 +407,12 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
                 break;
             case "count":
                 $result = parent::count($params);
+                break;
+            case "max":
+                $result = parent::maximum($params);
+                break;
+            case "min":
+                $result = parent::minimum($params);
                 break;
         }
 
@@ -462,7 +496,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
         $addKeys = array();
 
-        // sum
+        // sum, max, min
         if (isset($parameters["column"])) {
 
             $addKeys[] = "column";
@@ -534,6 +568,12 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
                 $addKeys[] = trim($field);
 
             }
+        }
+
+        // columns
+        if (isset($parameters["columns"])) {
+            $columns   = str_replace(" ", "_", trim($parameters["columns"]));
+            $addKeys[] = str_replace(",", "_", $columns);
         }
 
         if ($addKeys) {

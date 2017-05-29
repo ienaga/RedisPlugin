@@ -35,6 +35,11 @@ class Criteria implements CriteriaInterface, OperatorInterface
      */
     protected $or = array();
 
+    /**
+     * @var null
+     */
+    protected $distinct = null;
+
 
     /**
      * @param \Phalcon\Mvc\Model $model
@@ -267,7 +272,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     }
 
     /**
-     * @param string $columns
+     * @param  string $columns
      * @return $this
      */
     public function setColumns($columns)
@@ -275,6 +280,25 @@ class Criteria implements CriteriaInterface, OperatorInterface
         $this->conditions["columns"] = $columns;
 
         return $this;
+    }
+
+    /**
+     * @param  string $column
+     * @return $this
+     */
+    public function setDistinct($column)
+    {
+        $this->distinct = $column;
+
+        return $this;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getDistinct()
+    {
+        return $this->distinct;
     }
 
     /**
@@ -367,7 +391,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
      */
     public function join($model, $conditions = null, $alias = null, $type = self::INNER_JOIN)
     {
-        $this->conditions["query"][$column] = $this->queryToArray($value, $operator);
+//        $this->conditions["query"][$column] = $this->queryToArray($value, $operator);
 
         return $this;
     }
@@ -391,6 +415,15 @@ class Criteria implements CriteriaInterface, OperatorInterface
         // or
         if (count($this->getOr())) {
             $this->conditions["or"] = $this->getOr();
+        }
+
+        // distinct
+        if ($this->getDistinct()) {
+            if (isset($this->conditions["columns"])) {
+                $this->conditions["columns"] .= sprintf(", DISTINCT %s", $this->getDistinct());
+            } else {
+                $this->conditions["columns"]  = sprintf("DISTINCT %s", $this->getDistinct());
+            }
         }
 
         // expire
@@ -463,4 +496,23 @@ class Criteria implements CriteriaInterface, OperatorInterface
         return $model::truncate($model);
     }
 
+    /**
+     * @param  string $column
+     * @return mixed
+     */
+    public function max($column)
+    {
+        $model = $this->getModel();
+        return $model::max(array_merge($this->buildCondition(), array("column" => $column)));
+    }
+
+    /**
+     * @param  string $column
+     * @return mixed
+     */
+    public function min($column)
+    {
+        $model = $this->getModel();
+        return $model::min(array_merge($this->buildCondition(), array("column" => $column)));
+    }
 }

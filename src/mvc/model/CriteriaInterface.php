@@ -34,4 +34,21 @@ interface CriteriaInterface
      * @return mixed
      */
     public function sum($column);
+
+    /**
+     * @return bool
+     */
+    public function truncate();
+
+    /**
+     * @param  string $column
+     * @return mixed
+     */
+    public function max($column);
+
+    /**
+     * @param  string $column
+     * @return mixed
+     */
+    public function min($column);
 }
