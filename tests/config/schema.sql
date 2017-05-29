@@ -369,6 +369,18 @@ INSERT INTO `common`.`mst_truncate` (`id`) VALUES
   (1),(2),(3),(4),(5),(6);
 
 
+CREATE TABLE IF NOT EXISTS `common`.`mst_test_columns` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `alpha` int(10) unsigned NOT NULL,
+  `beta` int(10) unsigned NOT NULL,
+  `gamma` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+INSERT INTO `common`.`mst_test_columns` (`id`,`alpha`,`beta`,`gamma`) VALUES
+  (1,1,1,1);
+
+
 
 
 CREATE TABLE IF NOT EXISTS `user1`.`user` (
