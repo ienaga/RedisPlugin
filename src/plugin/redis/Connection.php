@@ -116,7 +116,7 @@ class Connection implements ConnectionInterface
             $redis->select($select);
             $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
         } catch (RedisPluginException $e) {
-            die($e->getMessage());
+            error_log($e->getMessage());
         }
 
         // set local cache

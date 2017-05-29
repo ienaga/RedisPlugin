@@ -315,6 +315,54 @@ class Criteria implements CriteriaInterface, OperatorInterface
     }
 
     /**
+     * @param  $model
+     * @param  null $conditions
+     * @param  null $alias
+     * @return $this
+     */
+    public function innerJoin($model, $conditions = null, $alias = null)
+    {
+        return $this->join($model, $conditions, $alias, self::INNER_JOIN);
+    }
+
+    /**
+     * @param  $model
+     * @param  null $conditions
+     * @param  null $alias
+     * @return $this
+     */
+    public function leftJoin($model, $conditions = null, $alias = null)
+    {
+        return $this->join($model, $conditions, $alias, self::LEFT_JOIN);
+    }
+
+    /**
+     * @param  $model
+     * @param  null $conditions
+     * @param  null $alias
+     * @return $this
+     */
+    public function rightJoin($model, $conditions = null, $alias = null)
+    {
+        return $this->join($model, $conditions, $alias, self::RIGHT_JOIN);
+    }
+
+    /**
+     * @param  $model
+     * @param  null   $conditions
+     * @param  null   $alias
+     * @param  string $type
+     * @return $this
+     */
+    public function join($model, $conditions = null, $alias = null, $type = self::INNER_JOIN)
+    {
+        $this->conditions["query"][$column] = $this->queryToArray($value, $operator);
+
+        return $this;
+    }
+
+
+    /**
      * @return array
      */
     public function buildCondition()

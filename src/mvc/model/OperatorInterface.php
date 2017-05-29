@@ -21,4 +21,7 @@ interface OperatorInterface
     const ADD_OR        = "OR";
     const ASC           = "ASC";
     const DESC          = "DESC";
+    const INNER_JOIN    = "INNER";
+    const LEFT_JOIN     = "LEFT";
+    const RIGHT_JOIN    = "RIGHT";
 }

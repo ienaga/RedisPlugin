@@ -171,7 +171,8 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
      */
     public function getRedisValue($key)
     {
-        return $this->getRedis()->hGet($this->getPrefixKey(), $key);
+        $redis = $this->getRedis();
+        return ($redis) ? $redis->hGet($this->getPrefixKey(), $key) : null;
     }
 
     /**
