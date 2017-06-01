@@ -438,6 +438,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     public function findFirst()
     {
         $model = $this->getModel();
+        $model->initialize();
         return $model::findFirst($this->buildCondition());
     }
 
@@ -447,6 +448,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     public function find()
     {
         $model = $this->getModel();
+        $model->initialize();
         return $model::find($this->buildCondition());
     }
 
@@ -457,6 +459,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     public function sum($column)
     {
         $model = $this->getModel();
+        $model->initialize();
         return $model::sum(array_merge($this->buildCondition(), array("column" => $column)));
     }
 
@@ -466,6 +469,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     public function count()
     {
         $model = $this->getModel();
+        $model->initialize();
         return $model::count($this->buildCondition());
     }
 
@@ -475,6 +479,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     public function update()
     {
         $model = $this->getModel();
+        $model->initialize();
         return $model::queryUpdate($this->buildCondition(), $model);
     }
 
@@ -484,6 +489,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     public function delete()
     {
         $model = $this->getModel();
+        $model->initialize();
         return $model::queryDelete($this->buildCondition(), $model);
     }
 
@@ -493,6 +499,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     public function truncate()
     {
         $model = $this->getModel();
+        $model->initialize();
         return $model::truncate($model);
     }
 
@@ -503,6 +510,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     public function max($column)
     {
         $model = $this->getModel();
+        $model->initialize();
         return $model::max(array_merge($this->buildCondition(), array("column" => $column)));
     }
 
@@ -513,6 +521,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     public function min($column)
     {
         $model = $this->getModel();
+        $model->initialize();
         return $model::min(array_merge($this->buildCondition(), array("column" => $column)));
     }
 }
