@@ -380,7 +380,32 @@ CREATE TABLE IF NOT EXISTS `common`.`mst_test_columns` (
 INSERT INTO `common`.`mst_test_columns` (`id`,`alpha`,`beta`,`gamma`) VALUES
   (1,1,1,1);
 
+CREATE TABLE IF NOT EXISTS `common`.`mst_test_min_max` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `value` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
+INSERT INTO `common`.`mst_test_min_max` (`id`,`value`) VALUES
+  (1,1),
+  (2,2),
+  (3,3),
+  (4,4),
+  (5,5);
+
+CREATE TABLE IF NOT EXISTS `common`.`mst_test_distinct` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `type` int(10) unsigned NOT NULL,
+  `name` varchar(50) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+
+INSERT INTO `common`.`mst_test_distinct` (`id`,`type`,`name`) VALUES
+  (1,1,'A'),
+  (2,1,'B'),
+  (3,1,'C'),
+  (4,2,'A'),
+  (5,2,'C');
 
 
 CREATE TABLE IF NOT EXISTS `user1`.`user` (
