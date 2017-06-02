@@ -25,13 +25,15 @@ require_once __DIR__ . "/model/MstOr.php";
 require_once __DIR__ . "/model/MstTestSum.php";
 require_once __DIR__ . "/model/MstTestCount.php";
 require_once __DIR__ . "/model/MstTestColumns.php";
+require_once __DIR__ . "/model/MstTestMinMax.php";
+require_once __DIR__ . "/model/MstTestDistinct.php";
 require_once __DIR__ . "/model/MstTruncate.php";
-
 
 
 use \RedisPlugin\Mvc\Model;
 use \RedisPlugin\Mvc\Model\Criteria;
 use \RedisPlugin\Database;
+
 
 class ModelTest extends \PHPUnit_Framework_TestCase
 {
@@ -47,9 +49,11 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         // config
         $config = new \Phalcon\Config();
-        $yml    = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/config/redis.yml");
+        $yml = new \Phalcon\Config\Adapter\Yaml(__DIR__ . "/config/redis.yml");
         $config->merge($yml->get("test"));
-        $di->set("config", function () use ($config) { return $config; }, true);
+        $di->set("config", function () use ($config) {
+            return $config;
+        }, true);
 
         // service
         $service = new \RedisPlugin\Service();
@@ -149,7 +153,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
                 $prizeNo = mt_rand(0, $totalGravity);
 
                 // 抽選
-                $gravity  = 0;
+                $gravity = 0;
                 $configId = null;
                 foreach ($adminDbConfigs as $adminDbConfig) {
 
@@ -168,7 +172,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
                 $user = new User();
                 $user->setId($adminUser->getId());
-                $user->setName("test_user_". $i);
+                $user->setName("test_user_" . $i);
                 $user->save();
             }
 
@@ -511,7 +515,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     {
         /** @var MstNotIn $mstNotIn */
         $mstNotIn = MstNotIn::criteria()
-            ->notIn("type", array(1,2))
+            ->notIn("type", array(1, 2))
             ->findFirst();
 
         $this->assertEquals($mstNotIn->getId(), 1);
@@ -535,7 +539,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
     {
         /** @var MstBetween $mstBetween */
         $mstBetween = MstBetween::criteria()
-            ->between("type",0, 1)
+            ->between("type", 0, 1)
             ->findFirst();
 
         $this->assertEquals($mstBetween->getId(), 1);
@@ -597,7 +601,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         $values = array(120, 500);
         foreach ($mstTestSum as $key => $testSum) {
-            $this->assertEquals((int) $testSum->sumatory, $values[$key]);
+            $this->assertEquals((int)$testSum->sumatory, $values[$key]);
         }
     }
 
@@ -619,7 +623,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         $values = array(3, 2, 1);
         foreach ($mstTestCount as $key => $testCount) {
-            $this->assertEquals((int) $testCount->rowcount, $values[$key]);
+            $this->assertEquals((int)$testCount->rowcount, $values[$key]);
         }
     }
 
@@ -649,7 +653,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         $data = MstTestColumns::criteria()
             ->setColumns("alpha")
-            ->add("alpha",1)
+            ->add("alpha", 1)
             ->findFirst();
         $this->assertTrue(isset($data["alpha"]));
         $this->assertFalse(isset($data["beta"]));
@@ -658,7 +662,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         $data = MstTestColumns::criteria()
             ->setColumns("alpha,beta")
-            ->add("beta",1)
+            ->add("beta", 1)
             ->findFirst();
         $this->assertTrue(isset($data["alpha"]));
         $this->assertTrue(isset($data["beta"]));
@@ -667,11 +671,70 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         $data = MstTestColumns::criteria()
             ->setColumns("beta,gamma")
-            ->add("gamma",1)
+            ->add("gamma", 1)
             ->findFirst();
         $this->assertFalse(isset($data["alpha"]));
         $this->assertTrue(isset($data["beta"]));
         $this->assertTrue(isset($data["gamma"]));
 
     }
+
+    /**
+     * test min
+     */
+    public function testMin()
+    {
+        $data = MstTestMinMax::criteria()->find();
+
+        $dataList = [];
+        foreach ($data as $d) {
+            $dataList[] = $d->value;
+        }
+        $minValue = min($dataList);
+        $minData = MstTestMinMax::criteria()->min("value");
+        $this->assertEquals($minData, $minValue);
+    }
+
+    /**
+     * test max
+     */
+    public function testMax()
+    {
+        $data = MstTestMinMax::criteria()->find();
+
+        $dataList = [];
+        foreach ($data as $d) {
+            $dataList[] = $d->value;
+        }
+        $maxValue = max($dataList);
+        $maxData = MstTestMinMax::criteria()->max("value");
+        $this->assertEquals($maxData, $maxValue);
+    }
+
+    /**
+     * test distinct
+     */
+    public function testDistinct()
+    {
+        $type = MstTestDistinct::criteria()
+            ->setDistinct("type")
+            ->addOrder("type", "ASC")
+            ->find();
+
+        $this->assertEquals(count($type), 2);
+        $this->assertEquals($type[0]["type"], 1);
+        $this->assertEquals($type[1]["type"], 2);
+
+        $name = MstTestDistinct::criteria()
+            ->setDistinct("name")
+            ->addOrder("name", "ASC")
+            ->find();
+        $this->assertEquals(count($name), 3);
+        $this->assertEquals($name[0]["name"], "A");
+        $this->assertEquals($name[1]["name"], "B");
+        $this->assertEquals($name[2]["name"], "C");
+
+
+    }
+
 }
