@@ -14,7 +14,7 @@ class Connection implements ConnectionInterface
     const CONNECTION_CACHE_KEY = "%s:%s:%s";
 
     /**
-     * @var \RedisPlugin\Connection
+     * @var Connection
      */
     private static $_instance = null;
 
