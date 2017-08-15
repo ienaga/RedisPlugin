@@ -15,7 +15,7 @@ PHP_VER=$(phpenv version-name)
 echo "PHP Version: ${PHP_VER}"
 
 if [[ $PHP_VER == 7* ]]; then
-    pecl install -f yaml-2.0.0  < /dev/null
+    pecl install -f yaml-2.0.2  < /dev/null
 else
     pecl install -f yaml  < /dev/null
 fi
