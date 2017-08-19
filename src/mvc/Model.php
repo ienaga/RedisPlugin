@@ -1304,7 +1304,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
                 break;
         }
 
-        return (Database::isTransaction())
+        return (Database::isTransaction() || Database::useMasterConnection())
             ? $configName ."Master"
             : $configName ."Slave";
     }

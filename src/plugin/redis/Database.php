@@ -16,6 +16,11 @@ class Database implements DatabaseInterface
     /**
      * @var bool
      */
+    protected static $useMasterConnection = false;
+
+    /**
+     * @var bool
+     */
     protected static $isTransaction = false;
 
     /**
@@ -80,6 +85,30 @@ class Database implements DatabaseInterface
     public static function getRedis($name)
     {
         return self::getConnection($name)->getRedis();
+    }
+
+    /**
+     * master connection on
+     */
+    public static function masterConnectionOn()
+    {
+        self::$useMasterConnection = true;
+    }
+
+    /**
+     * master connection off
+     */
+    public static function masterConnectionOff()
+    {
+        self::$useMasterConnection = false;
+    }
+
+    /**
+     * @return bool
+     */
+    public static function useMasterConnection()
+    {
+        return self::$useMasterConnection;
     }
 
     /**
@@ -167,7 +196,6 @@ class Database implements DatabaseInterface
                 // cache clear
                 $prefix = implode(":", $matches);
                 foreach ($databases as $db => $arguments) {
-
                     $key = self::getCacheKey($model, $arguments, $prefix);
                     self::getRedis($db)->delete($key);
 
