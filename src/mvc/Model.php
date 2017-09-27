@@ -73,13 +73,25 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
     /**
      * initialize
+     * @param array $data
      */
-    public function initialize()
+    public function initialize($data = array())
     {
         $this->useDynamicUpdate(true);
 
         // reset
         self::$_prefix = self::DEFAULT_PREFIX;
+
+        // init set data
+        if (count($data)) {
+            foreach ($data as $property => $value) {
+                if (!property_exists($this, $property)) {
+                    continue;
+                }
+
+                $this->{$property} = $value;
+            }
+        }
 
         // execute model
         self::setCurrentModel($this);
@@ -1407,7 +1419,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     public function save($data = null, $whiteList = null)
     {
         // pre
-        $this->_pre();
+        $this->_pre($data);
 
         // execute
         if (!parent::save($data, $whiteList)) {
@@ -1462,10 +1474,11 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
     /**
      * pre
+     * @param array $data
      */
-    private function _pre()
+    private function _pre($data = array())
     {
-        $this->initialize();
+        $this->initialize($data);
         $this->setTransaction(Database::getTransaction($this));
     }
 
