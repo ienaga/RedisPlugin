@@ -275,11 +275,8 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
         // field key
         $field  = self::getFieldKey($params, __FUNCTION__);
 
-        // redis
-        $result = self::findRedis($field);
-
         return ((self::getRedis()->hExists(self::getCacheKey(), $field)))
-            ? $result
+            ? self::findRedis($field)
             : self::findDatabase($field, $params, __FUNCTION__);
     }
 
@@ -303,11 +300,8 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
         // field key
         $field  = self::getFieldKey($params, __FUNCTION__);
 
-        // redis
-        $result = self::findRedis($field);
-
         return ((self::getRedis()->hExists(self::getCacheKey(), $field)))
-            ? $result
+            ? self::findRedis($field)
             : self::findDatabase($field, $params, __FUNCTION__);
     }
 
@@ -331,11 +325,8 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
         // field key
         $field  = self::getFieldKey($params, __FUNCTION__);
 
-        // redis
-        $result = self::findRedis($field);
-
         return ((self::getRedis()->hExists(self::getCacheKey(), $field)))
-            ? $result
+            ? self::findRedis($field)
             : self::findDatabase($field, $params, __FUNCTION__);
     }
 
@@ -359,11 +350,8 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
         // field key
         $field  = self::getFieldKey($params, __FUNCTION__);
 
-        // redis
-        $result = self::findRedis($field);
-
         return ((self::getRedis()->hExists(self::getCacheKey(), $field)))
-            ? $result
+            ? self::findRedis($field)
             : self::findDatabase($field, $params, __FUNCTION__);
     }
 
@@ -402,11 +390,8 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
         // field key
         $field  = self::getFieldKey($params, __FUNCTION__);
 
-        // redis
-        $result = self::findRedis($field);
-
         return (self::getRedis()->hExists(self::getCacheKey(), $field))
-            ? $result
+            ? self::findRedis($field)
             : self::findDatabase($field, $params, __FUNCTION__);
     }
 
