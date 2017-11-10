@@ -240,20 +240,22 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
     public function writeIndexes()
     {
         // source
-        $model  = Model::getCurrentModel();
-        $source = $model->getSource();
+        $model = Model::getCurrentModel();
+        if ($model) {
+            $source = $model->getSource();
 
-        // indexes
-        $indexes = $model->getReadConnection()->describeIndexes($source);
+            // indexes
+            $indexes = $model->getReadConnection()->describeIndexes($source);
 
-        // cache
-        $key = $this->getIndexesKey($source);
+            // cache
+            $key = $this->getIndexesKey($source);
 
-        // local cache
-        $this->setCache($key, $indexes);
+            // local cache
+            $this->setCache($key, $indexes);
 
-        // redis
-        $this->setRedisValue($key, $indexes);
+            // redis
+            $this->setRedisValue($key, $indexes);
+        }
     }
 
     /**

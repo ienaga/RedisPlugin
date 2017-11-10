@@ -278,7 +278,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
         // redis
         $result = self::findRedis($field);
 
-        return ($result)
+        return ((self::getRedis()->hExists(self::getCacheKey(), $field)))
             ? $result
             : self::findDatabase($field, $params, __FUNCTION__);
     }
@@ -306,7 +306,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
         // redis
         $result = self::findRedis($field);
 
-        return ($result)
+        return ((self::getRedis()->hExists(self::getCacheKey(), $field)))
             ? $result
             : self::findDatabase($field, $params, __FUNCTION__);
     }
@@ -334,7 +334,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
         // redis
         $result = self::findRedis($field);
 
-        return ($result)
+        return ((self::getRedis()->hExists(self::getCacheKey(), $field)))
             ? $result
             : self::findDatabase($field, $params, __FUNCTION__);
     }
@@ -362,7 +362,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
         // redis
         $result = self::findRedis($field);
 
-        return ($result)
+        return ((self::getRedis()->hExists(self::getCacheKey(), $field)))
             ? $result
             : self::findDatabase($field, $params, __FUNCTION__);
     }
@@ -405,7 +405,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
         // redis
         $result = self::findRedis($field);
 
-        return ($result)
+        return (self::getRedis()->hExists(self::getCacheKey(), $field))
             ? $result
             : self::findDatabase($field, $params, __FUNCTION__);
     }
