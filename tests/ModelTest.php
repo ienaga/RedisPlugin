@@ -776,15 +776,15 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
         $criteria = UserQuest::criteria()
             ->add("status_number", 0)
-            ->add("user_id", $user->getId())
-            ->in("quest_id", array(1,2,3));
+            ->in("quest_id", array(1,2,3))
+            ->add("user_id", $user->getId());
 
         $param = $criteria->getConditions();
         $query = Model::buildParameters($param);
 
         var_dump($query);
 
-//        $this->assertEquals($query[0], "[id] = :id: AND [mode] = :mode: AND [level] = :level:");
+        $this->assertEquals($query[0], "[user_id] = :user_id: AND [quest_id] IN (:quest_id0:,:quest_id1:,:quest_id2:) AND [status_number] = :status_number:");
     }
 
 }
