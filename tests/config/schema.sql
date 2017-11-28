@@ -444,10 +444,10 @@ ALTER TABLE `user2`.`user_item`
 
 
 CREATE TABLE IF NOT EXISTS `user1`.`user_quest` (
-  `user_id` bigint(20) UNSIGNED NOT NULL COMMENT 'ユーザーID',
-  `quest_id` int(10) UNSIGNED NOT NULL COMMENT 'クエストID',
-  `clear_flag` tinyint(3) UNSIGNED NOT NULL DEFAULT '0' COMMENT '0=挑戦中、1=クリアした',
-  `status_number` tinyint(3) UNSIGNED NOT NULL DEFAULT '0',
+  `user_id` bigint(20) unsigned NOT NULL,
+  `quest_id` int(10) unsigned NOT NULL,
+  `clear_flag` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `status_number` tinyint(3) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE `user1`.`user_quest`
@@ -455,10 +455,10 @@ ALTER TABLE `user1`.`user_quest`
   ADD KEY `idx_user_id_clear_flag` (`user_id`,`clear_flag`) USING BTREE;
 
 CREATE TABLE IF NOT EXISTS `user2`.`user_quest` (
-  `user_id` bigint(20) UNSIGNED NOT NULL COMMENT 'ユーザーID',
-  `quest_id` int(10) UNSIGNED NOT NULL COMMENT 'クエストID',
-  `clear_flag` tinyint(3) UNSIGNED NOT NULL DEFAULT '0' COMMENT '0=挑戦中、1=クリアした',
-  `status_number` tinyint(3) UNSIGNED NOT NULL DEFAULT '0',
+  `user_id` bigint(20) unsigned NOT NULL,
+  `quest_id` int(10) unsigned NOT NULL,
+  `clear_flag` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `status_number` tinyint(3) unsigned NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE `user2`.`user_quest`
