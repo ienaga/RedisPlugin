@@ -782,8 +782,6 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $param = $criteria->getConditions();
         $query = Model::buildParameters($param);
 
-        var_dump($query);
-
         $this->assertEquals($query[0], "[user_id] = :user_id: AND [quest_id] IN (:quest_id0:,:quest_id1:,:quest_id2:) AND [status_number] = :status_number:");
     }
 
