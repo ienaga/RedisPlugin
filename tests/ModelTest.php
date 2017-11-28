@@ -738,7 +738,10 @@ class ModelTest extends \PHPUnit_Framework_TestCase
 
     }
 
-    public function testQuest()
+    /**
+     * Multiple primary key
+     */
+    public function testUserQuest()
     {
         try {
 
