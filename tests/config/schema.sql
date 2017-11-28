@@ -441,3 +441,22 @@ CREATE TABLE IF NOT EXISTS `user2`.`user_item` (
 
 ALTER TABLE `user2`.`user_item`
   ADD KEY `user_id_idx` (`user_id`) USING BTREE;
+
+
+CREATE TABLE IF NOT EXISTS `user1`.`quest` (
+  `user_id` bigint(20) UNSIGNED NOT NULL COMMENT 'ユーザーID',
+  `quest_id` int(10) UNSIGNED NOT NULL COMMENT 'クエストID',
+  `clear_flag` tinyint(3) UNSIGNED NOT NULL DEFAULT '0' COMMENT '0=挑戦中、1=クリアした',
+  `status_number` tinyint(3) UNSIGNED NOT NULL DEFAULT '0',
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE `user1`.`quest`
+  ADD PRIMARY KEY (`user_id`,`quest_id`),
+  ADD KEY `idx_user_id_clear_flag` (`user_id`,`clear_flag`) USING BTREE;
+
+INSERT INTO `user1`.`quest` (`user_id`,`quest_id`,`clear_flag`,`status_number`) VALUES
+  (1,1,1,0),
+  (1,2,1,0),
+  (1,3,1,0),
+  (1,4,0,0),
+  (1,5,0,0);

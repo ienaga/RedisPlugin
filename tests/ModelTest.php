@@ -8,6 +8,7 @@ require_once __DIR__ . "/model/AdminUser.php";
 require_once __DIR__ . "/model/AdminDbConfig.php";
 require_once __DIR__ . "/model/User.php";
 require_once __DIR__ . "/model/UserItem.php";
+require_once __DIR__ . "/model/UserQuest.php";
 require_once __DIR__ . "/model/MstEqual.php";
 require_once __DIR__ . "/model/MstNotEqual.php";
 require_once __DIR__ . "/model/MstGreaterThan.php";
@@ -735,6 +736,55 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($name[2]["name"], "C");
 
 
+    }
+
+    public function testQuest()
+    {
+        try {
+
+            Database::beginTransaction();
+
+            // 登録
+            $adminUser = new AdminUser();
+            $adminUser->setAdminDbConfigId(1);
+            $adminUser->save();
+
+            $user = new User();
+            $user->setId($adminUser->getId());
+            $user->setName("test_user_" . $adminUser->getId());
+            $user->save();
+
+            // test data
+            for ($i = 1, $i <= 5; $i++) {
+                $userQuest = new UserQuest();
+                $userQuest->setUserId($user->getId());
+                $userQuest->setQuestId($i);
+                $userQuest->setClearFlag(1);
+                $userQuest->setStatusNumber(0);
+                $userQuest->save();
+            }
+
+            Database::commit();
+
+        } catch (\Exception $e) {
+
+            Database::rollback($e);
+
+        }
+
+        sleep(2);
+
+        $criteria = UserQuest::criteria()
+            ->add("status_number", 0)
+            ->add("user_id", $user->getId())
+            ->in("quest_id", array(1,2,3));
+
+        $param = $criteria->getConditions();
+        $query = Model::buildParameters($param);
+
+        var_dump($query);
+
+//        $this->assertEquals($query[0], "[id] = :id: AND [mode] = :mode: AND [level] = :level:");
     }
 
 }
