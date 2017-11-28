@@ -755,7 +755,7 @@ class ModelTest extends \PHPUnit_Framework_TestCase
             $user->save();
 
             // test data
-            for ($i = 1, $i <= 5; $i++) {
+            for ($i = 1; $i <= 5; $i++) {
                 $userQuest = new UserQuest();
                 $userQuest->setUserId($user->getId());
                 $userQuest->setQuestId($i);
