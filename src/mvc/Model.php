@@ -7,6 +7,7 @@ use \RedisPlugin\Database;
 use \RedisPlugin\Mvc\Model\Criteria;
 use \RedisPlugin\Mvc\Model\OperatorInterface;
 use \RedisPlugin\Exception\RedisPluginException;
+use \Phalcon\Db\Adapter\Pdo\Mysql;
 
 class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterface
 {
@@ -905,8 +906,64 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     private static function getIndexes(\Phalcon\Mvc\Model $model = null)
     {
         /** @var \Phalcon\Mvc\Model $model */
-        $model = ($model) ? : self::getCurrentModel();
-        return $model->getModelsMetaData()->readIndexes($model->getSource());
+        $model   = ($model) ? : self::getCurrentModel();
+        $indexes = $model->getModelsMetaData()->readIndexes($model->getSource());
+        if (!$indexes) {
+
+            $databases = \Phalcon\DI::getDefault()
+                ->get("config")
+                ->get("database")
+                ->toArray();
+
+            foreach ($databases as $db => $config) {
+
+                if (!isset($config["dbname"])) {
+                    continue;
+                }
+
+                if (!isset($config["transaction"]) || !$config["transaction"]) {
+                    continue;
+                }
+
+                try{
+
+                    $connection = new Mysql([
+                        "host"     => $config["host"],
+                        "username" => $config["username"],
+                        "password" => $config["password"],
+                        "dbname"   => $config["dbname"],
+                        "port"     => $config["port"],
+                        "charset"  => $config["charset"]
+                    ]);
+
+                } catch (\Exception $e) {
+                    continue;
+                }
+
+                $tables = $connection->fetchAll("SHOW TABLES");
+
+                $targetTable = null;
+                foreach ($tables as $table) {
+                    $values = each($table);
+                    if ($model->getSource() !== $values["value"]) {
+                        continue;
+                    }
+
+                    // execute cache
+                    $model->setReadConnectionService($db);
+                    $model->getModelsMetaData()->writeIndexes();
+                    $indexes = $model->getModelsMetaData()->readIndexes($model->getSource());
+
+                    break;
+                }
+
+                if ($indexes) {
+                    break;
+                }
+            }
+        }
+
+        return $indexes;
     }
 
     /**
@@ -955,7 +1012,6 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
                     $matches[] = $_keys[$property];
 
                 } else {
-
                     if (!property_exists($model, $property)) {
                         continue;
                     }
