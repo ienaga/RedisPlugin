@@ -84,7 +84,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
         self::$_prefix = self::DEFAULT_PREFIX;
 
         // init set data
-        if (count($data)) {
+        if (is_array($data) && count($data)) {
             foreach ($data as $property => $value) {
                 if (!property_exists($this, $property)) {
                     continue;
