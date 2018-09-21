@@ -92,7 +92,7 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
 
             $e = new \Exception("test rollback");
 
-            Database::rollback($e);
+            Database::commit();
 
         } catch (\Exception $e) {
 
