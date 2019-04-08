@@ -204,42 +204,42 @@ dev:
 
     # schemaをキャッシュ
     metadata:
-      host:   XXXXX
+      host:   127.0.0.1
       port:   6379
       select: 0
       
     # servers
     server:
       dbMaster:
-        host: 127.0.01
+        host: 127.0.0.1
         port: 6379
         select: 0 # redis select [データベースインデックス]
       dbSlave:
-        host: 127.0.01
+        host: 127.0.0.1
         port: 6379
         select: 0
       dbCommonMaster:
-        host: 127.0.01
+        host: 127.0.0.1
         port: 6379
         select: 0
       dbCommonSlave:
-        host: 127.0.01
+        host: 127.0.0.1
         port: 6379
         select: 0
       dbUser1Master:
-        host: 127.0.01
+        host: 127.0.0.1
         port: 6379
         select: 0
       dbUser1Slave:
-        host: 127.0.01
+        host: 127.0.0.1
         port: 6379
         select: 0
       dbUser2Master:
-        host: 127.0.01
+        host: 127.0.0.1
         port: 6379
         select: 0
       dbUser2Slave:
-        host: 127.0.01
+        host: 127.0.0.1
         port: 6379
         select: 0
 ```

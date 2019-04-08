@@ -16,14 +16,16 @@ before_install:
   - pecl channel-update pecl.php.net
   - pecl install yaml-2.0.4 < /dev/null
   - echo "extension=yaml.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - sleep 20
   - pecl install -f redis < /dev/null
   - echo "extension=redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - sleep 20
   - composer install --dev -o --prefer-source --no-interaction
   - bin/install-phalcon.sh v3.4.1
 
 before_script:
   - mysql -uroot < tests/config/schema.sql
-  - sleep 50
+  - sleep 10
 
 script:
   - php -r "echo \Phalcon\Version::get();"
