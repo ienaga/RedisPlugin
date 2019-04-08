@@ -132,7 +132,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @return array
      */
-    public function getOr()
+    public function getOr(): array
     {
         return $this->or;
     }
@@ -142,7 +142,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  string $operator
      * @return array
      */
-    public function queryToArray($value, $operator = self::EQUAL)
+    public function queryToArray($value, $operator = self::EQUAL): array
     {
         return array(
             "value"    => $value,
@@ -154,9 +154,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  string $column
      * @param  mixed  $value
      * @param  string $operator
-     * @return $this
+     * @return Criteria
      */
-    public function add($column, $value, $operator = self::EQUAL)
+    public function add(string $column, $value, $operator = self::EQUAL): Criteria
     {
         $this->conditions["query"][$column] = $this->queryToArray($value, $operator);
 
@@ -168,7 +168,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  array  $values
      * @return Criteria
      */
-    public function in($column, $values = array())
+    public function in(string $column, $values = array()): Criteria
     {
         sort($values);
         return $this->add($column, $values, self::IN);
@@ -179,7 +179,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  array  $values
      * @return Criteria
      */
-    public function notIn($column, $values = array())
+    public function notIn(string $column, $values = array()): Criteria
     {
         sort($values);
         return $this->add($column, $values, self::NOT_IN);
@@ -191,7 +191,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  mixed  $end
      * @return Criteria
      */
-    public function between($column, $start, $end)
+    public function between(string $column, $start, $end): Criteria
     {
         return $this->add($column, array($start, $end), self::BETWEEN);
     }
@@ -200,7 +200,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  string $column
      * @return Criteria
      */
-    public function isNull($column)
+    public function isNull(string $column): Criteria
     {
         return $this->add($column, null, self::IS_NULL);
     }
@@ -209,7 +209,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  string $column
      * @return Criteria
      */
-    public function isNotNull($column)
+    public function isNotNull(string $column): Criteria
     {
         return $this->add($column, null, self::IS_NOT_NULL);
     }
@@ -218,9 +218,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  string $column
      * @param  mixed  $value
      * @param  string $operator
-     * @return $this
+     * @return Criteria
      */
-    public function addOr($column, $value, $operator = self::EQUAL)
+    public function addOr(string $column, $value, $operator = self::EQUAL): Criteria
     {
         if (!isset($this->conditions["query"][0])) {
             $this->conditions["query"][0] = self::ADD_OR;
@@ -236,9 +236,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @param  int $limit
      * @param  int $offset
-     * @return $this
+     * @return Criteria
      */
-    public function limit($limit, $offset = 0)
+    public function limit(int $limit, $offset = 0): Criteria
     {
         $this->conditions["limit"] = array(
             "number" => $limit,
@@ -251,9 +251,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @param  string $value
      * @param  string $sort
-     * @return $this
+     * @return Criteria
      */
-    public function addOrder($value, $sort = self::ASC)
+    public function addOrder(string $value, $sort = self::ASC): Criteria
     {
         $this->orders[] = $value ." ". $sort;
 
@@ -262,9 +262,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
     /**
      * @param  string $value
-     * @return $this
+     * @return Criteria
      */
-    public function addGroup($value)
+    public function addGroup(string $value): Criteria
     {
         $this->groups[] = $value;
 
@@ -273,9 +273,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
     /**
      * @param  string $columns
-     * @return $this
+     * @return Criteria
      */
-    public function setColumns($columns)
+    public function setColumns(string $columns): Criteria
     {
         $this->conditions["columns"] = $columns;
 
@@ -284,9 +284,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
     /**
      * @param  string $column
-     * @return $this
+     * @return Criteria
      */
-    public function setDistinct($column)
+    public function setDistinct(string $column): Criteria
     {
         $this->distinct = $column;
 
@@ -303,9 +303,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
     /**
      * @param  bool  $bool
-     * @return $this
+     * @return Criteria
      */
-    public function cache($bool = false)
+    public function cache($bool = false): Criteria
     {
         $this->conditions["cache"] = $bool;
 
@@ -314,9 +314,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
     /**
      * @param  bool  $bool
-     * @return $this
+     * @return Criteria
      */
-    public function autoIndex($bool = false)
+    public function autoIndex($bool = false): Criteria
     {
         $this->conditions["autoIndex"] = $bool;
 
@@ -325,9 +325,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
     /**
      * @param  bool  $bool
-     * @return $this
+     * @return Criteria
      */
-    public function test($bool = false)
+    public function test($bool = false): Criteria
     {
         $this->conditions["test"] = $bool;
 
@@ -337,9 +337,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @param  string $column
      * @param  mixed  $value
-     * @return $this
+     * @return Criteria
      */
-    public function set($column, $value)
+    public function set(string $column, $value): Criteria
     {
         if (!isset($this->conditions["update"])) {
             $this->conditions["update"] = array();
@@ -353,9 +353,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  $model
      * @param  null $conditions
      * @param  null $alias
-     * @return $this
+     * @return Criteria
      */
-    public function innerJoin($model, $conditions = null, $alias = null)
+    public function innerJoin($model, $conditions = null, $alias = null): Criteria
     {
         return $this->join($model, $conditions, $alias, self::INNER_JOIN);
     }
@@ -364,9 +364,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  $model
      * @param  null $conditions
      * @param  null $alias
-     * @return $this
+     * @return Criteria
      */
-    public function leftJoin($model, $conditions = null, $alias = null)
+    public function leftJoin($model, $conditions = null, $alias = null): Criteria
     {
         return $this->join($model, $conditions, $alias, self::LEFT_JOIN);
     }
@@ -375,9 +375,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  $model
      * @param  null $conditions
      * @param  null $alias
-     * @return $this
+     * @return Criteria
      */
-    public function rightJoin($model, $conditions = null, $alias = null)
+    public function rightJoin($model, $conditions = null, $alias = null): Criteria
     {
         return $this->join($model, $conditions, $alias, self::RIGHT_JOIN);
     }
@@ -400,7 +400,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @return array
      */
-    public function buildCondition()
+    public function buildCondition(): array
     {
         // order by
         if (count($this->getOrders())) {
@@ -445,7 +445,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @return \Phalcon\Mvc\Model\ResultsetInterface
      */
-    public function find()
+    public function find(): \Phalcon\Mvc\Model\ResultsetInterface
     {
         $model = $this->getModel();
         $model->initialize();
@@ -456,7 +456,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  string $column
      * @return mixed
      */
-    public function sum($column)
+    public function sum(string $column)
     {
         $model = $this->getModel();
         $model->initialize();
@@ -476,7 +476,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @return bool
      */
-    public function update()
+    public function update(): bool
     {
         $model = $this->getModel();
         $model->initialize();
@@ -486,7 +486,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @return bool
      */
-    public function delete()
+    public function delete(): bool
     {
         $model = $this->getModel();
         $model->initialize();
@@ -496,7 +496,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @return bool
      */
-    public function truncate()
+    public function truncate(): bool
     {
         $model = $this->getModel();
         $model->initialize();
@@ -507,7 +507,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  string $column
      * @return mixed
      */
-    public function max($column)
+    public function max(string $column)
     {
         $model = $this->getModel();
         $model->initialize();
@@ -518,7 +518,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
      * @param  string $column
      * @return mixed
      */
-    public function min($column)
+    public function min(string $column)
     {
         $model = $this->getModel();
         $model->initialize();

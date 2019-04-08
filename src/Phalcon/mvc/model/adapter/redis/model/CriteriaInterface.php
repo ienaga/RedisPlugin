@@ -44,11 +44,11 @@ interface CriteriaInterface
      * @param  string $column
      * @return mixed
      */
-    public function max($column);
+    public function max(string $column);
 
     /**
      * @param  string $column
      * @return mixed
      */
-    public function min($column);
+    public function min(string $column);
 }
