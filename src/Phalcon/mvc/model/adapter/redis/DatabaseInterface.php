@@ -16,7 +16,7 @@ interface DatabaseInterface
 
     /**
      * rollback
-     * @param Exception $e
+     * @param \Exception $e
      */
-    public static function rollback(Exception $e);
+    public static function rollback(\Exception $e);
 }

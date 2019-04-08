@@ -261,9 +261,9 @@ class Database implements DatabaseInterface
 
     /**
      * rollback
-     * @param Exception $e
+     * @param \Exception $e
      */
-    public static function rollback(Exception $e)
+    public static function rollback(\Exception $e)
     {
         foreach (self::$transactions as $service => $transaction) {
 
@@ -276,7 +276,7 @@ class Database implements DatabaseInterface
 
                     $transaction->rollback($e->getMessage());
 
-                } catch (Exception $e) {
+                } catch (\Exception $e) {
 
                     array_shift(self::$transactions);
                     self::rollback($e);
