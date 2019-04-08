@@ -16,10 +16,12 @@ before_install:
   - pecl channel-update pecl.php.net
   - pecl install -f yaml-2.0.4 < /dev/null
   - pecl install -f redis < /dev/null
-  - composer install --dev -o --prefer-source --no-interaction
-  - bin/install-phalcon.sh v3.4.1
   - echo "extension = yaml.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - echo "extension = redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+
+install:
+  - composer install --dev -o --prefer-source --no-interaction
+  - bin/install-phalcon.sh v3.4.1
 
 before_script:
   - phpenv config-rm xdebug.ini
@@ -27,7 +29,6 @@ before_script:
   - sleep 20
 
 script:
-  - php -r "echo \Phalcon\Version::get();"
   - vendor/bin/phpunit
 
 addons:
