@@ -26,6 +26,7 @@ before_script:
   - sleep 20
 
 script:
+  - php -r "echo \Phalcon\Version::get();"
   - vendor/bin/phpunit
 
 addons:
