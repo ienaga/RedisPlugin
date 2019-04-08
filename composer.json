@@ -12,7 +12,7 @@
         }
     ],
     "require": {
-        "ienaga/ienaga/phalcon-config-loader-for-yaml": "2.0.0"
+        "ienaga/phalcon-config-loader-for-yaml": "2.0.0"
     },
     "require-dev": {
         "phalcon/zephir": "0.9.*",

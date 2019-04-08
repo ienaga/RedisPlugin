@@ -5,6 +5,7 @@ namespace Phalcon\Mvc\Model\Adapter\Redis;
 use \Phalcon\Mvc\Model\Adapter\Redis\Model\Criteria;
 use \Phalcon\Mvc\Model\Adapter\Redis\Model\OperatorInterface;
 use \Phalcon\Db\Adapter\Pdo\Mysql;
+use \Redis;
 
 class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterface
 {
@@ -50,7 +51,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     private static $_cache = array();
 
     /**
-     * @var \Phalcon\Mvc\Model
+     * @var \Phalcon\Mvc\Model|null
      */
     private static $_current_model = null;
 
@@ -101,7 +102,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @param bool $bool
      */
-    public static function test($bool = false)
+    public static function test(bool $bool = false)
     {
         self::$_test = $bool;
     }
@@ -115,7 +116,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * @param \Phalcon\Mvc\Model $model
+     * @param \Phalcon\Mvc\Model|null $model
      */
     public static function setCurrentModel(\Phalcon\Mvc\Model $model)
     {
@@ -123,17 +124,17 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * redisを取得
-     * @return |Redis
+     * @return Redis
+     * @throws Exception
      */
-    private static function getRedis()
+    private static function getRedis(): Redis
     {
         return self::getConnection()->getRedis();
     }
 
     /**
-     * @return \Phalcon\Mvc\Model\Adapter\Redis\Connection
-     * @throws \Phalcon\Mvc\Model\Adapter\Redis\Exception
+     * @return Connection
+     * @throws Exception
      */
     private static function getConnection(): Connection
     {
@@ -150,7 +151,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @return Criteria
      */
-    public static function criteria()
+    public static function criteria(): Criteria
     {
         return new Criteria(new static());
     }
@@ -159,7 +160,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param  string $field
      * @return mixed
      */
-    private static function getLocalCache($field)
+    private static function getLocalCache(string $field)
     {
         // cache key
         $key = self::getCacheKey();
@@ -178,7 +179,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param string $field
      * @param mixed  $value
      */
-    private static function setLocalCache($field, $value)
+    private static function setLocalCache(string $field, $value)
     {
         // cache key
         $key = self::getCacheKey();
@@ -194,7 +195,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @return string
      */
-    private static function getCacheKey()
+    private static function getCacheKey(): string
     {
         $key  = self::getServiceName();
         $key .= ":". self::getCurrentModel()->getSource();
@@ -207,7 +208,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @return string
      */
-    private static function getServiceName()
+    private static function getServiceName(): string
     {
         $service = self::getCurrentModel()->getReadConnectionService();
 
@@ -255,8 +256,9 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * @param  null|string|array $parameters
+     * @param  mixed $parameters
      * @return mixed
+     * @throws Exception
      */
     public static function sum($parameters = null)
     {
@@ -280,8 +282,9 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * @param  null|string|array $parameters
+     * @param  mixed $parameters
      * @return mixed
+     * @throws Exception
      */
     public static function count($parameters = null)
     {
@@ -305,8 +308,9 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * @param  null|string|array $parameters
+     * @param  mixed $parameters
      * @return mixed
+     * @throws Exception
      */
     public static function max($parameters = null)
     {
@@ -330,8 +334,9 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * @param  null|string|array $parameters
+     * @param  mixed $parameters
      * @return mixed
+     * @throws Exception
      */
     public static function min($parameters = null)
     {
@@ -355,8 +360,8 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * @param  null|string|array $parameters
-     * @return \Phalcon\Mvc\Model
+     * @param  mixed $parameters
+     * @return null|\Phalcon\Mvc\Model
      */
     public static function findFirst($parameters = null)
     {
@@ -370,8 +375,9 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * @param  null|string|array $parameters
-     * @return \Phalcon\Mvc\Model\ResultsetInterface
+     * @param  mixed $parameters
+     * @return mixed|\Phalcon\Mvc\Model\ResultsetInterface
+     * @throws Exception
      */
     public static function find($parameters = null)
     {
@@ -400,7 +406,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param  string $mode
      * @return mixed
      */
-    private static function findDatabase($field, $params, $mode = "find")
+    private static function findDatabase(string $field, array $params, string $mode = "find")
     {
         // cache on or off
         $_cache = \Phalcon\DI::getDefault()
@@ -450,9 +456,10 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
     /**
      * @param  string $field
-     * @return mixed
+     * @return mixed|string
+     * @throws Exception
      */
-    private static function findRedis($field)
+    private static function findRedis(string $field)
     {
         // local cache
         $_cache = self::getLocalCache($field);
@@ -467,11 +474,12 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * @param string $field
-     * @param mixed  $value
-     * @param int    $expire
+     * @param  string $field
+     * @param  mixed  $value
+     * @param  int    $expire
+     * @throws Exception
      */
-    private static function setHash($field, $value, $expire = 0)
+    private static function setHash(string $field, $value, int $expire = 0)
     {
         // cache key
         $key = self::getCacheKey();
@@ -495,7 +503,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param  string $mode
      * @return string
      */
-    private static function getFieldKey($params, $mode = "find")
+    private static function getFieldKey(array $params, string $mode = "find"): string
     {
         // field key
         $field  = $mode. "@";
@@ -510,7 +518,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param  array $parameters
      * @return string
      */
-    private static function buildFieldKey($parameters)
+    private static function buildFieldKey(array $parameters): string
     {
         // base
         $key = self::DEFAULT_PREFIX;
@@ -615,7 +623,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param  array  $_keys
      * @return string
      */
-    private static function buildBaseKey($_keys = array())
+    private static function buildBaseKey($_keys = array()): string
     {
         $array = array();
 
@@ -645,7 +653,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @return array
      * @throws Exception
      */
-    public static function buildParameters($parameters)
+    public static function buildParameters($parameters): array
     {
         // init
         $indexQuery  = array();
@@ -747,7 +755,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param  mixed  $value
      * @return array
      */
-    private static function buildQuery($column, $value)
+    private static function buildQuery($column, $value): array
     {
 
         if (count($aliased = explode(".", $column)) > 1) {
@@ -967,7 +975,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @return string
      */
-    private static function getPrefix()
+    private static function getPrefix(): string
     {
         return self::$_prefix;
     }
@@ -1034,7 +1042,8 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * @param $params
+     * @param  array $params
+     * @throws Exception
      */
     private static function bindToPrefix($params)
     {
@@ -1047,8 +1056,9 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
     /**
      * @return string
+     * @throws Exception
      */
-    private static function getShardServiceName()
+    private static function getShardServiceName(): string
     {
         $mode = \Phalcon\DI::getDefault()
             ->get("config")
@@ -1087,7 +1097,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @return string
      * @throws Exception
      */
-    private static function getAdminConfigName($primary_key)
+    private static function getAdminConfigName($primary_key): string
     {
         // local cache
         if (isset(self::$_config_class_cache[$primary_key])) {
@@ -1286,6 +1296,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @param \Phalcon\Mvc\Model $model
      * @return mixed
+     * @throws Exception
      */
     public static function truncate(\Phalcon\Mvc\Model $model)
     {
@@ -1306,6 +1317,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
     /**
      * @param \Phalcon\Mvc\Model $model
+     * @throws Exception
      */
     private static function cacheAllDelete(\Phalcon\Mvc\Model $model)
     {
@@ -1329,7 +1341,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * @param $config_name
+     * @param mixed $config_name
      */
     public static function setServiceName($config_name)
     {
@@ -1338,8 +1350,9 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
     /**
      * @return string
+     * @throws Exception
      */
-    private static function getServiceNames()
+    private static function getServiceNames(): string
     {
         switch (true) {
             case self::isCommon():
@@ -1363,7 +1376,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @return bool
      */
-    private static function isCommon()
+    private static function isCommon(): bool
     {
         $config = \Phalcon\DI::getDefault()
             ->get("config")
@@ -1386,7 +1399,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @return bool
      */
-    private static function isAdmin()
+    private static function isAdmin(): bool
     {
         $config = \Phalcon\DI::getDefault()
             ->get("config")
@@ -1409,7 +1422,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param  array $databases
      * @return bool
      */
-    private static function isMatch($databases = array())
+    private static function isMatch($databases = array()): bool
     {
         $source = self::getCurrentModel()->getSource();
         foreach ($databases as $name) {
@@ -1427,7 +1440,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @return string
      */
-    public static function getCommonServiceName()
+    public static function getCommonServiceName(): string
     {
         return \Phalcon\DI::getDefault()
             ->get("config")
@@ -1440,7 +1453,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @return string
      */
-    public static function getAdminServiceName()
+    public static function getAdminServiceName(): string
     {
         return \Phalcon\DI::getDefault()
             ->get("config")
@@ -1454,8 +1467,9 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param  null $data
      * @param  null $whiteList
      * @return bool
+     * @throws Exception
      */
-    public function save($data = null, $whiteList = null)
+    public function save($data = null, $whiteList = null): bool
     {
         // pre
         $this->_pre($data);
@@ -1476,8 +1490,9 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param  null $data
      * @param  null $whiteList
      * @return bool
+     * @throws Exception
      */
-    public function create($data = null, $whiteList = null)
+    public function create($data = null, $whiteList = null): bool
     {
         return $this->save($data, $whiteList);
     }
@@ -1486,16 +1501,18 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param  null $data
      * @param  null $whiteList
      * @return bool
+     * @throws Exception
      */
-    public function update($data = null, $whiteList = null)
+    public function update($data = null, $whiteList = null): bool
     {
         return $this->save($data, $whiteList);
     }
 
     /**
      * @return bool
+     * @throws Exception
      */
-    public function delete()
+    public function delete(): bool
     {
         // pre
         $this->_pre();
@@ -1512,7 +1529,6 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * pre
      * @param array $data
      */
     private function _pre($data = array())
@@ -1522,7 +1538,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     *  post
+     * @throws Exception
      */
     private function _post()
     {
@@ -1576,7 +1592,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param  array $options
      * @return array
      */
-    public function toViewArray($caller = null, $options = array())
+    public function toViewArray($caller = null, $options = array()): array
     {
 
         $ignore = [];
