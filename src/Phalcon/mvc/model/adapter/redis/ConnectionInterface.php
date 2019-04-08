@@ -1,6 +1,6 @@
 <?php
 
-namespace RedisPlugin;
+namespace Phalcon\Mvc\Model\Adapter\Redis;
 
 interface ConnectionInterface
 {
@@ -34,7 +34,7 @@ interface ConnectionInterface
      * @param  string $key
      * @return bool
      */
-    public function hasConnections($key);
+    public function hasConnections(string $key);
 
     /**
      * @param  string $host
@@ -42,7 +42,7 @@ interface ConnectionInterface
      * @param  int    $select
      * @return string
      */
-    public function getConnectionCacheKey($host = self::HOST, $port = self::PORT, $select = self::SELECT);
+    public function getConnectionCacheKey(string $host = self::HOST, int $port = self::PORT, int $select = self::SELECT);
 
     /**
      * @param  string $host
@@ -50,7 +50,7 @@ interface ConnectionInterface
      * @param  int    $select
      * @return \Redis
      */
-    public function createClient($host = self::HOST, $port = self::PORT, $select = self::SELECT);
+    public function createClient(string $host = self::HOST, int $port = self::PORT, int $select = self::SELECT);
 
     /**
      * @return \Redis

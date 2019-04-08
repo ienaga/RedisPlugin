@@ -1,9 +1,8 @@
 <?php
 
-namespace RedisPlugin;
+namespace Phalcon\Mvc\Model\Adapter\Redis;
 
 use \Redis;
-use \RedisPlugin\Exception\RedisPluginException;
 
 class Connection implements ConnectionInterface
 {
@@ -40,7 +39,7 @@ class Connection implements ConnectionInterface
     /**
      * @return Connection
      */
-    static function getInstance()
+    static function getInstance(): Connection
     {
         return (self::$_instance === null)
             ? self::$_instance = new static
@@ -50,17 +49,17 @@ class Connection implements ConnectionInterface
     /**
      * @return \Phalcon\DiInterface
      */
-    public function getDI()
+    public function getDI(): \Phalcon\DiInterface
     {
         return \Phalcon\DI::getDefault();
     }
 
     /**
      * @param  array $config
-     * @return $this
-     * @throws RedisPluginException
+     * @return Connection
+     * @throws Exception
      */
-    public function connect($config = array())
+    public function connect($config = array()): Connection
     {
         if (!$config) {
             $configs = $this->getDI()
@@ -70,7 +69,7 @@ class Connection implements ConnectionInterface
                 ->toArray();
 
             if (!count($configs)) {
-                throw new RedisPluginException("Initial setting can not be found.");
+                throw new Exception("Initial setting can not be found.");
             }
 
             $config = array_shift($configs);
@@ -90,7 +89,7 @@ class Connection implements ConnectionInterface
      * @param  string $key
      * @return bool
      */
-    public function hasConnections($key)
+    public function hasConnections(string $key): bool
     {
         return isset($this->connections[$key]);
     }
@@ -101,7 +100,7 @@ class Connection implements ConnectionInterface
      * @param  int    $select
      * @return Redis
      */
-    public function createClient($host = self::HOST, $port = self::PORT, $select = self::SELECT)
+    public function createClient(string $host = self::HOST, int $port = self::PORT, int $select = self::SELECT): Redis
     {
         // local cache key
         $key = $this->getConnectionCacheKey($host, $port, $select);
@@ -111,12 +110,16 @@ class Connection implements ConnectionInterface
         }
 
         try {
+
             $redis = new Redis();
             $redis->pconnect($host, $port, 0, "x");
             $redis->select($select);
             $redis->setOption(Redis::OPT_SERIALIZER, Redis::SERIALIZER_PHP);
-        } catch (RedisPluginException $e) {
+
+        } catch (Exception $e) {
+
             die($e->getMessage());
+
         }
 
         // set local cache
@@ -131,7 +134,7 @@ class Connection implements ConnectionInterface
      * @param  int    $select
      * @return string
      */
-    public function getConnectionCacheKey($host = self::HOST, $port = self::PORT, $select = self::SELECT)
+    public function getConnectionCacheKey(string $host = self::HOST, int $port = self::PORT, int $select = self::SELECT): string
     {
         return sprintf(self::CONNECTION_CACHE_KEY, $host, $port, $select);
     }
@@ -139,7 +142,7 @@ class Connection implements ConnectionInterface
     /**
      * @return Redis
      */
-    public function getRedis()
+    public function getRedis(): Redis
     {
         return self::$current_client;
     }
@@ -150,17 +153,17 @@ class Connection implements ConnectionInterface
      * @param  string $key
      * @return bool
      */
-    public function isTimeout($key)
+    public function isTimeout(string $key): bool
     {
         return ($this->getRedis()->ttl($key) > 0);
     }
 
     /**
-     * @throws RedisPluginException
+     * @throws Exception
      */
     final function __clone()
     {
-        throw new RedisPluginException("Clone is not allowed against" . get_class($this));
+        throw new Exception("Clone is not allowed against" . get_class($this));
     }
 
     /**
@@ -172,6 +175,7 @@ class Connection implements ConnectionInterface
         foreach ($this->connections as $redis) {
             $redis->close();
         }
+
         // local params reset
         $this->connections    = array();
         self::$current_client = null;

@@ -1,8 +1,6 @@
 <?php
 
-namespace RedisPlugin;
-
-use \Exception;
+namespace Phalcon\Mvc\Model\Adapter\Redis;
 
 interface DatabaseInterface
 {

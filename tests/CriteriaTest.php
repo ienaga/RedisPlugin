@@ -1,8 +1,8 @@
 <?php
 
-require_once __DIR__ . "/../src/mvc/model/Criteria.php";
+require_once __DIR__ . "/../src/Phalcon/mvc/model/adapter/redis/model/Criteria.php";
 
-use \RedisPlugin\Mvc\Model\Criteria;
+use \Phalcon\Mvc\Model\Adapter\Redis\Model\Criteria;
 
 class CriteriaTest extends \PHPUnit_Framework_TestCase
 {

@@ -1,6 +1,8 @@
 <?php
 
-require_once __DIR__ . "/../src/plugin/redis/Service.php";
+require_once __DIR__ . "/../src/Phalcon/mvc/model/adapter/redis/Service.php";
+
+use \Phalcon\Mvc\Model\Adapter\Redis\Service;
 
 class ServiceTest extends \PHPUnit_Framework_TestCase
 {
@@ -26,7 +28,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
     public function testRegistration()
     {
         // 登録
-        $dbService = new \RedisPlugin\Service();
+        $dbService = new Service();
         $dbService->registration();
 
         $di = \Phalcon\DI::getDefault();
@@ -59,7 +61,7 @@ class ServiceTest extends \PHPUnit_Framework_TestCase
             $config[$db] = $descriptor;
         }
 
-        $dbService = new \RedisPlugin\Service();
+        $dbService = new Service();
         $dbService->overwrite($config);
 
         foreach ($databases as $db => $arguments) {

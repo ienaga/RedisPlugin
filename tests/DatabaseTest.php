@@ -1,9 +1,11 @@
 <?php
 
-require_once __DIR__ . "/../src/plugin/redis/Database.php";
+require_once __DIR__ . "/../src/Phalcon/mvc/model/adapter/redis/Database.php";
 require_once __DIR__ . "/model/MstDatabase.php";
 
-use \RedisPlugin\Database;
+use \Phalcon\Mvc\Model\Adapter\Redis\Database;
+use \Phalcon\Mvc\Model\Adapter\Redis\Service;
+use \Phalcon\Mvc\Model\Adapter\Redis\Metadata\Redis;
 
 class DatabaseTest extends \PHPUnit_Framework_TestCase
 {
@@ -23,12 +25,12 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
         $di->set("config", function () use ($config) { return $config; }, true);
 
         // service
-        $service = new \RedisPlugin\Service();
+        $service = new Service();
         $service->registration();
 
         // modelsMetadata
         $di->setShared("modelsMetadata", function () use ($di) {
-            return new \RedisPlugin\Mvc\Model\Metadata\Redis(
+            return new Redis(
                 $this->getConfig()->get("redis")->get("metadata")->toArray()
             );
         });

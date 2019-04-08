@@ -11,6 +11,9 @@
             "email": "ienaga@tvon.jp"
         }
     ],
+    "require": {
+        "ienaga/ienaga/phalcon-config-loader-for-yaml": "2.0.0"
+    },
     "require-dev": {
         "phalcon/zephir": "0.9.*",
         "phpunit/phpunit": "4.8.*"

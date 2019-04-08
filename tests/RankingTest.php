@@ -1,8 +1,8 @@
 <?php
 
-require_once __DIR__ . "/../src/plugin/redis/Ranking.php";
+require_once __DIR__ . "/../src/Phalcon/mvc/model/adapter/redis/Ranking.php";
 
-use \RedisPlugin\Ranking;
+use \Phalcon\Mvc\Model\Adapter\Redis\Ranking;
 
 class RankingTest extends \PHPUnit_Framework_TestCase
 {

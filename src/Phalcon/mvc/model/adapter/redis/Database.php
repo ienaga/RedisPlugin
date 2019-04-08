@@ -1,9 +1,6 @@
 <?php
 
-namespace RedisPlugin;
-
-use \Exception;
-use \RedisPlugin\Exception\RedisPluginException;
+namespace Phalcon\Mvc\Model\Adapter\Redis;
 
 class Database implements DatabaseInterface
 {
@@ -39,7 +36,7 @@ class Database implements DatabaseInterface
     /**
      * @return \Phalcon\Mvc\Model[]
      */
-    private static function getModels()
+    private static function getModels(): array
     {
         return self::$models;
     }
@@ -63,8 +60,9 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @param  string     $name
+     * @param  string $name
      * @return Connection
+     * @throws Exception
      */
     private static function getConnection($name)
     {
@@ -81,8 +79,9 @@ class Database implements DatabaseInterface
     /**
      * @param  string $name
      * @return \Redis
+     * @throws Exception
      */
-    public static function getRedis($name)
+    public static function getRedis($name): \Redis
     {
         return self::getConnection($name)->getRedis();
     }
@@ -122,7 +121,7 @@ class Database implements DatabaseInterface
     /**
      * @return bool
      */
-    public static function isTransaction()
+    public static function isTransaction(): bool
     {
         return self::$isTransaction;
     }
@@ -204,7 +203,7 @@ class Database implements DatabaseInterface
 
             // DEFAULT PREFIX
             foreach ($databases as $db => $arguments) {
-                $key = self::getCacheKey($model, $arguments, \RedisPlugin\Mvc\Model::DEFAULT_PREFIX);
+                $key = self::getCacheKey($model, $arguments, Model::DEFAULT_PREFIX);
                 self::getRedis($db)->delete($key);
             }
 
@@ -223,7 +222,7 @@ class Database implements DatabaseInterface
      * @param  mixed              $prefix
      * @return string
      */
-    public static function getCacheKey(\Phalcon\Mvc\Model $model, $arguments, $prefix = \RedisPlugin\Mvc\Model::DEFAULT_PREFIX)
+    public static function getCacheKey(\Phalcon\Mvc\Model $model, $arguments, $prefix = Model::DEFAULT_PREFIX): string
     {
         return sprintf("%s:%s:%s",
             self::generateServiceName($arguments),
@@ -236,7 +235,7 @@ class Database implements DatabaseInterface
      * @param  \Phalcon\Mvc\Model $model
      * @return string
      */
-    private static function getServiceName(\Phalcon\Mvc\Model $model)
+    private static function getServiceName(\Phalcon\Mvc\Model $model): string
     {
         // config
         $config = \Phalcon\DI::getDefault()
@@ -251,7 +250,7 @@ class Database implements DatabaseInterface
      * @param  array $config
      * @return string
      */
-    private static function generateServiceName($config = array())
+    private static function generateServiceName($config = array()): string
     {
         return sprintf("%s:%s:%s",
             $config["dbname"],
@@ -274,10 +273,14 @@ class Database implements DatabaseInterface
             if ($manager->has()) {
 
                 try {
+
                     $transaction->rollback($e->getMessage());
-                } catch (RedisPluginException $e) {
+
+                } catch (Exception $e) {
+
                     array_shift(self::$transactions);
                     self::rollback($e);
+
                 }
 
             }
@@ -304,7 +307,7 @@ class Database implements DatabaseInterface
 
     /**
      * @param  \Phalcon\Mvc\Model $model
-     * @throws RedisPluginException
+     * @throws Exception
      */
     public static function outputErrorMessage(\Phalcon\Mvc\Model $model)
     {
@@ -312,6 +315,7 @@ class Database implements DatabaseInterface
         foreach ($model->getMessages() as $message) {
             $messages .= $message;
         }
-        throw new RedisPluginException($messages);
+
+        throw new Exception($messages);
     }
 }

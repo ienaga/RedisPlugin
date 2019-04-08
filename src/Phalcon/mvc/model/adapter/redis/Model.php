@@ -1,12 +1,9 @@
 <?php
 
-namespace RedisPlugin\Mvc;
+namespace Phalcon\Mvc\Model\Adapter\Redis;
 
-use \RedisPlugin\Connection;
-use \RedisPlugin\Database;
-use \RedisPlugin\Mvc\Model\Criteria;
-use \RedisPlugin\Mvc\Model\OperatorInterface;
-use \RedisPlugin\Exception\RedisPluginException;
+use \Phalcon\Mvc\Model\Adapter\Redis\Model\Criteria;
+use \Phalcon\Mvc\Model\Adapter\Redis\Model\OperatorInterface;
 use \Phalcon\Db\Adapter\Pdo\Mysql;
 
 class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterface
@@ -135,9 +132,10 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     }
 
     /**
-     * @return Connection
+     * @return \Phalcon\Mvc\Model\Adapter\Redis\Connection
+     * @throws \Phalcon\Mvc\Model\Adapter\Redis\Exception
      */
-    private static function getConnection()
+    private static function getConnection(): Connection
     {
         $config = \Phalcon\DI::getDefault()
             ->get("config")
@@ -645,7 +643,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @param  array $parameters
      * @return array
-     * @throws RedisPluginException
+     * @throws Exception
      */
     public static function buildParameters($parameters)
     {
@@ -705,7 +703,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
                 }
 
                 if ($test && !count($indexQuery)) {
-                    throw new RedisPluginException("index not match.");
+                    throw new Exception("index not match.");
                 }
             }
 
@@ -936,7 +934,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
                         "charset"  => $config["charset"]
                     ]);
 
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     continue;
                 }
 
@@ -976,7 +974,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
 
     /**
      * @param  null|array $_keys
-     * @throws RedisPluginException
+     * @throws Exception
      */
     private static function setPrefix($_keys = null)
     {
@@ -989,7 +987,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
             ->get("columns");
 
         if (!$columns) {
-            throw new RedisPluginException("not found prefix columns");
+            throw new Exception("not found prefix columns");
         }
 
         $model = self::getCurrentModel();
@@ -1087,7 +1085,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @param  mixed $primary_key
      * @return string
-     * @throws RedisPluginException
+     * @throws Exception
      */
     private static function getAdminConfigName($primary_key)
     {
@@ -1120,7 +1118,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
             ->findFirst();
 
         if (!$configClass) {
-            throw new RedisPluginException(
+            throw new Exception(
                 sprintf("Not Found Admin Config: %s : %s", $primary, $primary_key)
             );
         }
@@ -1140,7 +1138,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
     /**
      * @param  mixed $_prefix
      * @return \Phalcon\Mvc\Model
-     * @throws RedisPluginException
+     * @throws Exception
      */
     private static function getAdminClass($_prefix)
     {
@@ -1171,7 +1169,7 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
             ->findFirst();
 
         if (!$adminClass) {
-            throw new RedisPluginException("Not Created Admin Member: Prefix: ". $_prefix);
+            throw new Exception("Not Created Admin Member: Prefix: ". $_prefix);
         }
 
         self::$_admin_class_cache[$_prefix] = $adminClass;
@@ -1187,12 +1185,12 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param  null               $parameters
      * @param  \Phalcon\Mvc\Model $model
      * @return \Phalcon\Mvc\Model\QueryInterface
-     * @throws RedisPluginException
+     * @throws Exception
      */
     public static function queryUpdate($parameters = null, \Phalcon\Mvc\Model $model)
     {
         if (!is_array($parameters) || !isset($parameters["query"])) {
-            throw new RedisPluginException("parameters array only.");
+            throw new Exception("parameters array only.");
         }
 
         // initialize
@@ -1245,12 +1243,12 @@ class Model extends \Phalcon\Mvc\Model implements ModelInterface, OperatorInterf
      * @param null $parameters
      * @param \Phalcon\Mvc\Model $model
      * @return mixed
-     * @throws RedisPluginException
+     * @throws Exception
      */
     public static function queryDelete($parameters = null, \Phalcon\Mvc\Model $model)
     {
         if (!is_array($parameters) || !isset($parameters["query"])) {
-            throw new RedisPluginException("parameters array only.");
+            throw new Exception("parameters array only.");
         }
 
         // initialize

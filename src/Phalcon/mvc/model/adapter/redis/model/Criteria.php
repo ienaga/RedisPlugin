@@ -1,6 +1,6 @@
 <?php
 
-namespace RedisPlugin\Mvc\Model;
+namespace Phalcon\Mvc\Model\Adapter\Redis\Model;
 
 class Criteria implements CriteriaInterface, OperatorInterface
 {
@@ -58,16 +58,16 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @return array
      */
-    public function getConditions()
+    public function getConditions(): array
     {
         return $this->conditions;
     }
 
     /**
      * @param  array $conditions
-     * @return $this
+     * @return Criteria
      */
-    public function setConditions($conditions = array())
+    public function setConditions($conditions = array()): Criteria
     {
         $this->conditions = $conditions;
 
@@ -75,7 +75,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     }
 
     /**
-     * @return \Phalcon\Mvc\Model
+     * @return \Phalcon\Mvc\Model|null
      */
     public function getModel()
     {
@@ -84,9 +84,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
     /**
      * @param  \Phalcon\Mvc\Model $model
-     * @return $this
+     * @return Criteria
      */
-    public function setModel(\Phalcon\Mvc\Model $model)
+    public function setModel(\Phalcon\Mvc\Model $model): Criteria
     {
         $model->initialize();
 
@@ -97,16 +97,16 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @return int
      */
-    public function getExpire()
+    public function getExpire(): int
     {
         return $this->expire;
     }
 
     /**
      * @param  int $expire
-     * @return $this
+     * @return Criteria
      */
-    public function setExpire($expire = 0)
+    public function setExpire(int $expire = 0): Criteria
     {
         $this->expire = $expire;
 
@@ -116,7 +116,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @return array
      */
-    public function getOrders()
+    public function getOrders(): array
     {
         return $this->orders;
     }
@@ -124,7 +124,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @return array
      */
-    public function getGroups()
+    public function getGroups(): array
     {
         return $this->groups;
     }

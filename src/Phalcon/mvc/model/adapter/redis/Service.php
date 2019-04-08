@@ -1,6 +1,6 @@
 <?php
 
-namespace RedisPlugin;
+namespace Phalcon\Mvc\Model\Adapter\Redis;
 
 use \Phalcon\Db\Adapter\Pdo\Mysql;
 use \Phalcon\Mvc\Model\Transaction\Manager;

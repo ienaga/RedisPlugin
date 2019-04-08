@@ -1,6 +1,6 @@
 <?php
 
-namespace RedisPlugin\Mvc\Model;
+namespace Phalcon\Mvc\Model\Adapter\Redis\Model;
 
 interface OperatorInterface
 {

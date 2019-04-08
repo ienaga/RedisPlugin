@@ -1,7 +1,6 @@
 language: php
+
 php:
-  - 5.5
-  - 5.6
   - 7.0
   - 7.1
   - 7.2
@@ -15,7 +14,7 @@ cache:
 before_install:
   - chmod +x bin/*.sh
   - pecl channel-update pecl.php.net
-  - bin/install-yaml.sh
+  - pecl install yaml-2.0.4 < /dev/null
   - echo "extension=yaml.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - pecl install -f redis < /dev/null
   - echo "extension=redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
@@ -24,6 +23,7 @@ before_install:
 
 before_script:
   - mysql -uroot < tests/config/schema.sql
+  - sleep 20
 
 script:
   - vendor/bin/phpunit

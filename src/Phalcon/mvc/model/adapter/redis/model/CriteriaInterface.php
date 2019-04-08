@@ -1,6 +1,6 @@
 <?php
 
-namespace RedisPlugin\Mvc\Model;
+namespace Phalcon\Mvc\Model\Adapter\Redis\Model;
 
 interface CriteriaInterface
 {
@@ -33,7 +33,7 @@ interface CriteriaInterface
      * @param  string $column
      * @return mixed
      */
-    public function sum($column);
+    public function sum(string $column);
 
     /**
      * @return bool

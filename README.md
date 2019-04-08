@@ -10,17 +10,17 @@ RedisPlugin for Phalcon (The correspondence of MySQL sharding.)
 ```json
 {
     "require": {
-       "ienaga/phalcon-redis-plugin": "2.*"
+       "ienaga/phalcon-redis-plugin": "3.*"
     }
 }
 ```
 
 
 ## Version
-
-PHP 5.x/7.x
-
-Phalcon 3.x 
+```
+PHP: 7.0.x, 7.1.x, 7.2.x
+Phalcon: 3.x
+```
 
 
 ## phpredis and YAML
@@ -34,13 +34,14 @@ sudo yum install libyaml libyaml-devel php-pecl-yaml php-pecl-redis
 ### @see [PhalconConfig](https://github.com/ienaga/PhalconConfig)
 
 ```php
-$configLoader = new \PhalconConfig\Loader();
-return $configLoader
+$loader = new Phalcon\Config\Adapter\Yaml\Loader();
+return $loader
     ->setIgnore(["routing"]) // ignore yml names
     ->setEnvironment("stg") // default dev
     ->setBasePath(realpath(dirname(__FILE__) . "/../.."))
     ->load();
 ```
+
 
 ## app/config/database.yml
 
@@ -250,15 +251,18 @@ dev:
 /**
  * Database connection is created based in the parameters defined in the configuration file
  */
-$dbService = new \RedisPlugin\Service();
+$dbService = new \Phalcon\Mvc\Model\Adapter\Redis\Service();
 $dbService->registration();
 
 /**
  * If the configuration specify the use of metadata adapter use it or use memory otherwise
  */
 $di->setShared('modelsMetadata', function () {
-    return new \RedisPlugin\Mvc\Model\Metadata\Redis(
-        $this->getConfig()->get("redis")->get("metadata")->toArray()
+    return new \Phalcon\Mvc\Model\Adapter\Redis\Metadata\Redis(
+        $this->getConfig()
+            ->get("redis")
+            ->get("metadata")
+            ->toArray()
     );
 });
 ```
@@ -267,7 +271,7 @@ $di->setShared('modelsMetadata', function () {
 ## findFirst
 
 ```php
-class Robot extends \RedisPlugin\Mvc\Model {}
+class Robot extends \Phalcon\Mvc\Model\Adapter\Redis\Model {}
 
 # findFirst
 $robot = Robot::criteria()
@@ -281,7 +285,7 @@ $robot = Robot::criteria()
 ## find
 
 ```php
-class Robot extends \RedisPlugin\Mvc\Model {}
+class Robot extends \Phalcon\Mvc\Model\Adapter\Redis\Model {}
 
 $robot = Robot::criteria()
     ->add('id', array($id), Criteria::IN)
@@ -295,7 +299,7 @@ $robot = Robot::criteria()
 ## cache Control
 
 ```php
-class Robot extends \RedisPlugin\Mvc\Model {}
+class Robot extends \Phalcon\Mvc\Model\Adapter\Redis\Model {}
 
 $robot = Robot::criteria()
     ->add('id', array($id), Criteria::IN)
@@ -310,7 +314,7 @@ $robot = Robot::criteria()
 ## autoIndex Control
 
 ```php
-class Robot extends \RedisPlugin\Mvc\Model {}
+class Robot extends \Phalcon\Mvc\Model\Adapter\Redis\Model {}
 
 $robot = Robot::criteria()
     ->add('id', array($id), Criteria::IN)
@@ -325,7 +329,7 @@ $robot = Robot::criteria()
 ## save
 
 ```php
-class UserItem extends \RedisPlugin\Mvc\Model {}
+class UserItem extends \Phalcon\Mvc\Model\Adapter\Redis\Model {}
 
 $userItem = new UserItem();
 $userItem->setId($id);
@@ -338,7 +342,7 @@ $userItem->save();
 ## update
 
 ```php
-class Robot extends \RedisPlugin\Mvc\Model {}
+class Robot extends \Phalcon\Mvc\Model\Adapter\Redis\Model {}
 
 Robot::criteria()
     ->add("user_status", 1)
@@ -356,7 +360,7 @@ UPDATE `robot` SET `status` = 2, `name` = "robot" WHERE `user_status` = 1 AND `p
 ## delete
 
 ```php
-class Robot extends \RedisPlugin\Mvc\Model {}
+class Robot extends \Phalcon\Mvc\Model\Adapter\Redis\Model {}
 
 Robot::criteria()
     ->add("user_status", 1)
@@ -372,7 +376,7 @@ DELETE FROM `robot` WHERE `user_status` = 1 AND `power` >= 100;
 ## count
 
 ```php
-class Robot extends \RedisPlugin\Mvc\Model {}
+class Robot extends \Phalcon\Mvc\Model\Adapter\Redis\Model {}
 
 $count = Robot::criteria()
     ->add("user_status", 1)
@@ -385,7 +389,7 @@ $count = Robot::criteria()
 ## sum
 
 ```php
-class Robot extends \RedisPlugin\Mvc\Model {}
+class Robot extends \Phalcon\Mvc\Model\Adapter\Redis\Model {}
 
 $sum = Robot::criteria()
     ->add("user_status", 1)
@@ -400,7 +404,7 @@ e.g. PRIMARY = type, INDEX = id, status
 
  
 ```php
-class Robot extends \RedisPlugin\Mvc\Model {}
+class Robot extends \Phalcon\Mvc\Model\Adapter\Redis\Model {}
 
 $robot = Robot::criteria()
     ->limit(10)
@@ -430,7 +434,7 @@ LIMIT 10
 
 * 単体
 ```php
-class Robot extends \RedisPlugin\Mvc\Model {}
+class Robot extends \Phalcon\Mvc\Model\Adapter\Redis\Model {}
 
 $robot = Robot::criteria()
     ->limit(10)
@@ -446,7 +450,7 @@ $robot = Robot::criteria()
 * 全体
 
 ```php
-class Robot extends \RedisPlugin\Mvc\Model {}
+class Robot extends \Phalcon\Mvc\Model\Adapter\Redis\Model {}
 
 \RedisPlugin\Mvc\Model::test(true);
 

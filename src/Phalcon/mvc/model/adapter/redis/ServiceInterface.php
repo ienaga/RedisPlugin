@@ -1,6 +1,6 @@
 <?php
 
-namespace RedisPlugin;
+namespace Phalcon\Mvc\Model\Adapter\Redis;
 
 interface ServiceInterface
 {

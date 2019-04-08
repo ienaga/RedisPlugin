@@ -1,8 +1,8 @@
 <?php
 
-require_once __DIR__ . "/../src/mvc/model/Criteria.php";
-require_once __DIR__ . "/../src/mvc/Model.php";
-require_once __DIR__ . "/../src/plugin/redis/Database.php";
+require_once __DIR__ . "/../src/Phalcon/mvc/model/adapter/redis/model/Criteria.php";
+require_once __DIR__ . "/../src/Phalcon/mvc/model/adapter/redis/Model.php";
+require_once __DIR__ . "/../src/Phalcon/mvc/model/adapter/redis/Database.php";
 require_once __DIR__ . "/model/MstIndex.php";
 require_once __DIR__ . "/model/AdminUser.php";
 require_once __DIR__ . "/model/AdminDbConfig.php";
@@ -31,10 +31,11 @@ require_once __DIR__ . "/model/MstTestDistinct.php";
 require_once __DIR__ . "/model/MstTruncate.php";
 
 
-use \RedisPlugin\Mvc\Model;
-use \RedisPlugin\Mvc\Model\Criteria;
-use \RedisPlugin\Database;
-
+use \Phalcon\Mvc\Model\Adapter\Redis\Model;
+use \Phalcon\Mvc\Model\Adapter\Redis\Model\Criteria;
+use \Phalcon\Mvc\Model\Adapter\Redis\Database;
+use \Phalcon\Mvc\Model\Adapter\Redis\Service;
+use \Phalcon\Mvc\Model\Adapter\Redis\Metadata\Redis;
 
 class ModelTest extends \PHPUnit_Framework_TestCase
 {
@@ -57,12 +58,12 @@ class ModelTest extends \PHPUnit_Framework_TestCase
         }, true);
 
         // service
-        $service = new \RedisPlugin\Service();
+        $service = new Service();
         $service->registration();
 
         // modelsMetadata
         $di->setShared("modelsMetadata", function () use ($di) {
-            return new \RedisPlugin\Mvc\Model\Metadata\Redis(
+            return new Redis(
                 $this->getConfig()->get("redis")->get("metadata")->toArray()
             );
         });

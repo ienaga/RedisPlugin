@@ -1,9 +1,9 @@
 <?php
 
-namespace RedisPlugin\Mvc\Model\Metadata;
+namespace Phalcon\Mvc\Model\Adapter\Redis\Metadata;
 
-use \RedisPlugin\Connection;
-use \RedisPlugin\Mvc\Model;
+use \Phalcon\Mvc\Model\Adapter\Redis\Connection;
+use \Phalcon\Mvc\Model\Adapter\Redis\Model;
 
 class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
 {
@@ -51,7 +51,7 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
     /**
      * @var string
      */
-    private $_prefix_key = self::PREFIX_KEY;
+    private $_prefixKey = self::PREFIX_KEY;
 
 
     /**
@@ -60,6 +60,9 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
      */
     public function __construct($options = null)
     {
+
+        parent::__construct($options);
+
         if (!is_array($options)) {
             $options = array();
         }
@@ -90,15 +93,15 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
     /**
      * @return array
      */
-    public function getOptions()
+    public function getOptions(): array
     {
         return $this->options;
     }
 
     /**
-     * @param $options
+     * @param array $options
      */
-    public function setOptions($options)
+    public function setOptions(array $options = array())
     {
         $this->options = $options;
     }
@@ -108,7 +111,7 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
      */
     public function getPrefixKey()
     {
-        return $this->_prefix_key;
+        return $this->_prefixKey;
     }
 
     /**
@@ -116,12 +119,12 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
      */
     public function setPrefixKey($prefix_key)
     {
-        $this->_prefix_key = $prefix_key;
+        $this->_prefixKey = $prefix_key;
     }
 
     /**
      * @param  string $key
-     * @return mixed|bool
+     * @return mixed
      */
     public function getCache($key)
     {
@@ -135,7 +138,7 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
      * @param string $key
      * @param mixed  $value
      */
-    public function setCache($key, $value)
+    public function setCache(string $key, $value)
     {
         $this->_cache[$key] = $value;
     }
@@ -144,7 +147,7 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
      * @param  string $key
      * @return bool
      */
-    public function hasCache($key)
+    public function hasCache(string $key): bool
     {
         return isset($this->_cache[$key]);
     }
@@ -160,16 +163,16 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
     /**
      * @return \Redis
      */
-    public function getRedis()
+    public function getRedis(): \Redis
     {
         return $this->getConnection()->getRedis();
     }
 
     /**
      * @param  string $key
-     * @return bool|mixed
+     * @return mixed
      */
-    public function getRedisValue($key)
+    public function getRedisValue(string $key)
     {
         $redis = $this->getRedis();
         return ($redis) ? $redis->hGet($this->getPrefixKey(), $key) : null;
@@ -179,7 +182,7 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
      * @param string $key
      * @param array  $value
      */
-    public function setRedisValue($key, $value)
+    public function setRedisValue(string $key, array $value = array())
     {
         // redis
         $this->getRedis()->hSet($this->getPrefixKey(), $key, $value);
@@ -195,7 +198,7 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
      * @param  string $source
      * @return string
      */
-    public function getIndexesKey($source)
+    public function getIndexesKey(string $source): string
     {
         return sprintf(self::INDEXES_KEY, $source);
     }
@@ -227,9 +230,9 @@ class Redis extends \Phalcon\Mvc\Model\Metadata\Redis implements RedisInterface
 
     /**
      * @param  string $source
-     * @return null
+     * @return mixed
      */
-    public function readIndexes($source)
+    public function readIndexes(string $source)
     {
         return $this->getCache($this->getIndexesKey($source));
     }

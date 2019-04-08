@@ -1,6 +1,6 @@
 <?php
 
-namespace RedisPlugin\Mvc\Model\Metadata;
+namespace Phalcon\Mvc\Model\Adapter\Redis\Metadata;
 
 interface RedisInterface
 {
@@ -18,9 +18,9 @@ interface RedisInterface
 
     /**
      * @param  string $source
-     * @return null
+     * @return mixed
      */
-    public function readIndexes($source);
+    public function readIndexes(string $source);
 
     /**
      * writeIndexes
