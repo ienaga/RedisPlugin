@@ -18,9 +18,9 @@ class Ranking extends Connection implements RankingInterface
     }
 
     /**
-     * @return Ranking
+     * @return Connection
      */
-    static function getInstance()
+    static function getInstance(): Connection
     {
         return (self::$_instance === null)
             ? self::$_instance = new static
@@ -29,9 +29,10 @@ class Ranking extends Connection implements RankingInterface
 
     /**
      * @param  array $config
-     * @return $this
+     * @return Connection
+     * @throws Exception
      */
-    public function connect($config = array())
+    public function connect($config = array()): Connection
     {
         parent::connect($config);
         return $this;
