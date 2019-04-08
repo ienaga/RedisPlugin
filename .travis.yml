@@ -12,17 +12,17 @@ cache:
     - ~/cphalcon
 
 before_install:
-  - phpenv config-rm xdebug.ini
   - chmod +x bin/*.sh
   - pecl channel-update pecl.php.net
   - pecl install -f yaml-2.0.4 < /dev/null
   - pecl install -f redis < /dev/null
-  - before_script: echo "extension=yaml.so"  >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - before_script: echo "extension=redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - echo "extension = yaml.so"  >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - echo "extension = redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - composer install --dev -o --prefer-source --no-interaction
   - bin/install-phalcon.sh v3.4.1
 
 before_script:
+  - phpenv config-rm xdebug.ini
   - mysql -uroot < tests/config/schema.sql
   - sleep 10
 
