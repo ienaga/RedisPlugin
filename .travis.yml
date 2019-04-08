@@ -11,6 +11,16 @@ cache:
     - ~/.composer/cache
     - ~/cphalcon
 
+addons:
+  apt:
+    packages:
+      - libyaml-dev
+
+services:
+  - redis-server
+  - mysql
+
+
 before_install:
   - chmod +x bin/*.sh
   - pecl channel-update pecl.php.net
@@ -30,12 +40,3 @@ before_script:
 
 script:
   - vendor/bin/phpunit
-
-addons:
-  apt:
-    packages:
-      - libyaml-dev
-
-services:
-  - redis-server
-  - mysql
