@@ -1,8 +1,8 @@
 <?php
 
-require_once __DIR__ . "/../../src/mvc/Model.php";
+require_once __DIR__ . "/../../src/Phalcon/mvc/model/adapter/redis/Model.php";
 
-use \RedisPlugin\Mvc\Model;
+use \Phalcon\Mvc\Model\Adapter\Redis\Model;
 
 class MstNotLike extends Model
 {
