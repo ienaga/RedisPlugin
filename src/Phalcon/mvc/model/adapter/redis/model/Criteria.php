@@ -2,6 +2,8 @@
 
 namespace Phalcon\Mvc\Model\Adapter\Redis\Model;
 
+use Phalcon\Mvc\Model\Adapter\Redis\Model;
+
 class Criteria implements CriteriaInterface, OperatorInterface
 {
 
@@ -11,7 +13,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     protected $conditions = array("query" => array());
 
     /**
-     * @var \Phalcon\Mvc\Model
+     * @var Model|null
      */
     protected $model = null;
 
@@ -42,10 +44,10 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
 
     /**
-     * @param \Phalcon\Mvc\Model $model
-     * @param int                $expire
+     * @param Model $model
+     * @param int   $expire
      */
-    public function __construct(\Phalcon\Mvc\Model $model = null, $expire = 0)
+    public function __construct(Model $model = null, $expire = 0)
     {
         if ($model) {
             $this->setModel($model);
@@ -75,7 +77,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     }
 
     /**
-     * @return \Phalcon\Mvc\Model|null
+     * @return Model|null
      */
     public function getModel()
     {
@@ -83,10 +85,10 @@ class Criteria implements CriteriaInterface, OperatorInterface
     }
 
     /**
-     * @param  \Phalcon\Mvc\Model $model
+     * @param  Model $model
      * @return Criteria
      */
-    public function setModel(\Phalcon\Mvc\Model $model): Criteria
+    public function setModel(Model $model): Criteria
     {
         $model->initialize();
 
@@ -444,6 +446,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
     /**
      * @return \Phalcon\Mvc\Model\ResultsetInterface
+     * @throws \Phalcon\Mvc\Model\Adapter\Redis\Exception
      */
     public function find(): \Phalcon\Mvc\Model\ResultsetInterface
     {
@@ -455,6 +458,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @param  string $column
      * @return mixed
+     * @throws \Phalcon\Mvc\Model\Adapter\Redis\Exception
      */
     public function sum(string $column)
     {
@@ -465,6 +469,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
     /**
      * @return mixed
+     * @throws \Phalcon\Mvc\Model\Adapter\Redis\Exception
      */
     public function count()
     {
@@ -475,6 +480,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
     /**
      * @return bool
+     * @throws \Phalcon\Mvc\Model\Adapter\Redis\Exception
      */
     public function update(): bool
     {
@@ -485,6 +491,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
     /**
      * @return bool
+     * @throws \Phalcon\Mvc\Model\Adapter\Redis\Exception
      */
     public function delete(): bool
     {
@@ -495,6 +502,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
 
     /**
      * @return bool
+     * @throws \Phalcon\Mvc\Model\Adapter\Redis\Exception
      */
     public function truncate(): bool
     {
@@ -506,6 +514,7 @@ class Criteria implements CriteriaInterface, OperatorInterface
     /**
      * @param  string $column
      * @return mixed
+     * @throws \Phalcon\Mvc\Model\Adapter\Redis\Exception
      */
     public function max(string $column)
     {
@@ -515,8 +524,9 @@ class Criteria implements CriteriaInterface, OperatorInterface
     }
 
     /**
-     * @param  string $column
+     * @param string $column
      * @return mixed
+     * @throws \Phalcon\Mvc\Model\Adapter\Redis\Exception
      */
     public function min(string $column)
     {
