@@ -23,7 +23,7 @@ before_install:
 
 before_script:
   - mysql -uroot < tests/config/schema.sql
-  - sleep 20
+  - sleep 50
 
 script:
   - php -r "echo \Phalcon\Version::get();"

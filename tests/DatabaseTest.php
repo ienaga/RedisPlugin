@@ -92,9 +92,9 @@ class DatabaseTest extends \PHPUnit_Framework_TestCase
             $mstDatabase->setName("rollback");
             $mstDatabase->save();
 
-            throw new \Exception("test rollback");
+            $e = new \Exception("test rollback");
 
-//            Database::rollback($e);
+            Database::rollback($e);
 
         } catch (\Exception $e) {
 
